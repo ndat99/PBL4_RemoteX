@@ -1,0 +1,315 @@
+﻿<Window x:Class="RemoteX.Client.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="RemoteX" Height="636" Width="681"
+        Background="Transparent"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="CanResize" WindowStartupLocation="CenterScreen" Icon="/Views/Images/RemoteX.png">
+
+    <Window.Resources>
+        <!-- Styles -->
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#4A90E2"/>
+            <Setter Property="Margin" Value="10,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="LabelTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Margin" Value="0,5,0,2"/>
+        </Style>
+
+        <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#3E3E42"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#5BA0F2"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#3A80D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#4A90E2"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#2D2D30"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ChatMessageStyle" TargetType="Border">
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="15" BorderBrush="#FF4A90E2" BorderThickness="2" Background="#FF1E1E1E">
+        <Grid>
+            <!-- Title Bar -->
+            <Grid x:Name="titleBar" Height="40" VerticalAlignment="Top" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" Margin="0,1,0,0" Background="Transparent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Icon and Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                    <Ellipse Width="20" Height="20" Margin="0,0,8,0">
+                        <Ellipse.Fill>
+                            <ImageBrush ImageSource="/Views/Images/RemoteX.png"/>
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Text="RemoteX" FontWeight="SemiBold" Foreground="White" FontSize="14"/>
+                </StackPanel>
+
+                <!-- User Guide Button -->
+
+                <!-- Window Controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="btnMinimize" Content="−" Width="40" Height="40" Background="Transparent" 
+                        Foreground="White" BorderThickness="0" FontSize="16" Click="btnMinimize_Click"/>
+                    <Button x:Name="btnMaximize" Content="□" Width="40" Height="40" Background="Transparent" 
+                        Foreground="White" BorderThickness="0" FontSize="12" Click="btnMaximize_Click"/>
+                    <Button x:Name="btnClose" Content="×" Width="40" Height="40" Background="Transparent" 
+                        Foreground="White" BorderThickness="0" FontSize="16" Click="btnClose_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Main Content -->
+            <Grid Margin="0,40,0,30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Top Row - Control Panels -->
+                <Grid Grid.Row="0" Margin="10,10,10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Panel - Allow Remote Control -->
+                    <Border Grid.Column="0" Background="#252526" Margin="0,0,5,0" CornerRadius="8" BorderBrush="#FF454545" BorderThickness="1,1,1,1">
+                        <StackPanel Margin="15">
+                            <!-- Header with Icon -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                <Ellipse Width="24" Height="24" Margin="0,0,0,0">
+                                    <Ellipse.Fill>
+                                        <ImageBrush ImageSource="/Views/Images/Signal.png"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                <TextBlock Text="Cho phép điều khiển" Style="{StaticResource HeaderTextStyle}"/>
+                            </StackPanel>
+
+                            <!-- Description -->
+                            <TextBlock Text="Hãy gửi ID và Mật khẩu dưới đây cho đối tác"
+                                   Foreground="#CCCCCC" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <!-- Your ID -->
+                            <TextBlock Text="ID của bạn" Style="{StaticResource LabelTextStyle}"/>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtClientID" Grid.Column="0" Text="118 068 270" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
+                                    <Button x:Name="btnCopyID" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Password -->
+                            <TextBlock Text="Mật khẩu" Style="{StaticResource LabelTextStyle}"/>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtClientPass" Grid.Column="0" Text="07187" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
+                                    <Button x:Name="btnCopyPass" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
+                                    <Button x:Name="btnGeneratePass" Content="🔄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Advanced Password -->
+                            <TextBlock Text="Mật khẩu tùy chỉnh" Style="{StaticResource LabelTextStyle}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtCustomPass" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" Background="#FF454545"/>
+                                <Button Grid.Column="1" Content="🔑" Style="{StaticResource IconButtonStyle}" Margin="5,0,0,0" FontSize="14"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Right Panel - Control Another Computer -->
+                    <Border Grid.Column="1" Background="#252526" Margin="5,0,0,0" CornerRadius="8" BorderBrush="#FF454545" BorderThickness="1,1,1,1">
+                        <StackPanel Margin="15">
+                            <!-- Header with Icon -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                <Ellipse Width="24" Height="24" Margin="0,0,0,0">
+                                    <Ellipse.Fill>
+                                        <ImageBrush Stretch="Fill" ImageSource="/Views/Images/Control.png"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                <TextBlock Text="Điều khiển máy tính khác" Style="{StaticResource HeaderTextStyle}"/>
+                            </StackPanel>
+
+                            <!-- Description -->
+                            <TextBlock Text="Hãy nhập ID và Password của máy bạn cần điều khiển"
+                                   Foreground="#CCCCCC" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <!-- Partner ID -->
+                            <TextBlock Text="ID đối tác" Style="{StaticResource LabelTextStyle}"/>
+                            <TextBox x:Name="txtServerID" Style="{StaticResource InputTextBoxStyle}" Margin="0,0,0,10" Background="#FF454545"/>
+
+                            <!-- Password -->
+                            <TextBlock Text="Mật khẩu" Style="{StaticResource LabelTextStyle}"/>
+                            <TextBox x:Name="txtServerPass" Style="{StaticResource InputTextBoxStyle}" Margin="0,0,0,15" Background="#FF454545"/>
+
+                            <!-- Connect Button -->
+                            <Button x:Name="btnConnect" Content="Bắt đầu điều khiển" Style="{StaticResource ButtonStyle}" HorizontalAlignment="Stretch" Click="btnConnect_Click"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Bottom Row - Chat Panel (Full Width) -->
+                <Border Grid.Row="1" Background="#252526" CornerRadius="8" Margin="10,10,10,10" BorderThickness="1,1,1,1" BorderBrush="#FF454545">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Chat Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="15,15,15,10">
+                            <Ellipse Width="24" Height="24" Margin="0,0,0,0">
+                                <Ellipse.Fill>
+                                    <ImageBrush ImageSource="/Views/Images/Message.png"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                            <TextBlock Text="Chat trực tiếp" Style="{StaticResource HeaderTextStyle}"/>
+                        </StackPanel>
+
+                        <!-- Chat Messages -->
+                        <ScrollViewer x:Name="svChatBox" Grid.Row="1" Margin="15,0" VerticalScrollBarVisibility="Auto" Background="#FF454545">
+                            <StackPanel>
+                                <!-- Hello Message -->
+                                <Border Style="{StaticResource ChatMessageStyle}" HorizontalAlignment="Left" MaxWidth="400">
+                                    <StackPanel>
+                                        <TextBlock Text="Xin chào bạn" Foreground="White" FontSize="11"/>
+                                        <TextBlock Text="Bạn đã kết nối thành công tới máy tôi rồi đúng không?" 
+                                               Foreground="White" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+
+                                <!-- Response Message -->
+                                <Border Style="{StaticResource ChatMessageStyle}" HorizontalAlignment="Right" 
+                                    Background="#4A90E2" MaxWidth="400">
+                                    <StackPanel>
+                                        <TextBlock Text="Xin chào" Foreground="White" FontSize="11"/>
+                                        <TextBlock Text="Tôi đã kết nối và có thể nhìn thấy màn hình của bạn rồi" 
+                                               Foreground="White" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Chat Input -->
+                        <Grid Grid.Row="2" Margin="15,10,15,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="btnFile" Grid.Column="0" Content="📂" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14"/>
+                            <Button x:Name="btnImage" Grid.Column="1" Content="🏜" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14"/>
+                            <TextBox x:Name="txtMessage" Grid.Column="2" Style="{StaticResource InputTextBoxStyle}" 
+                                 Text="Nhập tin nhắn" Foreground="#CCCCCC" Background="#FF454545"/>
+                            <Button x:Name="btnSend" Grid.Column="3" Content="▶" Style="{StaticResource ButtonStyle}" 
+                                Width="40" Margin="5,0,0,0" Padding="0"/>
+                        </Grid>
+
+                        <!-- Status -->
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Footer -->
+            <Grid Height="30" VerticalAlignment="Bottom">
+                <TextBlock Text="Nguyen Hoang Phuc - Nguyen Dang Anh Tien" 
+                       Foreground="#4A90E2" FontSize="10" 
+                       HorizontalAlignment="Right" VerticalAlignment="Top" 
+                       Margin="0,4,15,0"/>
+                <Button x:Name="btnGuide" Content="Hướng dẫn sử dụng" 
+                    Background="#FFA93131" Foreground="White" 
+                    BorderThickness="0" Padding="10,5" 
+                    HorizontalAlignment="Left" Margin="10,-4,0,0"
+                    FontSize="11" Height="27" VerticalAlignment="Top" Width="126" Cursor="Hand"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

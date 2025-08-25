@@ -1,0 +1,34 @@
+﻿<Window x:Class="RemoteX.Client.Views.RemoteWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="RemoteX - Display" 
+        WindowState="Maximized"
+        Background="Black"
+        ResizeMode="CanResize" Icon="/Views/Images/RemoteX.png">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Toolbar -->
+        <Border Grid.Row="0" Background="#1E1E1E" Height="40">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                <Button x:Name="btnDisconnect" Content="Ngắt kết nối" 
+                        Background="#DC3545" Foreground="White" 
+                        BorderThickness="0" Padding="10,5" Margin="0,0,10,0"/>
+                <TextBlock Text="Đang kết nối với: 192.168.1.100" 
+                           Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Remote Screen Display -->
+        <ScrollViewer Grid.Row="1" Background="Black" 
+                     HorizontalScrollBarVisibility="Auto"
+                     VerticalScrollBarVisibility="Auto">
+            <Image x:Name="remoteScreenImage" 
+                   Stretch="Uniform"/>
+        </ScrollViewer>
+    </Grid>
+</Window>

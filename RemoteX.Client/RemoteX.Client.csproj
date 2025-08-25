@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Views\Control.png" />
+    <None Remove="Views\Message.png" />
+    <None Remove="Views\RemoteX.png" />
+    <None Remove="Views\Signal.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Views\Images\Control.png" />
+    <Resource Include="Views\Images\Message.png" />
+    <Resource Include="Views\Images\RemoteX.png" />
+    <Resource Include="Views\Images\Signal.png" />
+  </ItemGroup>
+
+</Project>
