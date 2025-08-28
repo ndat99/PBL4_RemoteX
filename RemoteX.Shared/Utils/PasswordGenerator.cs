@@ -11,7 +11,7 @@ namespace RemoteX.Shared.Utils
         public static string GeneratePassword()
         {
             Random rand = new Random();
-            int randomNumber = rand.Next(10000, 99999);
+            int randomNumber = rand.Next(100000, 999999);
             return randomNumber.ToString();
         }
     }
