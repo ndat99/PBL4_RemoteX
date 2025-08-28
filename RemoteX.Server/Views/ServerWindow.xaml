@@ -148,7 +148,7 @@
                         <!-- Server Icon and Status -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal">
                             <Ellipse Width="24" Height="24" Margin="0,0,10,0" Fill="White"/>
-                            <TextBlock x:Name="txtServerStatus" Text="Trạng thái: Đang chạy (Cổng 8888)" Style="{StaticResource StatusTextStyle}"/>
+                            <TextBlock  Text="{Binding Status}" Style="{StaticResource StatusTextStyle}"/>
                         </StackPanel>
 
                         <!-- Server Indicator -->
@@ -178,45 +178,34 @@
 
                         <!-- Client List -->
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Background="Transparent">
-                            <StackPanel x:Name="spClientList">
-                                <!-- Client 1 -->
-                                <Border Style="{StaticResource ClientItemStyle}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
+                            <ItemsControl ItemsSource="{Binding Clients}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource ClientItemStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
-                                        <Ellipse Grid.Column="0" Width="8" Height="8" Fill="#4CAF50" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <!-- Chấm trạng thái xanh -->
+                                                <Ellipse Grid.Column="0" Width="8" Height="8" Fill="#4CAF50"
+                                 VerticalAlignment="Center" Margin="0,0,10,0"/>
 
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="118068270" Foreground="White" FontWeight="SemiBold" FontSize="13"/>
-                                            <TextBlock Text="Mật khẩu: 07187" Foreground="#CCCCCC" FontSize="11" Margin="0,2,0,0"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-
-                                <!-- Client 2 -->
-                                <Border Style="{StaticResource ClientItemStyle}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <Ellipse Grid.Column="0" Width="8" Height="8" Fill="#4CAF50" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="234567891" Foreground="White" FontWeight="SemiBold" FontSize="13"/>
-                                            <TextBlock Text="Mật khẩu: 12345" Foreground="#CCCCCC" FontSize="11" Margin="0,2,0,0"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </StackPanel>
+                                                <!-- ID + Password -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Id}" 
+                                       Foreground="White" FontWeight="SemiBold" FontSize="13"/>
+                                                    <TextBlock Text="{Binding Password, StringFormat='Mật khẩu: {0}'}" 
+                                       Foreground="#CCCCCC" FontSize="11" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </ScrollViewer>
                     </Grid>
                 </Border>
