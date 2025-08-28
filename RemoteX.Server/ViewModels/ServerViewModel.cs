@@ -23,7 +23,7 @@ namespace RemoteX.Server.ViewModels
         {
             Clients = new ObservableCollection<ClientInfo>();
             Status = "Server chưa khởi động";
-            Clients.Add(new ClientInfo { Id = "123456", Password = "1234" }); //test
+            //Clients.Add(new ClientInfo { Id = "123456", Password = "1234" }); //test
         }
     }
 }

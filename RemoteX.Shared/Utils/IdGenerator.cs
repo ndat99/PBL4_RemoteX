@@ -36,7 +36,7 @@ namespace RemoteX.Shared.Utils
                     string json = File.ReadAllText(CONFIG_FILE_PATH);
                     _deviceConfig = JsonSerializer.Deserialize<DeviceConfig>(json);
 
-                    _deviceConfig.Password = NetworkHelper.GeneratePassword();
+                    _deviceConfig.Password = PasswordGenerator.GeneratePassword();
                     _deviceConfig.LastTime = DateTime.Now;
 
                     SaveConfig(_deviceConfig);
@@ -57,7 +57,7 @@ namespace RemoteX.Shared.Utils
             _deviceConfig = new DeviceConfig
             {
                 DeviceID = GenerateNumberID(9),
-                Password = NetworkHelper.GeneratePassword(),
+                Password = PasswordGenerator.GeneratePassword(),
                 FirstTime = DateTime.Now,
                 LastTime = DateTime.Now,
                 MachineInfo = new MachineInfo

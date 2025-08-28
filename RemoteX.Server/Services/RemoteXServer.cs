@@ -42,7 +42,7 @@ namespace RemoteX.Server.Services
 
                 var clientInfo = new ClientInfo
                 {
-                    Id = IdGenerator.GenerateId(),
+                    Id = IdGenerator.GetOrCreateDeviceID(),
                     Password = PasswordGenerator.GeneratePassword(),
                     IpAddress = ip,
                     IsConnected = true
