@@ -13,7 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Images\RemoteX.png" />
+    <ProjectReference Include="..\RemoteX.Shared\RemoteX.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Views\Images\RemoteX.png" />
   </ItemGroup>
 
 </Project>

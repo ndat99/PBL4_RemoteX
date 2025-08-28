@@ -16,9 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-    <Folder Include="Controllers\" />
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\RemoteX.Core\RemoteX.Core.csproj" />
+    <ProjectReference Include="..\RemoteX.Shared\RemoteX.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

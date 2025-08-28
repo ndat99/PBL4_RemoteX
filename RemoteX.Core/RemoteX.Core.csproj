@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteX.Shared\RemoteX.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
