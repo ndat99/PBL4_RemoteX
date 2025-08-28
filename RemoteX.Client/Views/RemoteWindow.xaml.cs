@@ -11,6 +11,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using RemoteX.Core;
+using RemoteX.Shared;
 
 namespace RemoteX.Client.Views
 {
