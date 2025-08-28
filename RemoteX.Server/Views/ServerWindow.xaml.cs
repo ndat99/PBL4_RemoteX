@@ -8,8 +8,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using RemoteX.Shared;
 
-namespace RemoteX.Server;
+namespace RemoteX.Server.Views;
 
 public partial class MainWindow : Window
 {
