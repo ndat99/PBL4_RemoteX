@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Shared.Utils
 {
-    class IdGenerator
+    public static class IdGenerator
     {
+        public static string GenerateRandomId()
+        {
+            Random rnd = new Random();
+            return rnd.Next(100000000, 999999999).ToString();
+        }
     }
 }

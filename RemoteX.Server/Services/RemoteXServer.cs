@@ -7,6 +7,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 using System.Linq.Expressions;
+using RemoteX.Shared.Models; //dùng ClientInfo
 
 namespace RemoteX.Server.Services
 {
@@ -16,6 +17,9 @@ namespace RemoteX.Server.Services
         private Thread _listenThread; //Thread de chay server song song
         private bool _isRunning;
         public bool IsRunning => _isRunning;
+
+        private List<ClientInfo> _clients = new List<ClientInfo>(); //Ds client da ket noi
+        public event Action<ClientInfo> ClientConnected; //Su kien khi co client ket noi
 
         public event Action<string> StatusChanged; //Bao trang thai server
 
@@ -47,7 +51,11 @@ namespace RemoteX.Server.Services
             {
                 try
                 {
-                    TcpClient client = _listener.AcceptTcpClient(); //Cho ket noi tu client moi
+                    TcpClient tcpClient = _listener.AcceptTcpClient(); //Cho ket noi tu client moi
+                    ClientInfo client = new ClientInfo(); //Tao client info ngau nhien
+                    _clients.Add(client); //Them client vao danh sach
+
+                    ClientConnected?.Invoke(client);
                     StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
                     //more
                 }

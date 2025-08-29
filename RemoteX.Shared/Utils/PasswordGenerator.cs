@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Shared.Utils
 {
-    class PasswordGenerator
+    public static class PasswordGenerator
     {
+        public static string GenerateRandomPassword()
+        {
+            Random rnd = new Random();
+            return rnd.Next(1000, 9999).ToString();
+        }
     }
 }

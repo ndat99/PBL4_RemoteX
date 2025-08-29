@@ -148,11 +148,11 @@
                         <!-- Server Icon and Status -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal">
                             <Ellipse Width="24" Height="24" Margin="0,0,10,0" Fill="White"/>
-                            <TextBlock x:Name="txtStatus" Text="Đã tắt Server" Style="{StaticResource StatusTextStyle}"/>
+                            <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusColor}" Style="{StaticResource StatusTextStyle}"/>
                         </StackPanel>
 
                         <!-- Server Indicator -->
-                        <Ellipse Grid.Column="2" Width="12" Height="12" x:Name="statusIndicator" Fill="#4CAF50" 
+                        <Ellipse Grid.Column="2" Width="12" Height="12" x:Name="statusIndicator" Fill="{Binding StatusDot}" 
                                  VerticalAlignment="Center"/>
                     </Grid>
                 </Border>
@@ -192,14 +192,14 @@
 
                                                 <!-- Chấm trạng thái xanh -->
                                                 <Ellipse Grid.Column="0" Width="8" Height="8" Fill="#4CAF50"
-                                 VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                VerticalAlignment="Center" Margin="0,0,10,0"/>
 
                                                 <!-- ID + Password -->
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Id}" 
-                                       Foreground="White" FontWeight="SemiBold" FontSize="13"/>
+                                                    Foreground="White" FontWeight="SemiBold" FontSize="13"/>
                                                     <TextBlock Text="{Binding Password, StringFormat='Mật khẩu: {0}'}" 
-                                       Foreground="#CCCCCC" FontSize="11" Margin="0,2,0,0"/>
+                                                    Foreground="#CCCCCC" FontSize="11" Margin="0,2,0,0"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
