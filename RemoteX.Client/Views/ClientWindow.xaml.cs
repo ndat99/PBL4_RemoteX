@@ -10,15 +10,31 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using RemoteX.Shared;
 using RemoteX.Core;
+using RemoteX.Client.Services;
 
 namespace RemoteX.Client.Views
 {
     public partial class MainWindow : Window
     {
+        private RemoteXClient _client;
         public MainWindow()
         {
             InitializeComponent();
+            _client = new RemoteXClient(); ;
+            _client.StatusChanged += OnStatusChanged;
         }
+
+        private void OnStatusChanged(string message)
+        {
+            MessageBox.Show(message);
+        }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            _client.Connect("127.0.0.1", 5000);
+        }
+
+
+
 
         // Cho phép kéo thả cửa sổ bằng title bar
         private void titleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

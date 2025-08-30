@@ -5,7 +5,7 @@
         Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
-        ResizeMode="CanResize" WindowStartupLocation="CenterScreen" Icon="/Views/Images/RemoteX.png">
+        ResizeMode="CanResize" WindowStartupLocation="CenterScreen" Icon="/Views/Images/RemoteX.png" Loaded="Window_Loaded">
 
     <Window.Resources>
         <!-- Styles -->
