@@ -52,11 +52,19 @@ namespace RemoteX.Server.Services
                 try
                 {
                     TcpClient tcpClient = _listener.AcceptTcpClient(); //Cho ket noi tu client moi
-                    ClientInfo client = new ClientInfo(); //Tao client info ngau nhien
+
+                    //Doc du lieu tu Client gui sang
+                    var stream = tcpClient.GetStream();
+                    byte[] buffer = new byte[1024];
+                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                    string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                    ClientInfo client = System.Text.Json.JsonSerializer.Deserialize<ClientInfo>(json);
+                    //ClientInfo client = new ClientInfo(); //Tao client info ngau nhien
                     _clients.Add(client); //Them client vao danh sach
 
                     ClientConnected?.Invoke(client);
-                    StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
+                    //StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
                     //more
                 }
                 catch (SocketException)
