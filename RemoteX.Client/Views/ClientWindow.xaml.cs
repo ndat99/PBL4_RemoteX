@@ -10,17 +10,64 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using RemoteX.Shared;
 using RemoteX.Core;
+using RemoteX.Client.Services;
+using RemoteX.Client.ViewModels;
+using RemoteX.Shared.Models;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using RemoteX.Shared.Utils;
 
 namespace RemoteX.Client.Views
 {
     public partial class MainWindow : Window
     {
+        private RemoteXClient _client;
+        private ClientViewModel _cvm;
         public MainWindow()
         {
             InitializeComponent();
+            _client = new RemoteXClient(); ;
+            _cvm = new ClientViewModel();
+
+            this.DataContext = _cvm;
+            _client.StatusChanged += OnStatusChanged;
+            _client.ClientConnected += OnClientConnected;
         }
 
-        // Cho phép kéo thả cửa sổ bằng title bar
+        private void OnStatusChanged(string message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _cvm.StatusText = message;
+
+                if (message.Contains("kết nối"))
+                    _cvm.StatusColor = Brushes.Green;
+
+            });
+        }
+
+        private void OnClientConnected(ClientInfo clientInfo)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _cvm.ClientInfo = clientInfo;
+            });
+        }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e) // <-- async void
+        {
+            await Task.Delay(1500);                 // đợi 1.5s rồi connect
+            _client.Connect("127.0.0.1", 5000);
+        }
+
+
+
+
+
+
+
+
+        // Kéo thả cửa sổ bằng title bar
         private void titleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
@@ -35,7 +82,7 @@ namespace RemoteX.Client.Views
             this.WindowState = WindowState.Minimized;
         }
 
-        // Maximize/Restore window
+        // Maximize window
         private void btnMaximize_Click(object sender, RoutedEventArgs e)
         {
             if (this.WindowState == WindowState.Maximized)

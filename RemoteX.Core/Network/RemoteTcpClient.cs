@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Core.Network
 {
-    class TopClient
+    class RemoteTcpClient
     {
     }
 }

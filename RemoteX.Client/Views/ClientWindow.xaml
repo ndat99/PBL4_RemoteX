@@ -5,7 +5,7 @@
         Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
-        ResizeMode="CanResize" WindowStartupLocation="CenterScreen" Icon="/Views/Images/RemoteX.png">
+        ResizeMode="CanResize" WindowStartupLocation="CenterScreen" Icon="/Views/Images/RemoteX.png" Loaded="Window_Loaded">
 
     <Window.Resources>
         <!-- Styles -->
@@ -114,6 +114,9 @@
                         </Ellipse.Fill>
                     </Ellipse>
                     <TextBlock Text="RemoteX" FontWeight="SemiBold" Foreground="White" FontSize="14"/>
+                    <!-- Status Text -->
+                    <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusColor}" FontWeight="Normal" 
+               FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- User Guide Button -->
@@ -167,7 +170,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtClientID" Grid.Column="0" Text="118 068 270" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
+                                <TextBox x:Name="txtClientID" Grid.Column="0" Text="{Binding ClientInfo.Id}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
                                     <Button x:Name="btnCopyID" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
                                 </StackPanel>
@@ -180,7 +183,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtClientPass" Grid.Column="0" Text="07187" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
+                                <TextBox x:Name="txtClientPass" Grid.Column="0" Text="{Binding ClientInfo.Password}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
                                     <Button x:Name="btnCopyPass" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
                                     <Button x:Name="btnGeneratePass" Content="🔄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
