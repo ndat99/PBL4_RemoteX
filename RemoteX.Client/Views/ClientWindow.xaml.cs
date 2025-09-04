@@ -14,6 +14,8 @@ using RemoteX.Client.Services;
 using RemoteX.Client.ViewModels;
 using RemoteX.Shared.Models;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using RemoteX.Shared.Utils;
 
 namespace RemoteX.Client.Views
 {
@@ -52,8 +54,18 @@ namespace RemoteX.Client.Views
             });
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            var deviceConfig = IdGenerator.DeviceConfig();
+
+            _client.ClientInfo = new ClientInfo
+            {
+                Id = deviceConfig.DeviceID,
+                Password = deviceConfig.Password
+            };
+
+            _cvm.ClientInfo = _client.ClientInfo;
+            await Task.Delay(2000);
             _client.Connect("localhost", 5000);
         }
 

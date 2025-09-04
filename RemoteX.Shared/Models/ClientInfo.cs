@@ -12,10 +12,9 @@ namespace RemoteX.Shared.Models
     {
         public string Id { get; set; } //ID client
         public string Password { get; set; }
-
         public ClientInfo()
         {
-            Id = IdGenerator.GenerateRandomId();
+            Id = IdGenerator.GetMacAddress();
             Password = PasswordGenerator.GenerateRandomPassword();
         }
     }
