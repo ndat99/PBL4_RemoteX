@@ -54,25 +54,20 @@ namespace RemoteX.Client.Views
             });
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e) // <-- async void
         {
-            var deviceConfig = IdGenerator.DeviceConfig();
-
-            _client.ClientInfo = new ClientInfo
-            {
-                Id = deviceConfig.DeviceID,
-                Password = deviceConfig.Password
-            };
-
-            _cvm.ClientInfo = _client.ClientInfo;
-            await Task.Delay(2000);
-            _client.Connect("localhost", 5000);
+            await Task.Delay(1500);                 // đợi 1.5s rồi connect
+            _client.Connect("127.0.0.1", 5000);
         }
 
 
 
 
-        // Cho phép kéo thả cửa sổ bằng title bar
+
+
+
+
+        // Kéo thả cửa sổ bằng title bar
         private void titleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
@@ -87,7 +82,7 @@ namespace RemoteX.Client.Views
             this.WindowState = WindowState.Minimized;
         }
 
-        // Maximize/Restore window
+        // Maximize window
         private void btnMaximize_Click(object sender, RoutedEventArgs e)
         {
             if (this.WindowState == WindowState.Maximized)

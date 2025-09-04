@@ -20,6 +20,7 @@ namespace RemoteX.Server.Services
 
         private List<ClientInfo> _clients = new List<ClientInfo>(); //Ds client da ket noi
         public event Action<ClientInfo> ClientConnected; //Su kien khi co client ket noi
+        public event Action<ClientInfo> ClientDisconnected; //Su kien khi co client ngat ket noi
 
         public event Action<string> StatusChanged; //Bao trang thai server
 
@@ -31,6 +32,8 @@ namespace RemoteX.Server.Services
                 if (_isRunning) return;  //server da chay roi thi bo qua
 
                 _listener = new TcpListener(IPAddress.Any, port); //Tao listener
+                //Cho phep reuse address de tranh loi "Address already in use"
+                _listener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 _listener.Start(); //Bat dau lang nghe
                 _isRunning = true;
 
@@ -53,23 +56,42 @@ namespace RemoteX.Server.Services
                 {
                     TcpClient tcpClient = _listener.AcceptTcpClient(); //Cho ket noi tu client moi
 
-                    //Doc du lieu tu Client gui sang
-                    var stream = tcpClient.GetStream();
-                    byte[] buffer = new byte[1024];
-                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                    string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-                    ClientInfo client = System.Text.Json.JsonSerializer.Deserialize<ClientInfo>(json);
-                    //ClientInfo client = new ClientInfo(); //Tao client info ngau nhien
-                    _clients.Add(client); //Them client vao danh sach
-
-                    ClientConnected?.Invoke(client);
-                    //StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
-                    //more
+                    //Tao Thread rieng de xu ly client
+                    Thread clientThread = new Thread(() => HandleClient(tcpClient));
+                    clientThread.Start();
                 }
                 catch (SocketException)
                 {
+                    if (!_isRunning) break; //Neu server da tat thi thoat vong lap
                 }
+            }
+        }
+
+        private void HandleClient(TcpClient tcpClient)
+        {
+            try
+            {
+                //Doc du lieu tu Client gui sang
+                var stream = tcpClient.GetStream();
+                byte[] buffer = new byte[1024];
+                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                ClientInfo client = System.Text.Json.JsonSerializer.Deserialize<ClientInfo>(json);
+                client.TcpClient = tcpClient; //Gan Socket thuc te vao ClientInfo
+                
+                lock (_clients)
+                {
+                _clients.Add(client); //Them client vao danh sach
+                }
+
+                ClientConnected?.Invoke(client);
+                //StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
+                //more
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"Lỗi khi xử lý client: {ex.Message}");
             }
         }
 
@@ -79,8 +101,38 @@ namespace RemoteX.Server.Services
             if (!_isRunning) return; //Neu chua chay thi bo qua
 
             _isRunning = false;
+            try
+            {
             _listener.Stop(); //Ngung lang nghe
-            StatusChanged?.Invoke("Đã tắt Server");   
+                if (_listenThread !=null && _listenThread.IsAlive)
+                {
+                    _listenThread.Join(500); //Chờ 500ms để thread kết thúc
+                    if (_listenThread.IsAlive)
+                    {
+                       _listenThread.Interrupt(); //Buộc thread dừng nếu nó vẫn còn chạy
+                    }
+                }
+                lock (_clients)
+                {
+                    foreach (var client in _clients.ToList())
+                    {
+                        client.TcpClient.Close();
+                        ClientDisconnected?.Invoke(client);
+                    }
+                    _clients.Clear();
+                }
+                StatusChanged?.Invoke("Đã tắt Server");
+            }
+
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"Lỗi khi tắt Server: {ex.Message}");
+            }
+            finally
+            {
+                _listener = null;
+                _listenThread = null;
+            }
         }
 
     }
