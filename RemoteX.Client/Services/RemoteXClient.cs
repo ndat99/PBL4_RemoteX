@@ -15,19 +15,15 @@ namespace RemoteX.Client.Services
     {
         private TcpClient _client;
         private ClientInfo _clientInfo;
+        private DeviceConfig _deviceConfig;
         public event Action<string> StatusChanged; //Bao trang thai cho UI Client
         public event Action<ClientInfo> ClientConnected; //Su kien khi ket noi thanh cong
-        public ClientInfo ClientInfo { get; set; }
-        public string DeviceID { get; set; }
-        public string Password { get; set; }
-        public string MachineName { get; set; }
+        
+        // Đọc hoặc tạo mới config khi app mở
 
         public RemoteXClient()
         {
-            var config = IdGenerator.DeviceConfig();
-            DeviceID = config.DeviceID;
-            Password = config.Password;
-            MachineName = config.MachineName;
+
         }
         public void Connect(string serverIp, int port)
         {
@@ -36,7 +32,14 @@ namespace RemoteX.Client.Services
                 //Thread.Sleep(10000);
                 _client = new TcpClient();
                 _client.Connect(serverIp, port);
-                _clientInfo = new ClientInfo(_client);
+                //_clientInfo = new ClientInfo(_client);
+                var config = IdGenerator.DeviceConfig();
+                _clientInfo = new ClientInfo (_client)
+                {
+                    Id = config.DeviceID,
+                    Password = config.Password,
+                    MachineName = config.MachineName,
+                };
 
                 //Gui thong tin Client cho Server
                 var stream = _client.GetStream();

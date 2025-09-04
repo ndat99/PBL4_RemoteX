@@ -13,14 +13,13 @@ namespace RemoteX.Shared.Models
     {
         public string Id { get; set; } //ID client
         public string Password { get; set; }
+        public string MachineName { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
         public TcpClient TcpClient { get; set; } //Đối tượng TcpClient để giao tiếp
 
         public ClientInfo(TcpClient tcpClient)
         {
             TcpClient = tcpClient;
-            Id = IdGenerator.GetMacAddress();
-            Password = PasswordGenerator.GenerateRandomPassword();
         }
     }
 }
