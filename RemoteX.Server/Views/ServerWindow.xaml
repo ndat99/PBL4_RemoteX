@@ -98,7 +98,7 @@
     <Border CornerRadius="15" BorderBrush="#FF4A90E2" BorderThickness="2" Background="#FF1E1E1E">
         <Grid>
             <!-- Title Bar -->
-            <Grid x:Name="titleBar" Height="40" VerticalAlignment="Top" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" Margin="0,1,0,0" Background="Transparent">
+            <Grid x:Name="titleBar" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" Margin="0,1,0,455" Background="Transparent">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -196,6 +196,8 @@
 
                                                 <!-- ID + Password -->
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding MachineName, StringFormat='Thiết bị: {0}'}"
+                                                    Foreground="#AAAAAA" FontSize="11" Margin="0,2,0,0"/>
                                                     <TextBlock Text="{Binding Id}" 
                                                     Foreground="White" FontWeight="SemiBold" FontSize="13"/>
                                                     <TextBlock Text="{Binding Password, StringFormat='Mật khẩu: {0}'}" 
@@ -223,7 +225,7 @@
 
             <!-- Footer -->
             <Grid Height="30" VerticalAlignment="Bottom">
-                <TextBlock Text="RemoteX Server v1.0" 
+                <TextBlock Text="RemoteX Server" 
                        Foreground="#4A90E2" FontSize="10" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Grid>
