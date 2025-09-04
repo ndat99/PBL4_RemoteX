@@ -48,8 +48,8 @@ namespace RemoteX.Client.ViewModels
 
         public ClientViewModel()
         {
-            StatusText = " • Chưa kết nối";
-            StatusColor = Brushes.Gray;
+            StatusText = " ⬤  Đang kết nối tới Server";
+            StatusColor = Brushes.Yellow;
 
         }
     }

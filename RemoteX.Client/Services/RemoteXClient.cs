@@ -22,7 +22,7 @@ namespace RemoteX.Client.Services
                 //Thread.Sleep(10000);
                 _client = new TcpClient();
                 _client.Connect(serverIp, port);
-                _clientInfo = new ClientInfo();
+                _clientInfo = new ClientInfo(_client);
 
                 //Gui thong tin Client cho Server
                 var stream = _client.GetStream();
@@ -30,13 +30,13 @@ namespace RemoteX.Client.Services
                 byte[] data = Encoding.UTF8.GetBytes(json);
                 stream.Write(data, 0, data.Length);
 
-                StatusChanged?.Invoke($" • Đã kết nối tới server {serverIp}:{port}");
+                StatusChanged?.Invoke($" ⬤  Đã kết nối tới server {serverIp}:{port}");
                 ClientConnected?.Invoke(_clientInfo);
             }
             catch (Exception ex)
             {
                 StatusChanged?.Invoke($"Lỗi kết nối");
-                MessageBox.Show("Lỗi kết nối: " + ex.Message);
+                MessageBox.Show(" ⬤  Lỗi kết nối: " + ex.Message);
             }
         }
     }

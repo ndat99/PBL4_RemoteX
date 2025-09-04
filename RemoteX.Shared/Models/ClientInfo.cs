@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using RemoteX.Shared.Utils;
@@ -12,9 +13,12 @@ namespace RemoteX.Shared.Models
     {
         public string Id { get; set; } //ID client
         public string Password { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public TcpClient TcpClient { get; set; } //Đối tượng TcpClient để giao tiếp
 
-        public ClientInfo()
+        public ClientInfo(TcpClient tcpClient)
         {
+            TcpClient = tcpClient;
             Id = IdGenerator.GenerateRandomId();
             Password = PasswordGenerator.GenerateRandomPassword();
         }
