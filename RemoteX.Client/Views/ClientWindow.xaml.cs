@@ -15,6 +15,7 @@ using RemoteX.Client.ViewModels;
 using RemoteX.Shared.Models;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using RemoteX.Shared.Utils;
 
 namespace RemoteX.Client.Views
 {

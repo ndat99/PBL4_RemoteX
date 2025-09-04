@@ -19,7 +19,7 @@ namespace RemoteX.Shared.Models
         public ClientInfo(TcpClient tcpClient)
         {
             TcpClient = tcpClient;
-            Id = IdGenerator.GenerateRandomId();
+            Id = IdGenerator.GetMacAddress();
             Password = PasswordGenerator.GenerateRandomPassword();
         }
     }

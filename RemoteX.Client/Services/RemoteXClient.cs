@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using RemoteX.Shared.Models;
+using RemoteX.Shared.Utils;
 
 namespace RemoteX.Client.Services
 {
@@ -15,6 +17,18 @@ namespace RemoteX.Client.Services
         private ClientInfo _clientInfo;
         public event Action<string> StatusChanged; //Bao trang thai cho UI Client
         public event Action<ClientInfo> ClientConnected; //Su kien khi ket noi thanh cong
+        public ClientInfo ClientInfo { get; set; }
+        public string DeviceID { get; set; }
+        public string Password { get; set; }
+        public string MachineName { get; set; }
+
+        public RemoteXClient()
+        {
+            var config = IdGenerator.DeviceConfig();
+            DeviceID = config.DeviceID;
+            Password = config.Password;
+            MachineName = config.MachineName;
+        }
         public void Connect(string serverIp, int port)
         {
             try
