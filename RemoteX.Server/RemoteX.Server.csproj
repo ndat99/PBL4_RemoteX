@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <None Remove="RemoteX.png" />
+    <None Remove="Views\Client.png" />
+    <None Remove="Views\RemoteX.ico" />
+    <None Remove="Views\Status.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,11 +20,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RemoteX.Core\RemoteX.Core.csproj" />
     <ProjectReference Include="..\RemoteX.Shared\RemoteX.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Views\Images\Client.png" />
     <Resource Include="Views\Images\RemoteX.png" />
+    <Resource Include="Views\Images\RemoteX.ico" />
+    <Resource Include="Views\Images\Status.png" />
   </ItemGroup>
 
 </Project>

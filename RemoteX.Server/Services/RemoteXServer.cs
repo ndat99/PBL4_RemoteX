@@ -8,6 +8,8 @@ using System.Net.Sockets;
 using System.Net;
 using System.Linq.Expressions;
 using RemoteX.Shared.Models; //dùng ClientInfo
+using RemoteX.Core.Network;
+using System.IO;
 
 namespace RemoteX.Server.Services
 {
@@ -71,15 +73,8 @@ namespace RemoteX.Server.Services
         {
             try
             {
-                //Doc du lieu tu Client gui sang
-                var stream = tcpClient.GetStream();
-                byte[] buffer = new byte[1024];
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                var client = MessageReceiver.ReceiveClientInfo(tcpClient); //Nhan ClientInfo tu client
 
-                ClientInfo client = System.Text.Json.JsonSerializer.Deserialize<ClientInfo>(json);
-                client.TcpClient = tcpClient; //Gan Socket thuc te vao ClientInfo
-                
                 lock (_clients)
                 {
                 _clients.Add(client); //Them client vao danh sach
@@ -87,7 +82,17 @@ namespace RemoteX.Server.Services
 
                 ClientConnected?.Invoke(client);
                 //StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
-                //more
+
+                Thread listenThread = new Thread(() =>
+                {
+                    MessageReceiver.ListenForDisconnected(client, c =>
+                    {
+                        lock (_clients)
+                            _clients.Remove(c); //Xoa client khoi danh sach
+                        ClientDisconnected?.Invoke(c);
+                    });
+                });
+                listenThread.Start();
             }
             catch (Exception ex)
             {

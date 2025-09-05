@@ -40,9 +40,10 @@ namespace RemoteX.Client.Views
             {
                 _cvm.StatusText = message;
 
-                if (message.Contains("kết nối"))
+                if (message.Contains("Lỗi"))
+                    _cvm.StatusColor = Brushes.Red;
+                else if (message.Contains("kết nối"))
                     _cvm.StatusColor = Brushes.Green;
-
             });
         }
 
