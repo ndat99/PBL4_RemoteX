@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Shared.Enums
 {
-    class MessageType
+    public enum MessageType
     {
+        FileTransfer, 
+        Chat
     }
 }
