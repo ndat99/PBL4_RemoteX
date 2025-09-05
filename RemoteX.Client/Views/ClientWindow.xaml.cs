@@ -28,8 +28,8 @@ namespace RemoteX.Client.Views
             InitializeComponent();
             _client = new RemoteXClient(); ;
             _cvm = new ClientViewModel();
-
             this.DataContext = _cvm;
+
             _client.StatusChanged += OnStatusChanged;
             _client.ClientConnected += OnClientConnected;
         }
@@ -61,6 +61,10 @@ namespace RemoteX.Client.Views
             _client.Connect("127.0.0.1", 5000);
         }
 
+        private void btnSend_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
 
 
 
