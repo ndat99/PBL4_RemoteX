@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using RemoteX.Shared.Utils;
 
@@ -20,6 +21,16 @@ namespace RemoteX.Shared.Models
         public ClientInfo(TcpClient tcpClient)
         {
             TcpClient = tcpClient;
+        }
+
+        public void Send(Message msg)
+        {
+            if (TcpClient == null || !TcpClient.Connected) return;
+
+            var stream = TcpClient.GetStream();
+            var json = JsonSerializer.Serialize(msg);
+            var bytes = Encoding.UTF8.GetBytes(json + "\n");
+            stream.Write(bytes, 0, bytes.Length);
         }
     }
 }

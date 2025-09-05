@@ -58,19 +58,13 @@ namespace RemoteX.Client.Views
         private async void Window_Loaded(object sender, RoutedEventArgs e) // <-- async void
         {
             await Task.Delay(1500);                 // đợi 1.5s rồi connect
-            _client.Connect("127.0.0.1", 5000);
+            _client.Connect("localhost", 5000);
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
 
         }
-
-
-
-
-
-
 
         // Kéo thả cửa sổ bằng title bar
         private void titleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

@@ -24,7 +24,6 @@ namespace RemoteX.Client.Services
 
         public RemoteXClient()
         {
-
         }
         public void Connect(string serverIp, int port)
         {

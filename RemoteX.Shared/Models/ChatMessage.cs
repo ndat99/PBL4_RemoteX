@@ -1,13 +1,24 @@
-﻿using System;
+using RemoteX.Shared.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RemoteX.Shared.Models
 {
-    // Dữ liệu tin nhắn gửi qua lại giữa Client và Server
     public class ChatMessage
     {
-        public string SenderId { get; set; } // Ai gửi tin (tên/ID)
-        public string Content { get; set; } // Nội dung tin nhắn
-        public DateTime Timestamp { get; set; } // Thời gian gửi
-        public bool IsMine { get; set; } //true neu la tin nhan cua minh
+        public string SenderID { get; set; }
+        public string ReceiverID { get; set; }
+        public string Message { get; set; }
+        public DateTime Timestamp { get; set; }
+    }
+
+    public class Message
+    {
+        public MessageType Type {  get; set; }
+        public string Data { get; set; }
     }
 }
+

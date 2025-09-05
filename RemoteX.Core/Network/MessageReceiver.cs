@@ -46,7 +46,6 @@ namespace RemoteX.Core.Network
             }
             catch (IOException)
             {
-
             }
             finally
             {
