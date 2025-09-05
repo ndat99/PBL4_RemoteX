@@ -108,6 +108,7 @@ public partial class MainWindow : Window
     // Close window
     private void btnClose_Click(object sender, RoutedEventArgs e)
     {
+        _server.Stop();
         this.Close();
     }
 }

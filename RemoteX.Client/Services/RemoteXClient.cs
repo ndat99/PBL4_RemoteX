@@ -6,6 +6,7 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using RemoteX.Core.Network;
 using RemoteX.Shared.Models;
 using RemoteX.Shared.Utils;
 
@@ -41,18 +42,14 @@ namespace RemoteX.Client.Services
                     MachineName = config.MachineName,
                 };
 
-                //Gui thong tin Client cho Server
-                var stream = _client.GetStream();
-                string json = System.Text.Json.JsonSerializer.Serialize(_clientInfo); //Chuyen thanh chuoi JSON
-                byte[] data = Encoding.UTF8.GetBytes(json);
-                stream.Write(data, 0, data.Length);
+                MessageSender.SendClientInfo(_client, _clientInfo);
 
                 StatusChanged?.Invoke($" ⬤  Đã kết nối tới server {serverIp}:{port}");
                 ClientConnected?.Invoke(_clientInfo);
             }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke($"Lỗi kết nối");
+                StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}");
                 MessageBox.Show(" ⬤  Lỗi kết nối: " + ex.Message);
             }
         }
