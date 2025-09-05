@@ -28,8 +28,8 @@ namespace RemoteX.Client.Views
             InitializeComponent();
             _client = new RemoteXClient(); ;
             _cvm = new ClientViewModel();
-
             this.DataContext = _cvm;
+
             _client.StatusChanged += OnStatusChanged;
             _client.ClientConnected += OnClientConnected;
         }
@@ -59,6 +59,11 @@ namespace RemoteX.Client.Views
         {
             await Task.Delay(1500);                 // đợi 1.5s rồi connect
             _client.Connect("localhost", 5000);
+        }
+
+        private void btnSend_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         // Kéo thả cửa sổ bằng title bar

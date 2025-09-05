@@ -1,4 +1,4 @@
-﻿using RemoteX.Shared.Enums;
+using RemoteX.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,3 +21,4 @@ namespace RemoteX.Shared.Models
         public string Data { get; set; }
     }
 }
+
