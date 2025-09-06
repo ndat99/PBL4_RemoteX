@@ -21,13 +21,13 @@ namespace RemoteX.Client.Views
     public partial class MainWindow : Window
     {
         private RemoteXClient _client;
-        private ClientViewModel _cvm;
+        private MainViewModel _vm;
         public MainWindow()
         {
             InitializeComponent();
             _client = new RemoteXClient(); ;
-            _cvm = new ClientViewModel();
-            this.DataContext = _cvm;
+            _vm = new MainViewModel();
+            this.DataContext = _vm;
 
             _client.StatusChanged += OnStatusChanged;
             _client.ClientConnected += OnClientConnected;
@@ -37,12 +37,12 @@ namespace RemoteX.Client.Views
         {
             Dispatcher.Invoke(() =>
             {
-                _cvm.StatusText = message;
+                _vm.ClientVM.StatusText = message;
 
                 if (message.Contains("Lỗi"))
-                    _cvm.StatusColor = Brushes.Red;
+                    _vm.ClientVM.StatusColor = Brushes.Red;
                 else if (message.Contains("kết nối"))
-                    _cvm.StatusColor = Brushes.Green;
+                    _vm.ClientVM.StatusColor = Brushes.Green;
             });
         }
 
@@ -50,7 +50,7 @@ namespace RemoteX.Client.Views
         {
             Dispatcher.Invoke(() =>
             {
-                _cvm.ClientInfo = clientInfo;
+                _vm.ClientVM.ClientInfo = clientInfo;
             });
         }
 

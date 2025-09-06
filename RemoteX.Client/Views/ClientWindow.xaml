@@ -170,7 +170,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtClientID" Grid.Column="0" Text="{Binding ClientInfo.Id}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
+                                <TextBox x:Name="txtClientID" Grid.Column="0" Text="{Binding ClientVM.ClientInfo.Id}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
                                     <Button x:Name="btnCopyID" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
                                 </StackPanel>
@@ -183,7 +183,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtClientPass" Grid.Column="0" Text="{Binding ClientInfo.Password}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
+                                <TextBox x:Name="txtClientPass" Grid.Column="0" Text="{Binding ClientVM.ClientInfo.Password}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
                                     <Button x:Name="btnCopyPass" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
                                     <Button x:Name="btnGeneratePass" Content="🔄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
@@ -256,7 +256,7 @@
 
                         <!-- Chat Messages -->
                         <ScrollViewer x:Name="svChatBox" Grid.Row="1" Margin="15,0" VerticalScrollBarVisibility="Auto" Background="#FF454545">
-                            <ItemsControl ItemsSource="{Binding Messages}">
+                            <ItemsControl ItemsSource="{Binding ChatVM.Messages}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Style="{StaticResource ChatMessageStyle}"
@@ -264,7 +264,7 @@
                                                 Background="{Binding IsMine, Converter={StaticResource BoolToBrushConverter}}"
                                                 MaxWidth="400" Margin="0,4">
                                             <StackPanel>
-                                                <TextBlock Text="{Binding Content}" 
+                                                <TextBlock Text="{Binding Message}" 
                                                             Foreground="White" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                                 <TextBlock Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}"
                                                            Foreground="LightGray" FontSize="9" HorizontalAlignment="Right"/>
@@ -287,7 +287,7 @@
                             <Button x:Name="btnFile" Grid.Column="0" Content="📂" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14"/>
                             <Button x:Name="btnImage" Grid.Column="1" Content="🏜" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14"/>
                             <TextBox x:Name="txtMessage" Grid.Column="2" Style="{StaticResource InputTextBoxStyle}" 
-                                 Text="{Binding NewMessage, UpdateSourceTrigger=PropertyChanged}" Foreground="#CCCCCC" Background="#FF454545"/>
+                                 Text="{Binding ChatVM.NewMessage, UpdateSourceTrigger=PropertyChanged}" Foreground="#CCCCCC" Background="#FF454545"/>
                             <Button x:Name="btnSend" Grid.Column="3" Content="▶" Style="{StaticResource ButtonStyle}" 
                                  Width="40" Margin="5,0,0,0" Padding="0" Height="30" VerticalAlignment="Top" Click="btnSend_Click"/>
                         </Grid>
