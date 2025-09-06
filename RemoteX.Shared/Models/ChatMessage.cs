@@ -13,12 +13,10 @@ namespace RemoteX.Shared.Models
         public string ReceiverID { get; set; }
         public string Message { get; set; }
         public DateTime Timestamp { get; set; }
-    }
 
-    public class Message
-    {
-        public MessageType Type {  get; set; }
-        public string Data { get; set; }
+        public ChatMessageType Type { get; set; } = ChatMessageType.Text; //Loai tin nhan
+
+        public byte[] Data { get; set; } //Dung cho file/screen
     }
 }
 

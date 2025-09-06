@@ -22,15 +22,5 @@ namespace RemoteX.Shared.Models
         {
             TcpClient = tcpClient;
         }
-
-        public void Send(Message msg)
-        {
-            if (TcpClient == null || !TcpClient.Connected) return;
-
-            var stream = TcpClient.GetStream();
-            var json = JsonSerializer.Serialize(msg);
-            var bytes = Encoding.UTF8.GetBytes(json + "\n");
-            stream.Write(bytes, 0, bytes.Length);
-        }
     }
 }

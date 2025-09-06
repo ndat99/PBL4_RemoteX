@@ -10,6 +10,8 @@ using System.Linq.Expressions;
 using RemoteX.Shared.Models; //dùng ClientInfo
 using RemoteX.Core.Network;
 using System.IO;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace RemoteX.Server.Services
 {
@@ -76,13 +78,12 @@ namespace RemoteX.Server.Services
                 var client = MessageReceiver.ReceiveClientInfo(tcpClient); //Nhan ClientInfo tu client
 
                 lock (_clients)
-                {
-                _clients.Add(client); //Them client vao danh sach
-                }
+                    _clients.Add(client); //Them client vao danh sach
 
                 ClientConnected?.Invoke(client);
                 //StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
 
+                //Thread lang nghe Client ket noi
                 Thread listenThread = new Thread(() =>
                 {
                     MessageReceiver.ListenForDisconnected(client, c =>
@@ -93,11 +94,24 @@ namespace RemoteX.Server.Services
                     });
                 });
                 listenThread.Start();
+
+                // Thread relay message
+                Thread relayThread = new Thread(() =>
+                {
+                    Relay(client);
+                });
+                relayThread.Start();
             }
             catch (Exception ex)
             {
                 StatusChanged?.Invoke($"Lỗi khi xử lý client: {ex.Message}");
             }
+        }
+
+        //Trung gian lang nghe va gui message (chat)
+        private void Relay(ClientInfo clientInfo)
+        {
+
         }
 
         //Tat Server

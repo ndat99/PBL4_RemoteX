@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace RemoteX.Core.Network
@@ -52,6 +53,33 @@ namespace RemoteX.Core.Network
                 onDisconnect?.Invoke(client); //Goi callback remove client
                 client.TcpClient.Close();
             }
+        }
+
+        public static void ListenForMessages<T>(ClientInfo client, Action<T> onMessage, Action<ClientInfo> onDisconnected = null)
+        {
+            try
+            {
+                var reader = new StreamReader(client.TcpClient.GetStream());
+
+                while (client.TcpClient.Connected)
+                {
+                    string json = reader.ReadLine(); //doc stream theo dong
+                    if (json == null) break; //client ngat ket noi
+
+                    var message = JsonSerializer.Deserialize<T>(json); //chuyen json thanh object T
+                    onMessage?.Invoke(message); //callback xu ly message
+                }
+            }
+            catch (IOException)
+            {
+                //Client disconnected
+            }
+            finally
+            {
+                onDisconnected?.Invoke(client);
+                client.TcpClient.Close();
+            }
+
         }
     }
 }
