@@ -26,11 +26,12 @@ namespace RemoteX.Client.Views
         {
             InitializeComponent();
             _client = new RemoteXClient(); ;
-            _vm = new MainViewModel();
+            _vm = new MainViewModel(_client);
             this.DataContext = _vm;
 
             _client.StatusChanged += OnStatusChanged;
             _client.ClientConnected += OnClientConnected;
+            //string _currentPartnerId = txtPartnerID.Text;
         }
 
         private void OnStatusChanged(string message)
@@ -48,6 +49,7 @@ namespace RemoteX.Client.Views
 
         private void OnClientConnected(ClientInfo clientInfo)
         {
+
             Dispatcher.Invoke(() =>
             {
                 _vm.ClientVM.ClientInfo = clientInfo;
@@ -60,10 +62,39 @@ namespace RemoteX.Client.Views
             _client.Connect("localhost", 5000);
         }
 
+        private void btnConnect_Click(object sender, RoutedEventArgs e)
+        {
+            string partnerId = txtPartnerID.Text.Trim();
+            string partnerPass = txtPartnerPass.Text.Trim();
+
+            if (string.IsNullOrEmpty(partnerId) || string.IsNullOrEmpty(partnerPass))
+            {
+                MessageBox.Show("Hãy nhập ID và mật khẩu đối tác!");
+                return;
+            }
+             string _currentPartnerId = partnerId;
+
+            RemoteWindow w = new RemoteWindow();
+            w.Show();
+        }
+
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
+            //var msg = new ChatMessage
+            //{
+            //    SenderID = _vm.ClientVM.ClientInfo.Id,
+            //    ReceiverID = txtPartnerID.Text,
+            //    Message = txtMessage.Text,
+            //    Timestamp = DateTime.Now
+            //};
 
+            //_client.SendMessage(msg);
+            _vm.ChatVM.SendMessage(_vm.ClientVM.ClientInfo.Id, txtPartnerID.Text);
         }
+
+
+
+
 
         // Kéo thả cửa sổ bằng title bar
         private void titleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -97,12 +128,6 @@ namespace RemoteX.Client.Views
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
-        }
-
-        private void btnConnect_Click(object sender, RoutedEventArgs e)
-        {
-            RemoteWindow w = new RemoteWindow();
-            w.Show();
         }
     }
 }

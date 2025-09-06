@@ -98,7 +98,13 @@ namespace RemoteX.Server.Services
                 // Thread relay message
                 Thread relayThread = new Thread(() =>
                 {
-                    Relay(client);
+                    var relay = new MessageRelay(_clients);
+
+                    //Lang nghe tat ca tin nhan ChatMessage tu client
+                    NetworkHelper.ListenForMessages<ChatMessage>(client, message =>
+                    {
+                        relay.RelayMessage(message); //Chuyen tin nhan den client dich
+                    });
                 });
                 relayThread.Start();
             }
@@ -106,38 +112,6 @@ namespace RemoteX.Server.Services
             {
                 StatusChanged?.Invoke($"Lỗi khi xử lý client: {ex.Message}");
             }
-        }
-
-        //Trung gian lang nghe va gui message (chat)
-        private void Relay(ClientInfo clientInfo)
-        {
-            NetworkHelper.ListenForMessages<ChatMessage>(
-                clientInfo,
-                onMessage =>
-                {
-                    //Tim Client dich trong danh sach
-                    ClientInfo target;
-                    lock (_clients)
-                    {
-                        target = _clients.FirstOrDefault(c => c.Id == onMessage.ReceiverID);
-                    }
-
-                    if (target != null && target.TcpClient.Connected)
-                    {
-                        NetworkHelper.Send(target.TcpClient, onMessage);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"[Relay] Không tìm thấy client đích: {onMessage.ReceiverID}");
-
-                    }
-                },
-                c =>
-                {
-                    lock (_clients) _clients.Remove(c);
-                    ClientDisconnected?.Invoke(c);
-                });
-
         }
 
         //Tat Server

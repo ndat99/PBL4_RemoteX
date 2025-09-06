@@ -18,7 +18,8 @@ namespace RemoteX.Client.Services
         private DeviceConfig _deviceConfig;
         public event Action<string> StatusChanged; //Bao trang thai cho UI Client
         public event Action<ClientInfo> ClientConnected; //Su kien khi ket noi thanh cong
-        
+        public event Action<ChatMessage> MessageReceived; //Su kien khi nhan duoc tin nhan chat
+
         // Đọc hoặc tạo mới config khi app mở
 
         public RemoteXClient()
@@ -52,6 +53,23 @@ namespace RemoteX.Client.Services
                 StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}");
                 MessageBox.Show(" ⬤  Lỗi kết nối: " + ex.Message);
             }
+        }
+        public void SendMessage<T>(T message) where T : BaseMessage
+        {
+            NetworkHelper.SendMessage(_client, message);
+        }
+        
+        public void StartListening()
+        {
+            if (_client == null || !_client.Connected) return;
+
+            Task.Run(() =>
+            {
+                NetworkHelper.ListenForMessages<ChatMessage>(_clientInfo, (msg) =>
+                {
+                    MessageReceived?.Invoke(msg);
+                });
+            });
         }
     }
 }
