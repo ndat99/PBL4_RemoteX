@@ -34,6 +34,7 @@ namespace RemoteX.Server.Services
             {
                 try
                 {
+                    MessageBox.Show($"Relaying message from {message.SenderID} to {message.ReceiverID}: {message.Message}");
                     NetworkHelper.SendMessage(targetClient.TcpClient, message);
                 }
                 catch (Exception ex)
@@ -44,6 +45,7 @@ namespace RemoteX.Server.Services
             else
             {
                 MessageBox.Show($"Không tìm thấy client đích: {message.ReceiverID}");
+                MessageBox.Show($"Available clients: {string.Join(", ", _clients.Select(c => c.Id))}");
             }
         }
     }

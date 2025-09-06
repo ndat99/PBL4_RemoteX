@@ -60,6 +60,7 @@ namespace RemoteX.Client.Views
         {
             await Task.Delay(1500);                 // đợi 1.5s rồi connect
             _client.Connect("localhost", 5000);
+            _client.StartListening();
         }
 
         private void btnConnect_Click(object sender, RoutedEventArgs e)
@@ -80,16 +81,17 @@ namespace RemoteX.Client.Views
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-            //var msg = new ChatMessage
-            //{
-            //    SenderID = _vm.ClientVM.ClientInfo.Id,
-            //    ReceiverID = txtPartnerID.Text,
-            //    Message = txtMessage.Text,
-            //    Timestamp = DateTime.Now
-            //};
+            string partnerId = txtPartnerID.Text?.Trim();
+            if (string.IsNullOrEmpty(partnerId))
+            {
+                MessageBox.Show("Chưa nhập Partner ID!");
+                return;
+            }
 
-            //_client.SendMessage(msg);
-            _vm.ChatVM.SendMessage(_vm.ClientVM.ClientInfo.Id, txtPartnerID.Text);
+            if (_vm.ClientVM.ClientInfo?.Id != null)
+            {
+                _vm.ChatVM.SendMessage(_vm.ClientVM.ClientInfo.Id, partnerId);
+            }
         }
 
 

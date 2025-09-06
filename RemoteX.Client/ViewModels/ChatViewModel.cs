@@ -16,20 +16,20 @@ namespace RemoteX.Client.ViewModels
         public ObservableCollection<ChatMessage> Messages { get; set; } = new();
         private string _inputMessage;
 
-        public string inputMessage
+        public string InputMessage
         {
             get => _inputMessage;
             set
             {
                 _inputMessage = value;
-                OnPropertyChanged(nameof(inputMessage));
+                OnPropertyChanged(nameof(InputMessage));
             }
         }
 
         public ChatViewModel(RemoteXClient client)
         {
             _client = client;
-            inputMessage = "Nhập tin nhắn";
+            InputMessage = "Nhập tin nhắn";
 
             //Dang ky su kien nhan tin nhan
             _client.MessageReceived += ReceiveMessage;
@@ -38,19 +38,22 @@ namespace RemoteX.Client.ViewModels
         //Gui tin nhan
         public void SendMessage(string myId, string partnerId)
         {
-            if (string.IsNullOrWhiteSpace(inputMessage)) return;
+            if (string.IsNullOrWhiteSpace(InputMessage)) return;
 
             var msg = new ChatMessage
             {
                 SenderID = myId,
                 ReceiverID = partnerId,
-                Message = inputMessage,
+                Message = InputMessage,
                 IsMine = true
             };
             
             _client.SendMessage(msg);
-            Messages.Add(msg);
-            inputMessage = string.Empty;
+
+            App.Current.Dispatcher.Invoke(() => {
+                Messages.Add(msg);
+                InputMessage = string.Empty;
+            });
         }
 
         //Nhan tin nhan
