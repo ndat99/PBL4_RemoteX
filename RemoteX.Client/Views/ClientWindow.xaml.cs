@@ -9,7 +9,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using RemoteX.Shared;
-using RemoteX.Core;
 using RemoteX.Client.Services;
 using RemoteX.Client.ViewModels;
 using RemoteX.Shared.Models;
@@ -22,14 +21,14 @@ namespace RemoteX.Client.Views
     public partial class MainWindow : Window
     {
         private RemoteXClient _client;
-        private ClientViewModel _cvm;
+        private MainViewModel _vm;
         public MainWindow()
         {
             InitializeComponent();
             _client = new RemoteXClient(); ;
-            _cvm = new ClientViewModel();
+            _vm = new MainViewModel();
+            this.DataContext = _vm;
 
-            this.DataContext = _cvm;
             _client.StatusChanged += OnStatusChanged;
             _client.ClientConnected += OnClientConnected;
         }
@@ -38,11 +37,12 @@ namespace RemoteX.Client.Views
         {
             Dispatcher.Invoke(() =>
             {
-                _cvm.StatusText = message;
+                _vm.ClientVM.StatusText = message;
 
-                if (message.Contains("kết nối"))
-                    _cvm.StatusColor = Brushes.Green;
-
+                if (message.Contains("Lỗi"))
+                    _vm.ClientVM.StatusColor = Brushes.Red;
+                else if (message.Contains("kết nối"))
+                    _vm.ClientVM.StatusColor = Brushes.Green;
             });
         }
 
@@ -50,22 +50,20 @@ namespace RemoteX.Client.Views
         {
             Dispatcher.Invoke(() =>
             {
-                _cvm.ClientInfo = clientInfo;
+                _vm.ClientVM.ClientInfo = clientInfo;
             });
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e) // <-- async void
         {
             await Task.Delay(1500);                 // đợi 1.5s rồi connect
-            _client.Connect("127.0.0.1", 5000);
+            _client.Connect("localhost", 5000);
         }
 
+        private void btnSend_Click(object sender, RoutedEventArgs e)
+        {
 
-
-
-
-
-
+        }
 
         // Kéo thả cửa sổ bằng title bar
         private void titleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

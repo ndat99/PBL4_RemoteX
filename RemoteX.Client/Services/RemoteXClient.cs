@@ -23,7 +23,6 @@ namespace RemoteX.Client.Services
 
         public RemoteXClient()
         {
-
         }
         public void Connect(string serverIp, int port)
         {
@@ -32,8 +31,10 @@ namespace RemoteX.Client.Services
                 //Thread.Sleep(10000);
                 _client = new TcpClient();
                 _client.Connect(serverIp, port);
-                //_clientInfo = new ClientInfo(_client);
-                var config = IdGenerator.DeviceConfig();
+
+                var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ DEBUG, SAU NÀY XÓA
+
+                //var config = IdGenerator.DeviceConfig(); //NHỚ GIỮ LẠI SAU CÒN DÙNG
                 _clientInfo = new ClientInfo (_client)
                 {
                     Id = config.DeviceID,
@@ -41,18 +42,14 @@ namespace RemoteX.Client.Services
                     MachineName = config.MachineName,
                 };
 
-                //Gui thong tin Client cho Server
-                var stream = _client.GetStream();
-                string json = System.Text.Json.JsonSerializer.Serialize(_clientInfo); //Chuyen thanh chuoi JSON
-                byte[] data = Encoding.UTF8.GetBytes(json);
-                stream.Write(data, 0, data.Length);
+                NetworkHelper.SendClientInfo(_client, _clientInfo);
 
                 StatusChanged?.Invoke($" ⬤  Đã kết nối tới server {serverIp}:{port}");
                 ClientConnected?.Invoke(_clientInfo);
             }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke($"Lỗi kết nối");
+                StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}");
                 MessageBox.Show(" ⬤  Lỗi kết nối: " + ex.Message);
             }
         }

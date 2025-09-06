@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Shared.Enums
 {
-    class MessageType
+    public enum MessageType
     {
+        Chat,
+        File,
+        ScreenFrame,
+        MouseEvent,
+        KeyboardEvent
     }
 }

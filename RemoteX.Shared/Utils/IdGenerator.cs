@@ -69,5 +69,37 @@ namespace RemoteX.Shared.Utils
                 Console.WriteLine($"Loi khi luu cau hinh: {ex.Message}");
             }
         }
+
+
+
+
+        //Dùng để debug thôi, sau này xóa
+        public static DeviceConfig RandomDeviceConfig()
+        {
+            _deviceConfig = new DeviceConfig
+            {
+                DeviceID = GenerateRandomId(),
+                Password = PasswordGenerator.GenerateRandomPassword(),
+                MachineName = RandomMachineName()
+            };
+            SaveConfig(_deviceConfig);
+
+            return _deviceConfig;
+        }
+
+        public static string GenerateRandomId()
+        {
+            byte[] randomBytes = new byte[6];
+            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomBytes);
+            }
+            return BitConverter.ToString(randomBytes).Replace("-", "");
+        }
+
+        public static string RandomMachineName()
+        {
+            return "RemoteX-" + GenerateRandomId().Substring(0, 2);
+        }
     }
 }
