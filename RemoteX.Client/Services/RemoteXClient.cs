@@ -6,7 +6,6 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using RemoteX.Core.Network;
 using RemoteX.Shared.Models;
 using RemoteX.Shared.Utils;
 
@@ -41,7 +40,7 @@ namespace RemoteX.Client.Services
                     MachineName = config.MachineName,
                 };
 
-                MessageSender.SendClientInfo(_client, _clientInfo);
+                NetworkHelper.SendClientInfo(_client, _clientInfo);
 
                 StatusChanged?.Invoke($" ⬤  Đã kết nối tới server {serverIp}:{port}");
                 ClientConnected?.Invoke(_clientInfo);
