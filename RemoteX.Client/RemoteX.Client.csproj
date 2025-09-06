@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RemoteX.Core\RemoteX.Core.csproj" />
     <ProjectReference Include="..\RemoteX.Shared\RemoteX.Shared.csproj" />
   </ItemGroup>
 

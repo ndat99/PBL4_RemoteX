@@ -8,10 +8,10 @@ using System.Net.Sockets;
 using System.Net;
 using System.Linq.Expressions;
 using RemoteX.Shared.Models; //dùng ClientInfo
-using RemoteX.Core.Network;
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using RemoteX.Shared.Utils;
 
 namespace RemoteX.Server.Services
 {
@@ -75,7 +75,7 @@ namespace RemoteX.Server.Services
         {
             try
             {
-                var client = MessageReceiver.ReceiveClientInfo(tcpClient); //Nhan ClientInfo tu client
+                var client = NetworkHelper.ReceiveClientInfo(tcpClient); //Nhan ClientInfo tu client
 
                 lock (_clients)
                     _clients.Add(client); //Them client vao danh sach
@@ -86,7 +86,7 @@ namespace RemoteX.Server.Services
                 //Thread lang nghe Client ket noi
                 Thread listenThread = new Thread(() =>
                 {
-                    MessageReceiver.ListenForDisconnected(client, c =>
+                    NetworkHelper.ListenForDisconnected(client, c =>
                     {
                         lock (_clients)
                             _clients.Remove(c); //Xoa client khoi danh sach
@@ -111,7 +111,7 @@ namespace RemoteX.Server.Services
         //Trung gian lang nghe va gui message (chat)
         private void Relay(ClientInfo clientInfo)
         {
-            MessageReceiver.ListenForMessages<ChatMessage>(
+            NetworkHelper.ListenForMessages<ChatMessage>(
                 clientInfo,
                 onMessage =>
                 {
@@ -124,7 +124,7 @@ namespace RemoteX.Server.Services
 
                     if (target != null && target.TcpClient.Connected)
                     {
-                        MessageSender.Send(target.TcpClient, onMessage);
+                        NetworkHelper.Send(target.TcpClient, onMessage);
                     }
                     else
                     {

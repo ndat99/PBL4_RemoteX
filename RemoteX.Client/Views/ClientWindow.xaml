@@ -258,7 +258,7 @@
                         <ScrollViewer x:Name="svChatBox" Grid.Row="1" Margin="15,0" VerticalScrollBarVisibility="Auto" Background="#FF454545">
                             <ItemsControl ItemsSource="{Binding Messages}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{StaticResource ChatMessageStyle}">
+                                    <DataTemplate>
                                         <Border Style="{StaticResource ChatMessageStyle}"
                                                 HorizontalAlignment="{Binding IsMine, Converter={StaticResource BoolToAlignConverter}}"
                                                 Background="{Binding IsMine, Converter={StaticResource BoolToBrushConverter}}"
