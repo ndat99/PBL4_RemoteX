@@ -8,6 +8,10 @@ using System.Net.Sockets;
 using System.Net;
 using System.Linq.Expressions;
 using RemoteX.Shared.Models; //dùng ClientInfo
+using System.IO;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using RemoteX.Shared.Utils;
 
 namespace RemoteX.Server.Services
 {
@@ -20,6 +24,7 @@ namespace RemoteX.Server.Services
 
         private List<ClientInfo> _clients = new List<ClientInfo>(); //Ds client da ket noi
         public event Action<ClientInfo> ClientConnected; //Su kien khi co client ket noi
+        public event Action<ClientInfo> ClientDisconnected; //Su kien khi co client ngat ket noi
 
         public event Action<string> StatusChanged; //Bao trang thai server
 
@@ -31,6 +36,8 @@ namespace RemoteX.Server.Services
                 if (_isRunning) return;  //server da chay roi thi bo qua
 
                 _listener = new TcpListener(IPAddress.Any, port); //Tao listener
+                //Cho phep reuse address de tranh loi "Address already in use"
+                _listener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 _listener.Start(); //Bat dau lang nghe
                 _isRunning = true;
 
@@ -53,24 +60,84 @@ namespace RemoteX.Server.Services
                 {
                     TcpClient tcpClient = _listener.AcceptTcpClient(); //Cho ket noi tu client moi
 
-                    //Doc du lieu tu Client gui sang
-                    var stream = tcpClient.GetStream();
-                    byte[] buffer = new byte[1024];
-                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                    string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-                    ClientInfo client = System.Text.Json.JsonSerializer.Deserialize<ClientInfo>(json);
-                    //ClientInfo client = new ClientInfo(); //Tao client info ngau nhien
-                    _clients.Add(client); //Them client vao danh sach
-
-                    ClientConnected?.Invoke(client);
-                    //StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
-                    //more
+                    //Tao Thread rieng de xu ly client
+                    Thread clientThread = new Thread(() => HandleClient(tcpClient));
+                    clientThread.Start();
                 }
                 catch (SocketException)
                 {
+                    if (!_isRunning) break; //Neu server da tat thi thoat vong lap
                 }
             }
+        }
+
+        private void HandleClient(TcpClient tcpClient)
+        {
+            try
+            {
+                var client = NetworkHelper.ReceiveClientInfo(tcpClient); //Nhan ClientInfo tu client
+
+                lock (_clients)
+                    _clients.Add(client); //Them client vao danh sach
+
+                ClientConnected?.Invoke(client);
+                //StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
+
+                //Thread lang nghe Client ket noi
+                Thread listenThread = new Thread(() =>
+                {
+                    NetworkHelper.ListenForDisconnected(client, c =>
+                    {
+                        lock (_clients)
+                            _clients.Remove(c); //Xoa client khoi danh sach
+                        ClientDisconnected?.Invoke(c);
+                    });
+                });
+                listenThread.Start();
+
+                // Thread relay message
+                Thread relayThread = new Thread(() =>
+                {
+                    Relay(client);
+                });
+                relayThread.Start();
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"Lỗi khi xử lý client: {ex.Message}");
+            }
+        }
+
+        //Trung gian lang nghe va gui message (chat)
+        private void Relay(ClientInfo clientInfo)
+        {
+            NetworkHelper.ListenForMessages<ChatMessage>(
+                clientInfo,
+                onMessage =>
+                {
+                    //Tim Client dich trong danh sach
+                    ClientInfo target;
+                    lock (_clients)
+                    {
+                        target = _clients.FirstOrDefault(c => c.Id == onMessage.ReceiverID);
+                    }
+
+                    if (target != null && target.TcpClient.Connected)
+                    {
+                        NetworkHelper.Send(target.TcpClient, onMessage);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[Relay] Không tìm thấy client đích: {onMessage.ReceiverID}");
+
+                    }
+                },
+                c =>
+                {
+                    lock (_clients) _clients.Remove(c);
+                    ClientDisconnected?.Invoke(c);
+                });
+
         }
 
         //Tat Server
@@ -79,8 +146,38 @@ namespace RemoteX.Server.Services
             if (!_isRunning) return; //Neu chua chay thi bo qua
 
             _isRunning = false;
+            try
+            {
             _listener.Stop(); //Ngung lang nghe
-            StatusChanged?.Invoke("Đã tắt Server");   
+                if (_listenThread !=null && _listenThread.IsAlive)
+                {
+                    _listenThread.Join(500); //Chờ 500ms để thread kết thúc
+                    if (_listenThread.IsAlive)
+                    {
+                       _listenThread.Interrupt(); //Buộc thread dừng nếu nó vẫn còn chạy
+                    }
+                }
+                lock (_clients)
+                {
+                    foreach (var client in _clients.ToList())
+                    {
+                        client.TcpClient.Close();
+                        ClientDisconnected?.Invoke(client);
+                    }
+                    _clients.Clear();
+                }
+                StatusChanged?.Invoke("Đã tắt Server");
+            }
+
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke($"Lỗi khi tắt Server: {ex.Message}");
+            }
+            finally
+            {
+                _listener = null;
+                _listenThread = null;
+            }
         }
 
     }

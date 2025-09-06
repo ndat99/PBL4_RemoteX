@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Client.Controllers
+namespace RemoteX.Shared.Enums
 {
-    class RemoteController
+    public enum ChatMessageType
     {
+        Text,
+        File
     }
 }

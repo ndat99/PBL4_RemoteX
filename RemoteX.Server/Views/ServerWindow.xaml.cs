@@ -29,6 +29,7 @@ public partial class MainWindow : Window
         
         _server.StatusChanged += OnStatusChanged;
         _server.ClientConnected += OnClientConnected;
+        _server.ClientDisconnected += OnClientDisconnected;
 
         this.Loaded += (s, e) =>
         {
@@ -57,6 +58,14 @@ public partial class MainWindow : Window
         Dispatcher.Invoke(() =>
         {
             _svm.Clients.Add(client);
+        });
+    }
+
+    private void OnClientDisconnected(ClientInfo client)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            _svm.Clients.Remove(client);
         });
     }
     private void btnStart_Click(object sender, RoutedEventArgs e)
@@ -99,6 +108,7 @@ public partial class MainWindow : Window
     // Close window
     private void btnClose_Click(object sender, RoutedEventArgs e)
     {
+        _server.Stop();
         this.Close();
     }
 }
