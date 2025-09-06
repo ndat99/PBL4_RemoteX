@@ -31,8 +31,10 @@ namespace RemoteX.Client.Services
                 //Thread.Sleep(10000);
                 _client = new TcpClient();
                 _client.Connect(serverIp, port);
-                //_clientInfo = new ClientInfo(_client);
-                var config = IdGenerator.DeviceConfig();
+
+                var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ DEBUG, SAU NÀY XÓA
+
+                //var config = IdGenerator.DeviceConfig(); //NHỚ GIỮ LẠI SAU CÒN DÙNG
                 _clientInfo = new ClientInfo (_client)
                 {
                     Id = config.DeviceID,

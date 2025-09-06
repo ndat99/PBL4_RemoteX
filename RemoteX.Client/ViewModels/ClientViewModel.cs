@@ -19,8 +19,6 @@ namespace RemoteX.Client.ViewModels
         private string _statusText;
         private Brush _statusColor;
         private ClientInfo _clientInfo;        
-        public ObservableCollection<ChatMessage> Messages { get; set; } = new();
-        private string _newMessage;
 
         public string StatusText
         {
@@ -52,23 +50,11 @@ namespace RemoteX.Client.ViewModels
             }
         }
 
-        public string NewMessage
+        public ClientViewModel()
         {
-            get => _newMessage;
-            set
-            {
-                _newMessage = value;
-                OnPropertyChanged(nameof(NewMessage));
-            }
+            StatusText = " ⬤  Đang kết nối tới Server";
+            StatusColor = Brushes.Yellow;
         }
-
-        //ICommand SendMessageCommand { get; }
-
-        //public ClientViewModel()
-        //{
-        //    StatusText = " ⬤  Đang kết nối tới Server";
-        //    StatusColor = Brushes.Yellow;
-        //}
 
         //private void SendMessage()
         //{
