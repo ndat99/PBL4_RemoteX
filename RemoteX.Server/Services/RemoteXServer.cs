@@ -111,6 +111,32 @@ namespace RemoteX.Server.Services
         //Trung gian lang nghe va gui message (chat)
         private void Relay(ClientInfo clientInfo)
         {
+            MessageReceiver.ListenForMessages<ChatMessage>(
+                clientInfo,
+                onMessage =>
+                {
+                    //Tim Client dich trong danh sach
+                    ClientInfo target;
+                    lock (_clients)
+                    {
+                        target = _clients.FirstOrDefault(c => c.Id == onMessage.ReceiverID);
+                    }
+
+                    if (target != null && target.TcpClient.Connected)
+                    {
+                        MessageSender.Send(target.TcpClient, onMessage);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[Relay] Không tìm thấy client đích: {onMessage.ReceiverID}");
+
+                    }
+                },
+                c =>
+                {
+                    lock (_clients) _clients.Remove(c);
+                    ClientDisconnected?.Invoke(c);
+                });
 
         }
 

@@ -63,11 +63,12 @@ namespace RemoteX.Core.Network
 
                 while (client.TcpClient.Connected)
                 {
-                    string json = reader.ReadLine(); //doc stream theo dong
-                    if (json == null) break; //client ngat ket noi
+                    string line = reader.ReadLine(); //doc stream theo dong
+                    if (line == null) break; //client ngat ket noi
 
-                    var message = JsonSerializer.Deserialize<T>(json); //chuyen json thanh object T
-                    onMessage?.Invoke(message); //callback xu ly message
+                    var message = JsonSerializer.Deserialize<T>(line); //chuyen json thanh object T
+                    if(message != null)
+                        onMessage?.Invoke(message); //callback xu ly message
                 }
             }
             catch (IOException)
@@ -79,7 +80,6 @@ namespace RemoteX.Core.Network
                 onDisconnected?.Invoke(client);
                 client.TcpClient.Close();
             }
-
         }
     }
 }
