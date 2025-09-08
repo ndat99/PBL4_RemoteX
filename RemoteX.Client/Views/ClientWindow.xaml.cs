@@ -31,6 +31,7 @@ namespace RemoteX.Client.Views
 
             _client.StatusChanged += OnStatusChanged;
             _client.ClientConnected += OnClientConnected;
+            _client.MessageReceived += OnMessageReceived;
             //string _currentPartnerId = txtPartnerID.Text;
         }
 
@@ -56,11 +57,30 @@ namespace RemoteX.Client.Views
             });
         }
 
+        private void OnMessageReceived(ChatMessage msg)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                msg.IsMine = false;
+                _vm.ChatVM.Messages.Add(msg);
+
+                // Nếu server confirm kết nối thì lưu PartnerID
+                if (msg.SenderID == "Server" && msg.Message.Contains("Kết nối tới"))
+                {
+                    _vm.ClientVM.CurrentPartnerId = msg.ReceiverID; // A lưu B
+                }
+                else if (msg.SenderID == "Server" && msg.Message.Contains("được kết nối"))
+                {
+                    _vm.ClientVM.CurrentPartnerId = msg.ReceiverID; // B lưu A
+                }
+            });
+        }
+
         private async void Window_Loaded(object sender, RoutedEventArgs e) // <-- async void
         {
             await Task.Delay(1500);                 // đợi 1.5s rồi connect
             _client.Connect("localhost", 5000);
-            _client.StartListening();
+            //_client.StartListening();
         }
 
         private void btnConnect_Click(object sender, RoutedEventArgs e)
@@ -73,7 +93,15 @@ namespace RemoteX.Client.Views
                 MessageBox.Show("Hãy nhập ID và mật khẩu đối tác!");
                 return;
             }
-             string _currentPartnerId = partnerId;
+
+            // Gửi ConnectRequest lên server
+            var request = new ConnectRequest
+            {
+                SenderID = _client.ClientInfo.Id,  //ID của máy A
+                TargetID = partnerId,
+                Password = partnerPass
+            };
+            _client.SendMessage(request);
 
             RemoteWindow w = new RemoteWindow();
             w.Show();
@@ -81,17 +109,31 @@ namespace RemoteX.Client.Views
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-            string partnerId = txtPartnerID.Text?.Trim();
+            string partnerId = _vm.ClientVM.CurrentPartnerId;
+            string message = _vm.ChatVM.InputMessage?.Trim();
+
+
             if (string.IsNullOrEmpty(partnerId))
             {
-                MessageBox.Show("Chưa nhập Partner ID!");
+                MessageBox.Show("Chưa kết nối tới đối tác nào!");
                 return;
             }
 
-            if (_vm.ClientVM.ClientInfo?.Id != null)
+            var msg = new ChatMessage
             {
-                _vm.ChatVM.SendMessage(_vm.ClientVM.ClientInfo.Id, partnerId);
-            }
+                SenderID = _vm.ClientVM.ClientInfo.Id,
+                ReceiverID = partnerId,
+                Message = message,
+                IsMine = true
+            };
+
+            _client.SendMessage(msg);
+
+            _vm.ChatVM.Messages.Add(msg);
+
+            //_vm.ChatVM.SendMessage(_vm.ClientVM.ClientInfo.Id, partnerId);
+
+            txtMessage.Clear();
         }
 
 

@@ -16,6 +16,8 @@ namespace RemoteX.Client.Services
         private TcpClient _client;
         private ClientInfo _clientInfo;
         private DeviceConfig _deviceConfig;
+        public ClientInfo ClientInfo => _clientInfo;
+
         public event Action<string> StatusChanged; //Bao trang thai cho UI Client
         public event Action<ClientInfo> ClientConnected; //Su kien khi ket noi thanh cong
         public event Action<ChatMessage> MessageReceived; //Su kien khi nhan duoc tin nhan chat
@@ -24,6 +26,7 @@ namespace RemoteX.Client.Services
 
         public RemoteXClient()
         {
+
         }
         public void Connect(string serverIp, int port)
         {
@@ -36,7 +39,7 @@ namespace RemoteX.Client.Services
                 var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ DEBUG, SAU NÀY XÓA
 
                 //var config = IdGenerator.DeviceConfig(); //NHỚ GIỮ LẠI SAU CÒN DÙNG
-                _clientInfo = new ClientInfo (_client)
+                _clientInfo = new ClientInfo(_client)
                 {
                     Id = config.DeviceID,
                     Password = config.Password,
@@ -47,6 +50,8 @@ namespace RemoteX.Client.Services
 
                 StatusChanged?.Invoke($" ⬤  Đã kết nối tới server {serverIp}:{port}");
                 ClientConnected?.Invoke(_clientInfo);
+
+                StartListening(); //Bắt đầu lắng nghe tin nhắn từ server
             }
             catch (Exception ex)
             {
@@ -58,7 +63,7 @@ namespace RemoteX.Client.Services
         {
             NetworkHelper.SendMessage(_client, message);
         }
-        
+
         public void StartListening()
         {
             if (_client == null || !_client.Connected) return;

@@ -14,14 +14,26 @@ namespace RemoteX.Shared.Utils
         //Listen
         public static ClientInfo ReceiveClientInfo(TcpClient tcpClient)
         {
-            //Doc du lieu tu Client gui sang
             var stream = tcpClient.GetStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
-            string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-            ClientInfo client = System.Text.Json.JsonSerializer.Deserialize<ClientInfo>(json);
-            client.TcpClient = tcpClient; //Gan Socket thuc te vao ClientInfo
+            // Đọc 4 byte độ dài
+            byte[] lengthBuffer = new byte[4];
+            stream.Read(lengthBuffer, 0, 4);
+            int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
+
+            // Đọc dữ liệu JSON
+            byte[] buffer = new byte[messageLength];
+            int read = 0;
+            while (read < messageLength)
+            {
+                int chunk = stream.Read(buffer, read, messageLength - read);
+                if (chunk == 0) break;
+                read += chunk;
+            }
+
+            string json = Encoding.UTF8.GetString(buffer, 0, read);
+            ClientInfo client = JsonSerializer.Deserialize<ClientInfo>(json);
+            client.TcpClient = tcpClient;
 
             return client;
         }
@@ -100,10 +112,12 @@ namespace RemoteX.Shared.Utils
         //Send
         public static void SendClientInfo(TcpClient client, ClientInfo info)
         {
-            //Gui thong tin Client cho Server
             var stream = client.GetStream();
-            string json = System.Text.Json.JsonSerializer.Serialize(info); //Chuyen thanh chuoi JSON
+            string json = JsonSerializer.Serialize(info);
             byte[] data = Encoding.UTF8.GetBytes(json);
+            byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
+
+            stream.Write(lengthPrefix, 0, lengthPrefix.Length);
             stream.Write(data, 0, data.Length);
         }
 
@@ -123,9 +137,9 @@ namespace RemoteX.Shared.Utils
                 stream.Write(data, 0, data.Length); //Gui du lieu
                 stream.Flush();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-            
+
             }
         }
     }

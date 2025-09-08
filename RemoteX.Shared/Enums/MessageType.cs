@@ -8,7 +8,8 @@ namespace RemoteX.Shared.Enums
 {
     public enum MessageType
     {
-        Chat,
+        ConnectRequest = 1,
+        Chat = 2,
         File,
         ScreenFrame,
         MouseEvent,

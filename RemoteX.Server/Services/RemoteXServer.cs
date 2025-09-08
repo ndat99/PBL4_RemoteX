@@ -12,6 +12,7 @@ using System.IO;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using RemoteX.Shared.Utils;
+using System.Windows;
 
 namespace RemoteX.Server.Services
 {
@@ -22,7 +23,8 @@ namespace RemoteX.Server.Services
         private bool _isRunning;
         public bool IsRunning => _isRunning;
 
-        private List<ClientInfo> _clients = new List<ClientInfo>(); //Ds client da ket noi
+        //private List<ClientInfo> _clients = new List<ClientInfo>(); //Ds client da ket noi
+        private ClientManager _clientManager;
         public event Action<ClientInfo> ClientConnected; //Su kien khi co client ket noi
         public event Action<ClientInfo> ClientDisconnected; //Su kien khi co client ngat ket noi
 
@@ -35,6 +37,7 @@ namespace RemoteX.Server.Services
             {
                 if (_isRunning) return;  //server da chay roi thi bo qua
 
+                _clientManager = new ClientManager(); //Khoi tao quan ly client
                 _listener = new TcpListener(IPAddress.Any, port); //Tao listener
                 //Cho phep reuse address de tranh loi "Address already in use"
                 _listener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -77,28 +80,78 @@ namespace RemoteX.Server.Services
             {
                 var client = NetworkHelper.ReceiveClientInfo(tcpClient); //Nhan ClientInfo tu client
 
-                lock (_clients)
-                    _clients.Add(client); //Them client vao danh sach
+                _clientManager.AddClient(client); //Them client vao danh sach quan ly
 
                 ClientConnected?.Invoke(client);
                 //StatusChanged?.Invoke("Có client mới kết nối!");    //Bao ve UI
 
-                //Thread lang nghe Client ket noi
+                //Thread lang nghe Client ngat ket noi
                 Thread listenThread = new Thread(() =>
                 {
                     NetworkHelper.ListenForDisconnected(client, c =>
                     {
-                        lock (_clients)
-                            _clients.Remove(c); //Xoa client khoi danh sach
+                        _clientManager.RemoveClient(c);
                         ClientDisconnected?.Invoke(c);
                     });
                 });
                 listenThread.Start();
 
+                //Thread lang nghe ConnectRequest giua cac client
+                Thread connectThread = new Thread(() =>
+                {
+                    NetworkHelper.ListenForMessages<ConnectRequest>(client, request =>
+                    {
+                        bool success = _clientManager.TryMapClients(request.SenderID, request.TargetID, request.Password);
+
+                        if (!success)
+                        {
+                            //Bao loi cho nguoi gui (A)
+                            var failMsg = new ChatMessage
+                            {
+                                SenderID = "Server",
+                                ReceiverID = request.SenderID,
+                                Message = "Kết nối thất bại: Sai ID hoặc Pass.",
+                                IsMine = false
+                            };
+                            NetworkHelper.SendMessage(client.TcpClient, failMsg);
+                        }
+                        else
+                        {
+                            //Neu thanh cong thi bao lai cho A
+
+                            var sender = _clientManager.FindById(request.SenderID);
+                            var partner = _clientManager.FindById(request.TargetID);
+
+                            if (partner != null && sender != null)
+                            {
+                                var okMsgA = new ChatMessage
+                                {
+                                    SenderID = "Server",
+                                    ReceiverID = request.SenderID,
+                                    Message = $"Kết nối tới {partner.MachineName} thành công!",
+                                    IsMine = false
+                                };
+                                NetworkHelper.SendMessage(client.TcpClient, okMsgA);
+
+                                // Báo cho B biết đã được kết nối
+                                var okMsgB = new ChatMessage
+                                {
+                                    SenderID = "Server",
+                                    ReceiverID = partner.Id,  // B
+                                    Message = $"Bạn đã được kết nối với {sender.MachineName}!",
+                                    IsMine = false
+                                };
+                                NetworkHelper.SendMessage(partner.TcpClient, okMsgB);
+                            }
+                        }
+                    });
+                });
+                connectThread.Start();
+
                 // Thread relay message
                 Thread relayThread = new Thread(() =>
                 {
-                    var relay = new MessageRelay(_clients);
+                    var relay = new MessageRelay(_clientManager);
 
                     //Lang nghe tat ca tin nhan ChatMessage tu client
                     NetworkHelper.ListenForMessages<ChatMessage>(client, message =>
@@ -122,24 +175,28 @@ namespace RemoteX.Server.Services
             _isRunning = false;
             try
             {
-            _listener.Stop(); //Ngung lang nghe
-                if (_listenThread !=null && _listenThread.IsAlive)
+                _listener.Stop(); //Ngung lang nghe
+                if (_listenThread != null && _listenThread.IsAlive)
                 {
                     _listenThread.Join(500); //Chờ 500ms để thread kết thúc
                     if (_listenThread.IsAlive)
                     {
-                       _listenThread.Interrupt(); //Buộc thread dừng nếu nó vẫn còn chạy
+                        _listenThread.Interrupt(); //Buộc thread dừng nếu nó vẫn còn chạy
                     }
                 }
-                lock (_clients)
+
+                var allClients = _clientManager.GetAllClients().ToList();
+                foreach (var client in allClients)
                 {
-                    foreach (var client in _clients.ToList())
+                    try
                     {
                         client.TcpClient.Close();
                         ClientDisconnected?.Invoke(client);
                     }
-                    _clients.Clear();
+                    catch { }
                 }
+
+                _clientManager.Clear();
                 StatusChanged?.Invoke("Đã tắt Server");
             }
 

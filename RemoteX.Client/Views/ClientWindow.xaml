@@ -1,6 +1,7 @@
 ﻿<Window x:Class="RemoteX.Client.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:RemoteX.Client.Views"
         Title="RemoteX" Height="682" Width="661"
         Background="Transparent"
         WindowStyle="None"
@@ -8,6 +9,8 @@
         ResizeMode="CanResize" WindowStartupLocation="CenterScreen" Icon="/Views/Images/RemoteX.ico" Loaded="Window_Loaded">
 
     <Window.Resources>
+        <converters:BoolToAlignConverter x:Key="BoolToAlignConverter"/>
+        <converters:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <!-- Styles -->
         <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
@@ -115,7 +118,7 @@
                     </Ellipse>
                     <TextBlock Text="RemoteX" FontWeight="SemiBold" Foreground="White" FontSize="14"/>
                     <!-- Status Text -->
-                    <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusColor}" FontWeight="Normal" 
+                    <TextBlock Text="{Binding ClientVM.StatusText}" Foreground="{Binding ClientVM.StatusColor}" FontWeight="Normal" 
                FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
 

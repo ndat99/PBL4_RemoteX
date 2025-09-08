@@ -14,38 +14,47 @@ namespace RemoteX.Server.Services
 {
     public class MessageRelay
     {
-        private readonly List<ClientInfo> _clients;
+        private ClientManager _clientManager;
 
         //Truyen vao danh sach client da ket noi
-        public MessageRelay(List<ClientInfo> clients)
+        public MessageRelay(ClientManager clientManager)
         {
-            _clients = clients;
+            _clientManager = clientManager;
         }
 
         //Relay chatmessage tu sender -> receiver
         public void RelayMessage(ChatMessage message)
         {
-            if (string.IsNullOrEmpty(message.ReceiverID)) return;
+            var partnerId = _clientManager.GetPartnerId(message.ReceiverID);
+            //if (partnerId != message.ReceiverID) return;
+            
+            if (partnerId != message.ReceiverID)
+            {
+                // Gửi thông báo lỗi về cho sender
+                var errorMsg = new ChatMessage
+                {
+                    SenderID = "Server",
+                    ReceiverID = message.SenderID,
+                    Message = "❌ Chưa kết nối với đối tác này!"
+                };
+                var senderClient = _clientManager.FindById(message.SenderID);
+                if (senderClient != null)
+                    NetworkHelper.SendMessage(senderClient.TcpClient, errorMsg);
+                return;
+            }
 
             //Tim client trong danh sach
-            var targetClient = _clients.FirstOrDefault(c => c.Id == message.ReceiverID);
-
+            var targetClient = _clientManager.FindById(message.ReceiverID);
             if (targetClient != null)
             {
                 try
                 {
-                    MessageBox.Show($"Relaying message from {message.SenderID} to {message.ReceiverID}: {message.Message}");
                     NetworkHelper.SendMessage(targetClient.TcpClient, message);
                 }
                 catch (Exception ex)
                 {
 
                 }
-            }
-            else
-            {
-                MessageBox.Show($"Không tìm thấy client đích: {message.ReceiverID}");
-                MessageBox.Show($"Available clients: {string.Join(", ", _clients.Select(c => c.Id))}");
             }
         }
     }

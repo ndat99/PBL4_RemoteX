@@ -30,9 +30,17 @@ namespace RemoteX.Client.ViewModels
         {
             _client = client;
             InputMessage = "Nhập tin nhắn";
+            var msg = new ChatMessage()
+            {
+                SenderID = "123",
+                ReceiverID = "456",
+                Message = "Hello, đây là tin nhắn mẫu để kiểm tra thử",
+                IsMine = false
+            };
+            Messages.Add(msg);
 
             //Dang ky su kien nhan tin nhan
-            _client.MessageReceived += ReceiveMessage;
+            //_client.MessageReceived += ReceiveMessage;
         }
 
         //Gui tin nhan
@@ -47,7 +55,7 @@ namespace RemoteX.Client.ViewModels
                 Message = InputMessage,
                 IsMine = true
             };
-            
+
             _client.SendMessage(msg);
 
             App.Current.Dispatcher.Invoke(() => {
@@ -57,12 +65,12 @@ namespace RemoteX.Client.ViewModels
         }
 
         //Nhan tin nhan
-        public void ReceiveMessage(ChatMessage msg)
-        {
-            App.Current.Dispatcher.Invoke(() => {
-                msg.IsMine = false;
-                Messages.Add(msg);
-            });
-        }
+        //public void ReceiveMessage(ChatMessage msg)
+        //{
+        //    App.Current.Dispatcher.Invoke(() => {
+        //        msg.IsMine = false;
+        //        Messages.Add(msg);
+        //    });
+        //}
     }
 }
