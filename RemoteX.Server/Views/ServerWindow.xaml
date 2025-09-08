@@ -282,8 +282,8 @@
 
                     <!-- Control Buttons -->
                     <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
-                        <Button x:Name="btnStart" Content="Khởi động" Style="{StaticResource ButtonStyle}" Click="btnStart_Click"/>
-                        <Button x:Name="btnStop" Content="Dừng lại" Style="{StaticResource StopButtonStyle}" Click="btnStop_Click"/>
+                        <Button x:Name="btnStart" Content="Khởi động" Style="{StaticResource ButtonStyle}" Click="btnStart_Click" Command="{Binding StartCommand}"/>
+                        <Button x:Name="btnStop" Content="Dừng lại" Style="{StaticResource StopButtonStyle}" Click="btnStop_Click" Command="{Binding StopCommand}"/>
                         <Button x:Name="btnClearLog" Content="Xóa nhật ký" Style="{StaticResource ClearButtonStyle}"/>
                     </StackPanel>
                 </Grid>

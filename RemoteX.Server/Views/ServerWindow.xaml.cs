@@ -18,68 +18,24 @@ namespace RemoteX.Server.Views;
 
 public partial class MainWindow : Window
 {
-    private RemoteXServer _server;
     private ServerViewModel _svm;
     public MainWindow()
     {
         InitializeComponent();
-        _server = new RemoteXServer(); //Khoi tao server
         _svm = new ServerViewModel();
         this.DataContext = _svm; //Gan ViewModel vao UI
 
-        _server.StatusChanged += OnStatusChanged;
-        _server.ClientConnected += OnClientConnected;
-        _server.ClientDisconnected += OnClientDisconnected;
-
-        this.Loaded += (s, e) =>
-        {
-            _server.Start(5000);  // auto chạy
-        };
     }
 
-    private void OnStatusChanged(string message)
-    {
-        Dispatcher.Invoke(() =>
-        {
-            _svm.StatusText = message;
-
-            if (message.Contains("đang chạy"))
-                _svm.StatusColor = _svm.StatusDot = Brushes.Green;
-            //if (message.Contains("kết nối"))
-            //    _svm.StatusColor = _svm.StatusDot = Brushes.Blue;
-            if (message.Contains("Lỗi"))
-                _svm.StatusColor = _svm.StatusDot = Brushes.Red;
-            else if (message.Contains("tắt"))
-                _svm.StatusColor = _svm.StatusDot = Brushes.Gray;
-        });
-    }
-    private void OnClientConnected(ClientInfo client)
-    {
-        Dispatcher.Invoke(() =>
-        {
-            _svm.Clients.Add(client);
-        });
-    }
-
-    private void OnClientDisconnected(ClientInfo client)
-    {
-        Dispatcher.Invoke(() =>
-        {
-            _svm.Clients.Remove(client);
-        });
-    }
     private void btnStart_Click(object sender, RoutedEventArgs e)
     {
-        _server.Start();
-        //MessageBox.Show("Server đã được bật");
+        _svm.StartServer();
     }
 
     private void btnStop_Click(object sender, RoutedEventArgs e)
     {
-        _server.Stop();
-        //MessageBox.Show("Đã tắt Server");
+        _svm.StopServer();
     }
-
 
 
     //Dưới này là event thu nhỏ, phóng to, close cho cái title bar thôi đừng quan tâm
@@ -105,10 +61,9 @@ public partial class MainWindow : Window
             this.WindowState = WindowState.Maximized;
     }
 
-    // Close window
     private void btnClose_Click(object sender, RoutedEventArgs e)
     {
-        _server.Stop();
+        _svm.StopServer();
         this.Close();
     }
 }
