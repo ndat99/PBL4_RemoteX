@@ -5,9 +5,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using RemoteX.Shared.Utils;
+using RemoteX.Core.Utils;
 
-namespace RemoteX.Shared.Models
+namespace RemoteX.Core.Models
 {
     //Định nghĩa client model chung cho server và client
     public class ClientInfo

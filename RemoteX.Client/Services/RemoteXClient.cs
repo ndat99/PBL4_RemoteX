@@ -6,8 +6,8 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using RemoteX.Shared.Models;
-using RemoteX.Shared.Utils;
+using RemoteX.Core.Models;
+using RemoteX.Core.Utils;
 
 namespace RemoteX.Client.Services
 {
@@ -36,9 +36,9 @@ namespace RemoteX.Client.Services
                 _client = new TcpClient();
                 _client.Connect(serverIp, port);
 
-                var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ DEBUG, SAU NÀY XÓA
+                //var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ DEBUG, SAU NÀY XÓA
 
-                //var config = IdGenerator.DeviceConfig(); //NHỚ GIỮ LẠI SAU CÒN DÙNG
+                var config = IdGenerator.DeviceConfig(); //NHỚ GIỮ LẠI SAU CÒN DÙNG
                 _clientInfo = new ClientInfo(_client)
                 {
                     Id = config.DeviceID,

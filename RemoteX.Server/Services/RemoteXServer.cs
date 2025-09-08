@@ -7,11 +7,11 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 using System.Linq.Expressions;
-using RemoteX.Shared.Models; //dùng ClientInfo
+using RemoteX.Core.Models; //dùng ClientInfo
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using RemoteX.Shared.Utils;
+using RemoteX.Core.Utils;
 using System.Windows;
 
 namespace RemoteX.Server.Services
@@ -39,7 +39,7 @@ namespace RemoteX.Server.Services
 
                 _clientManager = new ClientManager(); //Khoi tao quan ly client
                 _listener = new TcpListener(IPAddress.Any, port); //Tao listener
-                //Cho phep reuse address de tranh loi "Address already in use"
+                //Cho phep reuse address
                 _listener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 _listener.Start(); //Bat dau lang nghe
                 _isRunning = true;

@@ -8,13 +8,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using RemoteX.Shared;
+using RemoteX.Core;
 using RemoteX.Client.Services;
 using RemoteX.Client.ViewModels;
-using RemoteX.Shared.Models;
+using RemoteX.Core.Models;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using RemoteX.Shared.Utils;
+using RemoteX.Core.Utils;
 
 namespace RemoteX.Client.Views
 {
@@ -78,7 +78,7 @@ namespace RemoteX.Client.Views
 
         private async void Window_Loaded(object sender, RoutedEventArgs e) // <-- async void
         {
-            await Task.Delay(1500);                 // đợi 1.5s rồi connect
+            await Task.Delay(1000);                 // đợi 1s rồi connect
             _client.Connect("localhost", 5000);
             //_client.StartListening();
         }

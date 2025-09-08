@@ -1,4 +1,4 @@
-﻿using RemoteX.Shared.Enums;
+﻿using RemoteX.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace RemoteX.Shared.Models
+namespace RemoteX.Core.Models
 {
     public class MouseEventMessage : BaseMessage
     {
