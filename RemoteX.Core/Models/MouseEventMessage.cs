@@ -8,9 +8,9 @@ using System.Windows.Input;
 
 namespace RemoteX.Core.Models
 {
-    public class MouseEventMessage : BaseMessage
+    public class MouseEventMessage : Message
     {
-        public override MessageType Type => MessageType.MouseEvent;
+        //public override MessageType Type => MessageType.MouseEvent;
 
         public int X { get; set; }
         public int Y { get; set; }

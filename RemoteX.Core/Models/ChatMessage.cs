@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace RemoteX.Core.Models
 {
     [Serializable]
-    public class ChatMessage : BaseMessage
+    public class ChatMessage : Message
     {
-        public override MessageType Type => MessageType.Chat;
+        //public override MessageType Type => MessageType.Chat;
         public string Message { get; set; }
 
         //Chi dung o client UI de phan biet message do minh gui hay nhan
