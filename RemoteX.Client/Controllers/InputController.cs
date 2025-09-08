@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Server.Services
+namespace RemoteX.Client.Controllers
 {
-    class ClientManager
+    class InputController
     {
     }
 }

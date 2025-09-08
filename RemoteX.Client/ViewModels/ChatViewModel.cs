@@ -4,29 +4,72 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RemoteX.Shared.Models;
-using RemoteX.Shared.Utils;
+using RemoteX.Client.Controllers;
+using RemoteX.Client.Controllers;
+using RemoteX.Core.Models;
+using RemoteX.Core.Utils;
 
 namespace RemoteX.Client.ViewModels
 {
     public class ChatViewModel : BaseViewModel
     {
+        private readonly ClientController _client;
         public ObservableCollection<ChatMessage> Messages { get; set; } = new();
-        private string _newMessage;
+        private string _inputMessage;
 
-        public string NewMessage
+        public string InputMessage
         {
-            get => _newMessage;
+            get => _inputMessage;
             set
             {
-                _newMessage = value;
-                OnPropertyChanged(nameof(NewMessage));
+                _inputMessage = value;
+                OnPropertyChanged(nameof(InputMessage));
             }
         }
 
-        public ChatViewModel()
+        public ChatViewModel(ClientController client)
         {
-            NewMessage = "Nhập tin nhắn";
+            _client = client;
+            InputMessage = "Nhập tin nhắn";
+            var msg = new ChatMessage()
+            {
+                From = "123",
+                To = "456",
+                Message = "Hello, đây là tin nhắn mẫu để kiểm tra thử",
+                IsMine = false
+            };
+            Messages.Add(msg);
         }
+
+        //Gui tin nhan
+        //public void SendMessage(string myId, string partnerId)
+        //{
+        //    if (string.IsNullOrWhiteSpace(InputMessage)) return;
+
+        //    var msg = new ChatMessage
+        //    {
+        //        From = myId,
+        //        To = partnerId,
+        //        Message = InputMessage,
+        //        IsMine = true
+        //    };
+
+        //    _client.SendMessage(msg);
+
+        //    App.Current.Dispatcher.Invoke(() =>
+        //    {
+        //        Messages.Add(msg);
+        //        InputMessage = string.Empty;
+        //    });
+        //}
+
+        //Nhan tin nhan
+        //public void ReceiveMessage(ChatMessage msg)
+        //{
+        //    App.Current.Dispatcher.Invoke(() => {
+        //        msg.IsMine = false;
+        //        Messages.Add(msg);
+        //    });
+        //}
     }
 }

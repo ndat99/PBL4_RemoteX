@@ -5,9 +5,9 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using RemoteX.Shared.Models;
+using RemoteX.Core.Models;
 
-namespace RemoteX.Shared.Utils
+namespace RemoteX.Core.Utils
 {
     public static class IdGenerator
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Shared.Models
+namespace RemoteX.Client.ViewModels
 {
-    class FileChunk
+    class ScreenViewModel
     {
     }
 }

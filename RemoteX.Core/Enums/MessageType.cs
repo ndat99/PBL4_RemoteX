@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Shared.Enums
+namespace RemoteX.Core.Enums
 {
     public enum MessageType
     {
+        ClientInfo,
         Chat,
         File,
-        ScreenFrame,
+        Screen,
         MouseEvent,
         KeyboardEvent
     }

@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Shared.Utils
+namespace RemoteX.Core.Utils
 {
     public static class PasswordGenerator
     {

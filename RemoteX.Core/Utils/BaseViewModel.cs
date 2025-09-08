@@ -6,7 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Shared.Utils
+namespace RemoteX.Core.Utils
 {
     public class BaseViewModel : INotifyPropertyChanged
     {

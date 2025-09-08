@@ -8,61 +8,42 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using RemoteX.Shared;
-using RemoteX.Client.Services;
+using RemoteX.Core;
 using RemoteX.Client.ViewModels;
-using RemoteX.Shared.Models;
-using System.Runtime.CompilerServices;
+using RemoteX.Client.Controllers;
 using System.Threading.Tasks;
-using RemoteX.Shared.Utils;
 
 namespace RemoteX.Client.Views
 {
     public partial class MainWindow : Window
     {
-        private RemoteXClient _client;
-        private MainViewModel _vm;
+        private ClientController _client;
+        private ClientViewModel _cvm;
         public MainWindow()
         {
             InitializeComponent();
-            _client = new RemoteXClient(); ;
-            _vm = new MainViewModel();
-            this.DataContext = _vm;
 
-            _client.StatusChanged += OnStatusChanged;
-            _client.ClientConnected += OnClientConnected;
+            _client = new ClientController();
+            _cvm = new ClientViewModel(_client);
+
+            this.DataContext = _cvm;
+
         }
 
-        private void OnStatusChanged(string message)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dispatcher.Invoke(() =>
-            {
-                _vm.ClientVM.StatusText = message;
-
-                if (message.Contains("Lỗi"))
-                    _vm.ClientVM.StatusColor = Brushes.Red;
-                else if (message.Contains("kết nối"))
-                    _vm.ClientVM.StatusColor = Brushes.Green;
-            });
-        }
-
-        private void OnClientConnected(ClientInfo clientInfo)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                _vm.ClientVM.ClientInfo = clientInfo;
-            });
-        }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e) // <-- async void
-        {
-            await Task.Delay(1500);                 // đợi 1.5s rồi connect
+            await Task.Delay(1000);                 // đợi 1s rồi connect
             _client.Connect("localhost", 5000);
+        }
+
+        private void btnConnect_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-
+            MessageBox.Show("Gui tin nhan");
         }
 
         // Kéo thả cửa sổ bằng title bar
@@ -97,12 +78,6 @@ namespace RemoteX.Client.Views
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
-        }
-
-        private void btnConnect_Click(object sender, RoutedEventArgs e)
-        {
-            RemoteWindow w = new RemoteWindow();
-            w.Show();
         }
     }
 }

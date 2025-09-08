@@ -5,9 +5,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using RemoteX.Shared.Utils;
+using RemoteX.Core.Utils;
 
-namespace RemoteX.Shared.Models
+namespace RemoteX.Core.Models
 {
     //Định nghĩa client model chung cho server và client
     public class ClientInfo
@@ -15,12 +15,14 @@ namespace RemoteX.Shared.Models
         public string Id { get; set; } //ID client
         public string Password { get; set; }
         public string MachineName { get; set; }
-        [System.Text.Json.Serialization.JsonIgnore]
-        public TcpClient TcpClient { get; set; } //Đối tượng TcpClient để giao tiếp
 
-        public ClientInfo(TcpClient tcpClient)
+        public ClientInfo() { }
+
+        public ClientInfo(DeviceConfig config)
         {
-            TcpClient = tcpClient;
+            Id = config.DeviceID;
+            Password = config.Password;
+            MachineName = config.MachineName;
         }
     }
 }

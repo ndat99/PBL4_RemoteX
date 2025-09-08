@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Client.Services
+namespace RemoteX.Core.Models
 {
-    class FileService
+    class FileChunk
     {
     }
 }

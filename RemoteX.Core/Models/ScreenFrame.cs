@@ -1,15 +1,15 @@
-﻿using RemoteX.Shared.Enums;
+﻿using RemoteX.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Shared.Models
+namespace RemoteX.Core.Models
 {
-    public class ScreenFrameMessage : BaseMessage
+    public class ScreenFrameMessage : Message
     {
-        public override MessageType Type => MessageType.ScreenFrame;
+        //public override MessageType Type => MessageType.ScreenFrame;
 
         public byte[] ImageData { get; set; } // frame nén JPEG/PNG
         public int Width { get; set; }
