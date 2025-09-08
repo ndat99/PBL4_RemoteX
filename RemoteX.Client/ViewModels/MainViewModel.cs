@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RemoteX.Client.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,10 +12,10 @@ namespace RemoteX.Client.ViewModels
         public ClientViewModel ClientVM { get; set; }
         public ChatViewModel ChatVM { get; set; }
 
-        public MainViewModel()
+        public MainViewModel(RemoteXClient client)
         {
             ClientVM = new ClientViewModel();
-            ChatVM = new ChatViewModel();
+            ChatVM = new ChatViewModel(client);
         }
     }
 }

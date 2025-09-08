@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RemoteX.Shared\RemoteX.Shared.csproj" />
+    <ProjectReference Include="..\RemoteX.Shared\RemoteX.Cored.csproj" />
   </ItemGroup>
 
   <ItemGroup>

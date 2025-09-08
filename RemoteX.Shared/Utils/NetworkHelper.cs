@@ -14,14 +14,26 @@ namespace RemoteX.Shared.Utils
         //Listen
         public static ClientInfo ReceiveClientInfo(TcpClient tcpClient)
         {
-            //Doc du lieu tu Client gui sang
             var stream = tcpClient.GetStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
-            string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-            ClientInfo client = System.Text.Json.JsonSerializer.Deserialize<ClientInfo>(json);
-            client.TcpClient = tcpClient; //Gan Socket thuc te vao ClientInfo
+            // Đọc 4 byte độ dài
+            byte[] lengthBuffer = new byte[4];
+            stream.Read(lengthBuffer, 0, 4);
+            int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
+
+            // Đọc dữ liệu JSON
+            byte[] buffer = new byte[messageLength];
+            int read = 0;
+            while (read < messageLength)
+            {
+                int chunk = stream.Read(buffer, read, messageLength - read);
+                if (chunk == 0) break;
+                read += chunk;
+            }
+
+            string json = Encoding.UTF8.GetString(buffer, 0, read);
+            ClientInfo client = JsonSerializer.Deserialize<ClientInfo>(json);
+            client.TcpClient = tcpClient;
 
             return client;
         }
@@ -41,7 +53,7 @@ namespace RemoteX.Shared.Utils
                         break;
                     }
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    onMessage?.Invoke(message); //callback xu ly message neu can
+                    onMessage?.Invoke(message);
                 }
 
             }
@@ -50,35 +62,48 @@ namespace RemoteX.Shared.Utils
             }
             finally
             {
-                onDisconnect?.Invoke(client); //Goi callback remove client
+                onDisconnect?.Invoke(client);
                 client.TcpClient.Close();
             }
         }
 
-        public static void ListenForMessages<T>(ClientInfo client, Action<T> onMessage, Action<ClientInfo> onDisconnected = null)
+        public static void ListenForMessages<T>(ClientInfo client, Action<T> onMessageReceived) where T : BaseMessage
         {
+            if (client == null || !client.TcpClient.Connected) return;
+
+            var stream = client.TcpClient.GetStream();
             try
             {
-                var reader = new StreamReader(client.TcpClient.GetStream());
-
                 while (client.TcpClient.Connected)
                 {
-                    string line = reader.ReadLine(); //doc stream theo dong
-                    if (line == null) break; //client ngat ket noi
+                    //Doc 4 byte do dai
+                    byte[] lengthBuffer = new byte[4];
+                    int bytesRead = stream.Read(lengthBuffer, 0, 4);
+                    if (bytesRead == 0) break; //client ngat ket noi
 
-                    var message = JsonSerializer.Deserialize<T>(line); //chuyen json thanh object T
+                    int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
+
+                    //Doc noi dung message
+                    byte[] buffer = new byte[messageLength];
+                    int read = 0;
+                    while (read < messageLength)
+                    {
+                        int chunk = stream.Read(buffer, read, messageLength - read);
+                        if (chunk == 0) break;
+                        read += chunk;
+                    }
+
+                    string json = Encoding.UTF8.GetString(buffer);
+
+                    //Deserialize lai thanh object
+                    var message = JsonSerializer.Deserialize<T>(json);
                     if (message != null)
-                        onMessage?.Invoke(message); //callback xu ly message
+                        onMessageReceived?.Invoke(message);
                 }
             }
             catch (IOException)
             {
-                //Client disconnected
-            }
-            finally
-            {
-                onDisconnected?.Invoke(client);
-                client.TcpClient.Close();
+
             }
         }
 
@@ -87,27 +112,35 @@ namespace RemoteX.Shared.Utils
         //Send
         public static void SendClientInfo(TcpClient client, ClientInfo info)
         {
-            //Gui thong tin Client cho Server
             var stream = client.GetStream();
-            string json = System.Text.Json.JsonSerializer.Serialize(info); //Chuyen thanh chuoi JSON
+            string json = JsonSerializer.Serialize(info);
             byte[] data = Encoding.UTF8.GetBytes(json);
+            byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
+
+            stream.Write(lengthPrefix, 0, lengthPrefix.Length);
             stream.Write(data, 0, data.Length);
         }
 
-        public static void Send<T>(TcpClient tcpClient, T message)
+        public static void SendMessage<T>(TcpClient tcpClient, T message) where T : BaseMessage
         {
             if (tcpClient == null || !tcpClient.Connected) return;
             try
             {
+                string json = JsonSerializer.Serialize(message);    //Serialize object thanh JSON string
+                byte[] data = Encoding.UTF8.GetBytes(json);     //Chuyen sang byte array
+                byte[] lengthPrefix = BitConverter.GetBytes(data.Length); //Lay do dai du lieu
+
                 //Lay kenh truyen du lieu tu TcpLient
                 var stream = tcpClient.GetStream();
-                //Tạo streamWriter để ghi dữ liệu dạng text vào stream
-                using var writer = new StreamWriter(stream, leaveOpen: true) { AutoFlush = true };
-                string json = JsonSerializer.Serialize(message);
-                //Ghi chuỗi Json đến stream
-                writer.WriteLine(json);
+
+                stream.Write(lengthPrefix, 0, lengthPrefix.Length); //Gui do dai du lieu truoc
+                stream.Write(data, 0, data.Length); //Gui du lieu
+                stream.Flush();
             }
-            catch { }
+            catch (Exception ex)
+            {
+
+            }
         }
     }
 }

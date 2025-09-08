@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Shared.Models
 {
+    [Serializable]
     public abstract class BaseMessage
     {
         public string SenderID { get; set; }

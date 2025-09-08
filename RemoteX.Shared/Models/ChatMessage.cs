@@ -8,10 +8,13 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Shared.Models
 {
+    [Serializable]
     public class ChatMessage : BaseMessage
     {
         public override MessageType Type => MessageType.Chat;
         public string Message { get; set; }
+
+        //Chi dung o client UI de phan biet message do minh gui hay nhan
         [JsonIgnore]
         public bool IsMine { get; set; }
     }
