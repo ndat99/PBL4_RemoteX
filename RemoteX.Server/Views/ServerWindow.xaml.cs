@@ -10,9 +10,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using RemoteX.Server.Services;
-using RemoteX.Shared;
+using RemoteX.Core;
 using RemoteX.Server.ViewModels;
-using RemoteX.Shared.Models;
+using RemoteX.Core.Models;
 
 namespace RemoteX.Server.Views;
 

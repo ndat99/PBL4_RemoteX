@@ -1,5 +1,5 @@
-﻿using RemoteX.Shared.Models;
-using RemoteX.Shared.Utils;
+﻿using RemoteX.Core.Models;
+using RemoteX.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;

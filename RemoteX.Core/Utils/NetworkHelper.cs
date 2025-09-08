@@ -1,4 +1,4 @@
-﻿using RemoteX.Shared.Models;
+﻿using RemoteX.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace RemoteX.Shared.Utils
+namespace RemoteX.Core.Utils
 {
     public static class NetworkHelper
     {
