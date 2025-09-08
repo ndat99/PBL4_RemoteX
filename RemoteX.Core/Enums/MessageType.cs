@@ -8,10 +8,10 @@ namespace RemoteX.Core.Enums
 {
     public enum MessageType
     {
-        ConnectRequest = 1,
-        Chat = 2,
+        ClientInfo,
+        Chat,
         File,
-        ScreenFrame,
+        Screen,
         MouseEvent,
         KeyboardEvent
     }

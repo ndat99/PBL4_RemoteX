@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Core.Models
 {
-    public class ScreenFrameMessage : BaseMessage
+    public class ScreenFrameMessage : Message
     {
-        public override MessageType Type => MessageType.ScreenFrame;
+        //public override MessageType Type => MessageType.ScreenFrame;
 
         public byte[] ImageData { get; set; } // frame nén JPEG/PNG
         public int Width { get; set; }
