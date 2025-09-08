@@ -5,7 +5,7 @@ VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteX.Client", "RemoteX.Client\RemoteX.Client.csproj", "{8F842E1F-FF69-43F7-9646-28DABDD773DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteX.Shared", "RemoteX.Shared\RemoteX.Shared.csproj", "{CFE377E2-8AD9-4F34-87A2-17D08BDA18F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteX.Cored", "RemoteX.Shared\RemoteX.Cored.csproj", "{CFE377E2-8AD9-4F34-87A2-17D08BDA18F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteX.Server", "RemoteX.Server\RemoteX.Server.csproj", "{28AA990B-9F23-4F3D-8E48-84011F3FA528}"
 EndProject

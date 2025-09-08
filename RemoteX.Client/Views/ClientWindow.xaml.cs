@@ -78,7 +78,7 @@ namespace RemoteX.Client.Views
 
         private async void Window_Loaded(object sender, RoutedEventArgs e) // <-- async void
         {
-            await Task.Delay(1500);                 // đợi 1.5s rồi connect
+            await Task.Delay(1000);                 // đợi 1s rồi connect
             _client.Connect("localhost", 5000);
             //_client.StartListening();
         }

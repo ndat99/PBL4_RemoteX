@@ -53,7 +53,7 @@ namespace RemoteX.Shared.Utils
                         break;
                     }
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    onMessage?.Invoke(message); //callback xu ly message neu can
+                    onMessage?.Invoke(message);
                 }
 
             }
@@ -62,7 +62,7 @@ namespace RemoteX.Shared.Utils
             }
             finally
             {
-                onDisconnect?.Invoke(client); //Goi callback remove client
+                onDisconnect?.Invoke(client);
                 client.TcpClient.Close();
             }
         }
@@ -103,7 +103,7 @@ namespace RemoteX.Shared.Utils
             }
             catch (IOException)
             {
-                //Client disconnected
+
             }
         }
 

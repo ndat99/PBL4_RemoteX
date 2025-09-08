@@ -39,7 +39,7 @@ namespace RemoteX.Server.Services
 
                 _clientManager = new ClientManager(); //Khoi tao quan ly client
                 _listener = new TcpListener(IPAddress.Any, port); //Tao listener
-                //Cho phep reuse address de tranh loi "Address already in use"
+                //Cho phep reuse address
                 _listener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 _listener.Start(); //Bat dau lang nghe
                 _isRunning = true;
