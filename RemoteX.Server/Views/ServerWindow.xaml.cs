@@ -26,7 +26,7 @@ public partial class MainWindow : Window
         _server = new RemoteXServer(); //Khoi tao server
         _svm = new ServerViewModel();
         this.DataContext = _svm; //Gan ViewModel vao UI
-        
+
         _server.StatusChanged += OnStatusChanged;
         _server.ClientConnected += OnClientConnected;
         _server.ClientDisconnected += OnClientDisconnected;
@@ -49,7 +49,7 @@ public partial class MainWindow : Window
             //    _svm.StatusColor = _svm.StatusDot = Brushes.Blue;
             if (message.Contains("Lỗi"))
                 _svm.StatusColor = _svm.StatusDot = Brushes.Red;
-            else  if (message.Contains("tắt"))
+            else if (message.Contains("tắt"))
                 _svm.StatusColor = _svm.StatusDot = Brushes.Gray;
         });
     }

@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Shared.Enums
 {
-    class ClientStatus
+    public enum MessageType
     {
+        ConnectRequest = 1,
+        Chat = 2,
+        File,
+        ScreenFrame,
+        MouseEvent,
+        KeyboardEvent
     }
 }

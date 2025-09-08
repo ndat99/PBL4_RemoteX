@@ -18,9 +18,8 @@ namespace RemoteX.Client.ViewModels
 
         private string _statusText;
         private Brush _statusColor;
-        private ClientInfo _clientInfo;        
-        public ObservableCollection<ChatMessage> Messages { get; set; } = new();
-        private string _newMessage;
+        private ClientInfo _clientInfo;
+        private string _currentPartnerId;
 
         public string StatusText
         {
@@ -52,53 +51,20 @@ namespace RemoteX.Client.ViewModels
             }
         }
 
-        public string NewMessage
+        public string CurrentPartnerId
         {
-            get => _newMessage;
+            get => _currentPartnerId;
             set
             {
-                _newMessage = value;
-                OnPropertyChanged(nameof(NewMessage));
+                _currentPartnerId = value;
+                OnPropertyChanged(nameof(CurrentPartnerId));
             }
         }
 
-        //ICommand SendMessageCommand { get; }
-
-        //public ClientViewModel()
-        //{
-        //    StatusText = " ⬤  Đang kết nối tới Server";
-        //    StatusColor = Brushes.Yellow;
-        //}
-
-        //private void SendMessage()
-        //{
-        //    if (string.IsNullOrWhiteSpace(NewMessage))
-        //        return;
-
-        //    //Add vao danh sach (tin nhan cua minh)
-        //    Messages.Add(new ChatMessage
-        //    {
-        //        SenderId = "Me",
-        //        Content = NewMessage,
-        //        Timestamp = DateTime.Now,
-        //        IsMine = true
-        //    });
-
-        //    //TODO: goi NetworkService gui ra server
-
-        //    NewMessage = string.Empty;
-        //}
-
-        ////Backend goi khi nhan tin nhan tu server
-        //public void ReceiveMessage(string senderId, string content)
-        //{
-        //    Messages.Add(new ChatMessage
-        //    {
-        //        SenderId = senderId,
-        //        Content = content,
-        //        Timestamp = DateTime.Now,
-        //        IsMine = false
-        //    });
-        //}
+        public ClientViewModel()
+        {
+            StatusText = " ⬤  Đang kết nối tới Server";
+            StatusColor = Brushes.Yellow;
+        }
     }
 }
