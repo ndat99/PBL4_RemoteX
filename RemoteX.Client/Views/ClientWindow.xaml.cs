@@ -8,13 +8,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using RemoteX.Shared;
+using RemoteX.Core;
 using RemoteX.Client.Services;
 using RemoteX.Client.ViewModels;
-using RemoteX.Shared.Models;
+using RemoteX.Core.Models;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using RemoteX.Shared.Utils;
+using RemoteX.Core.Utils;
 
 namespace RemoteX.Client.Views
 {

@@ -6,8 +6,8 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using RemoteX.Shared.Models;
-using RemoteX.Shared.Utils;
+using RemoteX.Core.Models;
+using RemoteX.Core.Utils;
 
 namespace RemoteX.Client.Services
 {

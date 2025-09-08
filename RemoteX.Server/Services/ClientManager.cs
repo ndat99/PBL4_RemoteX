@@ -1,4 +1,4 @@
-﻿using RemoteX.Shared.Models;
+﻿using RemoteX.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

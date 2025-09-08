@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RemoteX.Client.Services;
-using RemoteX.Shared.Models;
-using RemoteX.Shared.Utils;
+using RemoteX.Core.Models;
+using RemoteX.Core.Utils;
 
 namespace RemoteX.Client.ViewModels
 {
