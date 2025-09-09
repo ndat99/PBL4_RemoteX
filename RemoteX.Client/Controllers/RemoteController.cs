@@ -7,8 +7,11 @@ using System.Windows;
 using RemoteX.Core.Models;
 using RemoteX.Core.Networking;
 using RemoteX.Client.Services;
+using RemoteX.Core.Services;
 using RemoteX.Core.Enums;
 using System.Net.Sockets;
+using RemoteX.Core;
+
 namespace RemoteX.Client.Controllers
 {
     public class RemoteController

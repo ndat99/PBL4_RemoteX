@@ -9,26 +9,28 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace RemoteX.Server.Services
+namespace RemoteX.Core.Services
 {
     //Giữ TcpClient, MessageListener và ClientInfo của 1 client
     //ServerController quản lý list ClientHandler
     //Client disconnected -> báo event về ServerController -> remove khỏi list
     public class ClientHandler
     {
-        public TcpClient Client { get; }
-        public ClientInfo Info { get; private set; }
+        private readonly TcpClient _client;
         private readonly MessageListener _listener;
+        public TcpClient Client => _client;
+        public ClientInfo Info { get; private set; }
 
+        //Events
         public event Action<ClientHandler> Disconnected;
         public event Action<ClientInfo> ClientInfoReceived;
         public event Action<ChatMessage> ChatMessageReceived;
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
-
+        public event Action<ConnectRequest> ConnectRequestReceived;
         public ClientHandler(TcpClient client)
         {
-            Client = client;
-            _listener = new MessageListener(client);
+            _client = client;
+            _listener = new MessageListener(_client);
             _listener.MessageReceived += OnMessageReceived;
             _listener.ClientDisconnected += () => Disconnected?.Invoke(this);
         }
@@ -50,6 +52,10 @@ namespace RemoteX.Server.Services
                     ScreenFrameReceived?.Invoke(frameMsg);
                     break;
 
+                case ConnectRequest connectRequest:
+                    ConnectRequestReceived?.Invoke(connectRequest);
+                    break;
+
                 default:
                     break;
             }
@@ -59,5 +65,8 @@ namespace RemoteX.Server.Services
         {
             return _listener.StartAsync();
         }
+
+        public Task SendAsync(Message msg) => MessageSender.Send(_client, msg);
+        public void Close() => _client.Close();
     }
 }

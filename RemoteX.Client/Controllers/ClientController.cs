@@ -9,30 +9,46 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using System.Net.Http;
+using RemoteX.Core.Services;
+using RemoteX.Core;
 
 namespace RemoteX.Client.Controllers
 {
     public class ClientController
     {
-        private TcpClient _client;
-        public TcpClient TcpClient => _client;
-        public event Action<string, System.Windows.Media.Brush> StatusChanged; 
-        //public event Action<ClientInfo> InfoReceived;
-        public event Action<ClientInfo> ClientConnected;
+        private TcpClient _tcpClient;
+        private ClientHandler _handler;
+        public TcpClient TcpClient => _tcpClient;
 
-        public void Connect(string IP, int port)
+        //Events
+        public event Action<string, System.Windows.Media.Brush> StatusChanged;
+        //public event Action<ClientInfo> SelfInfoReady;
+        public event Action<ClientInfo> ClientConnected;
+        public event Action<ConnectRequest> ConnectRequestReceived;
+        public event Action<ChatMessage> ChatMessageReceived;
+
+        public async void Connect(string IP, int port)
         {
             try
             {
-                _client = new TcpClient();
-                _client.Connect(IP, port);
+                _tcpClient = new TcpClient();
+                await _tcpClient.ConnectAsync(IP, port);
 
+                _handler = new ClientHandler(_tcpClient);
 
-                var config = IdGenerator.DeviceConfig();
+                _handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
+                _handler.ChatMessageReceived += chatMsg => ChatMessageReceived?.Invoke(chatMsg);
+                _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
+
+                //Gui info
+                var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ TEST
+                //var config = IdGenerator.DeviceConfig(); //DÙNG CHÍNH THỨC
                 var info = new ClientInfo(config);
 
-                MessageSender.Send(_client, info);
-
+                await _handler.SendAsync(info);
+                _ = _handler.StartAsync();
+                
                 ClientConnected?.Invoke(info);
                 StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port}", System.Windows.Media.Brushes.Green);
             }
@@ -41,5 +57,6 @@ namespace RemoteX.Client.Controllers
                 StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}", System.Windows.Media.Brushes.Red);
             }
         }
+        public Task SendAsync(RemoteX.Core.Message msg) => _handler.SendAsync(msg);
     }
 }

@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteX.Client", "RemoteX.Client\RemoteX.Client.csproj", "{8F842E1F-FF69-43F7-9646-28DABDD773DB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{28AA990B-9F23-4F3D-8E48-84011F3FA528} = {28AA990B-9F23-4F3D-8E48-84011F3FA528}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteX.Server", "RemoteX.Server\RemoteX.Server.csproj", "{28AA990B-9F23-4F3D-8E48-84011F3FA528}"
 EndProject
