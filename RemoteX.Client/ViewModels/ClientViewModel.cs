@@ -22,7 +22,7 @@ namespace RemoteX.Client.ViewModels
             {
                 InfoVM.ClientInfo = info;
                 InfoVM.StatusText = " ⬤  Đã kết nối tới Server";
-                InfoVM.StatusColor = Brushes.Green;
+                InfoVM.StatusColor = System.Windows.Media.Brushes.Green;
             };
         }
     }

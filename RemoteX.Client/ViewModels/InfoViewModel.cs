@@ -17,7 +17,7 @@ namespace RemoteX.Client.ViewModels
     {
 
         private string _statusText;
-        private Brush _statusColor;
+        private System.Windows.Media.Brush _statusColor;
         private ClientInfo _clientInfo;
 
         public string StatusText
@@ -30,7 +30,7 @@ namespace RemoteX.Client.ViewModels
             }
         }
 
-        public Brush StatusColor
+        public System.Windows.Media.Brush StatusColor
         {
             get => _statusColor;
             set
@@ -53,7 +53,7 @@ namespace RemoteX.Client.ViewModels
         public InfoViewModel()
         {
             StatusText = " ⬤  Đang kết nối tới Server";
-            StatusColor = Brushes.Yellow;
+            StatusColor = System.Windows.Media.Brushes.Yellow;
         }
     }
 }

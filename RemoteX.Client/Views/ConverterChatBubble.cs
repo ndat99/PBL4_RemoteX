@@ -12,9 +12,9 @@ namespace RemoteX.Client.Views
         {
             if (value is bool isMine)
             {
-                return isMine ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+                return isMine ? System.Windows.HorizontalAlignment.Right : System.Windows.HorizontalAlignment.Left;
             }
-            return HorizontalAlignment.Left;
+            return System.Windows.HorizontalAlignment.Left;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -30,10 +30,10 @@ namespace RemoteX.Client.Views
             if (value is bool isMine)
             {
                 return isMine
-                    ? new SolidColorBrush(Color.FromRgb(0, 120, 215))  // Xanh dương
-                    : new SolidColorBrush(Color.FromRgb(100, 100, 100)); // Xám
+                    ? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 120, 215))  // Xanh dương
+                    : new SolidColorBrush(System.Windows.Media.Color.FromRgb(100, 100, 100)); // Xám
             }
-            return new SolidColorBrush(Color.FromRgb(100, 100, 100));
+            return new SolidColorBrush(System.Windows.Media.Color.FromRgb(100, 100, 100));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

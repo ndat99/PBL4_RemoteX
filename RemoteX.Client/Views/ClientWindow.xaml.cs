@@ -44,7 +44,7 @@ namespace RemoteX.Client.Views
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Gui tin nhan");
+            System.Windows.MessageBox.Show("Gui tin nhan");
         }
 
         // Kéo thả cửa sổ bằng title bar

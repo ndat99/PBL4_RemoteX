@@ -22,6 +22,7 @@ namespace RemoteX.Server.Controllers
         public ObservableCollection<ClientInfo> Clients { get; } = new();
         public event Action<string> StatusChanged;
         private bool _isRunning;
+        private readonly List<ClientHandler> _handlers = new();
 
         public void Start(int port)
         {
@@ -74,14 +75,17 @@ namespace RemoteX.Server.Controllers
                     {
                         App.Current.Dispatcher.Invoke(() =>
                         {
+                            StatusChanged?.Invoke($"Đã nhận client: {info.Id} - {info.Password}");
                             Clients.Add(info);
                         });
                     };
-                    handler.StartAsync();
+                    _handlers.Add(handler);
+                    _ = handler.StartAsync();
                 }
-                catch
+                catch(Exception ex)
                 {
-                    if (_isRunning) throw;
+                    if (_isRunning)
+                        StatusChanged?.Invoke($"[Accept Error] {ex.Message}");
                 }
             }
         }

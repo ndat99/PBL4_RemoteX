@@ -22,6 +22,8 @@ namespace RemoteX.Server.Services
 
         public event Action<ClientHandler> Disconnected;
         public event Action<ClientInfo> ClientInfoReceived;
+        public event Action<ChatMessage> ChatMessageReceived;
+        public event Action<ScreenFrameMessage> ScreenFrameReceived;
 
         public ClientHandler(TcpClient client)
         {
@@ -33,10 +35,23 @@ namespace RemoteX.Server.Services
 
         private void OnMessageReceived(Message msg)
         {
-            if (msg.Type == Core.Enums.MessageType.ClientInfo)
+            switch (msg)
             {
-                Info = JsonSerializer.Deserialize<ClientInfo>(msg.Payload);
-                ClientInfoReceived?.Invoke(Info);
+                case ClientInfo clientInfoMsg:
+                    Info = clientInfoMsg;
+                    ClientInfoReceived?.Invoke(Info);
+                    break;
+
+                case ChatMessage chatMsg:
+                    ChatMessageReceived?.Invoke(chatMsg);
+                    break;
+
+                case ScreenFrameMessage frameMsg:
+                    ScreenFrameReceived?.Invoke(frameMsg);
+                    break;
+
+                default:
+                    break;
             }
         }
 

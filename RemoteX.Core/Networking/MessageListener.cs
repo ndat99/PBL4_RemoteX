@@ -1,4 +1,5 @@
-﻿using RemoteX.Core.Models;
+﻿using RemoteX.Core.Enums;
+using RemoteX.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,9 +31,11 @@ namespace RemoteX.Core.Networking
                 while (true)
                 {
                     var line = await reader.ReadLineAsync();
-                    if (line == null) break;
+                    if (line == null) break; //client dong stream
 
-                    var msg = JsonSerializer.Deserialize<Message>(line);
+                    var msg = Deserialize(line);
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Raw line: {line}");
+
                     MessageReceived?.Invoke(msg);
                 }
             }
@@ -49,6 +52,19 @@ namespace RemoteX.Core.Networking
                 ClientDisconnected?.Invoke();
                 _client.Close();
             }
+        }
+
+        public static Message Deserialize(string json)
+        {
+            using var doc = JsonDocument.Parse(json);
+            var type = (MessageType)doc.RootElement.GetProperty("Type").GetInt32();
+            return type switch
+            {
+                MessageType.ClientInfo => JsonSerializer.Deserialize<ClientInfo>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
+                MessageType.Chat => JsonSerializer.Deserialize<ChatMessage>(json),
+                MessageType.Screen => JsonSerializer.Deserialize<ScreenFrameMessage>(json),
+                _ => throw new NotSupportedException($"Unsupported message type {type}")
+            };
         }
     }
 }

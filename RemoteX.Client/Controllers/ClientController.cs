@@ -15,7 +15,8 @@ namespace RemoteX.Client.Controllers
     public class ClientController
     {
         private TcpClient _client;
-        public event Action<string, Brush> StatusChanged; 
+        public TcpClient TcpClient => _client;
+        public event Action<string, System.Windows.Media.Brush> StatusChanged; 
         //public event Action<ClientInfo> InfoReceived;
         public event Action<ClientInfo> ClientConnected;
 
@@ -30,14 +31,14 @@ namespace RemoteX.Client.Controllers
                 var config = IdGenerator.DeviceConfig();
                 var info = new ClientInfo(config);
 
-                MessageSender.Send(_client, info, MessageType.ClientInfo);
+                MessageSender.Send(_client, info);
 
                 ClientConnected?.Invoke(info);
-                StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port}", Brushes.Green);
+                StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port}", System.Windows.Media.Brushes.Green);
             }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}", Brushes.Red);
+                StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}", System.Windows.Media.Brushes.Red);
             }
         }
     }
