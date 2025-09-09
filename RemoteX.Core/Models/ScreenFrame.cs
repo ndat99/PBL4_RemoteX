@@ -14,5 +14,6 @@ namespace RemoteX.Core.Models
         public byte[] ImageData { get; set; } // frame nén JPEG/PNG
         public int Width { get; set; }
         public int Height { get; set; }
+        public DateTime Timestamp { get; set; }
     }
 }
