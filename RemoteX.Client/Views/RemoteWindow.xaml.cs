@@ -12,17 +12,28 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using RemoteX.Core;
+using RemoteX.Client.ViewModels;
 
 namespace RemoteX.Client.Views
 {
-    /// <summary>
-    /// Interaction logic for RemoteWindow.xaml
-    /// </summary>
     public partial class RemoteWindow : Window
     {
+        private RemoteViewModel _rvm;
         public RemoteWindow()
         {
             InitializeComponent();
+            _rvm = new RemoteViewModel();
+            this.DataContext = _rvm;
+        }
+
+        private void btnDisconnect_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnScreenshot_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

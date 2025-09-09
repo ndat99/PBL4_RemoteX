@@ -32,6 +32,7 @@
     </Resource>
     <Resource Include="Views\Images\RemoteX.png" />
     <Resource Include="Views\Images\Signal.png" />
+    <Resource Include="Views\Screenshot.png" />
   </ItemGroup>
 
 </Project>
