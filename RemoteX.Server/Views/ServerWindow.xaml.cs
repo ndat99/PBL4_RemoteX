@@ -9,7 +9,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using RemoteX.Server.Services;
 using RemoteX.Core;
 using RemoteX.Server.ViewModels;
 using RemoteX.Core.Models;

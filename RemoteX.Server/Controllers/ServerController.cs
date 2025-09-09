@@ -11,7 +11,7 @@ using RemoteX.Core.Networking;
 using System.Text.Json;
 using System.Threading;
 using RemoteX.Core.Models;
-using RemoteX.Server.Services;
+using RemoteX.Core.Services;
 
 namespace RemoteX.Server.Controllers
 {
@@ -19,10 +19,10 @@ namespace RemoteX.Server.Controllers
     {
         private TcpListener _listener;
         private Thread _listenThread;
-        public ObservableCollection<ClientInfo> Clients { get; } = new();
-        public event Action<string> StatusChanged;
         private bool _isRunning;
         private readonly List<ClientHandler> _handlers = new();
+        public ObservableCollection<ClientInfo> Clients { get; } = new();
+        public event Action<string> StatusChanged;
 
         public void Start(int port)
         {
@@ -62,20 +62,28 @@ namespace RemoteX.Server.Controllers
                 try
                 {
                 var tcpClient = await _listener.AcceptTcpClientAsync();
-                //var listener = new MessageListener(tcpClient);
                 var handler = new ClientHandler(tcpClient);
 
-                // Khi client ngắt kết nối, xóa nó khỏi danh sách
-                handler.Disconnected += handler =>
-                {
-                    App.Current.Dispatcher.Invoke(() => Clients.Remove(handler.Info));
-                };
+                    // Khi client ngắt kết nối, xóa nó khỏi danh sách
+                    handler.Disconnected += handler =>
+                    {
+                        App.Current.Dispatcher.Invoke(() => Clients.Remove(handler.Info));
+                    };
+
+                    //Khi nhận Connect Request
+                    handler.ConnectRequestReceived += request =>
+                    {
+                        HandleConnectRequest(handler, request);
+                    };
+                    _handlers.Add(handler);
+                    _ = handler.StartAsync();
+
                     // Khi nhận ClientInfo → thêm vào list
                     handler.ClientInfoReceived += info =>
                     {
                         App.Current.Dispatcher.Invoke(() =>
                         {
-                            StatusChanged?.Invoke($"Đã nhận client: {info.Id} - {info.Password}");
+                            //StatusChanged?.Invoke($"Đã nhận client: {info.Id} - {info.Password}");
                             Clients.Add(info);
                         });
                     };
@@ -88,6 +96,35 @@ namespace RemoteX.Server.Controllers
                         StatusChanged?.Invoke($"[Accept Error] {ex.Message}");
                 }
             }
+        }
+        private async void HandleConnectRequest(ClientHandler sender, ConnectRequest request)
+        {
+            var target = _handlers.FirstOrDefault(h => h.Info.Id == request.To);
+
+            if (target == null)
+            {
+                await sender.SendAsync(new ConnectRequest
+                {
+                    From = "Server",
+                    To = request.From,
+                    Status = "❌ Không tìm thấy đối tác"
+                });
+                return;
+            }
+
+            if (target.Info.Password != request.Password)
+            {
+                await sender.SendAsync(new ConnectRequest
+                {
+                    From = "Server",
+                    To = request.From,
+                    Status = "❌ Sai mật khẩu"
+                });
+                return;
+            }
+
+            // Forward request tới target
+            await target.SendAsync(request);
         }
     }
 }
