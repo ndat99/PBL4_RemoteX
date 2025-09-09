@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RemoteX.Client.ViewModels
+namespace RemoteX.Core.Services
 {
-    class ScreenViewModel
+    class ScreenService
     {
     }
 }

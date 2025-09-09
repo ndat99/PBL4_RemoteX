@@ -38,7 +38,8 @@ namespace RemoteX.Client.Views
 
         private void btnConnect_Click(object sender, RoutedEventArgs e)
         {
-
+            RemoteWindow w = new RemoteWindow();
+            w.Show();
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
