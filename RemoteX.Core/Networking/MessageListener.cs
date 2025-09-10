@@ -60,6 +60,7 @@ namespace RemoteX.Core.Networking
             var type = (MessageType)doc.RootElement.GetProperty("Type").GetInt32();
             return type switch
             {
+                MessageType.ConnectRequest => JsonSerializer.Deserialize<ConnectRequest>(json),
                 MessageType.ClientInfo => JsonSerializer.Deserialize<ClientInfo>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
                 MessageType.Chat => JsonSerializer.Deserialize<ChatMessage>(json),
                 MessageType.Screen => JsonSerializer.Deserialize<ScreenFrameMessage>(json),
