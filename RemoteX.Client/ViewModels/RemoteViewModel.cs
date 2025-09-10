@@ -38,13 +38,25 @@ namespace RemoteX.Client.ViewModels
             //nhận frame từ partner
             _clientController.ScreenFrameReceived += frame =>
             {
+                System.Diagnostics.Debug.WriteLine($"[REMOTE] Received frame from {frame.From}, expecting from {PartnerId}");
+                System.Diagnostics.Debug.WriteLine($"[REMOTE] Frame size: {frame.ImageData?.Length} bytes, {frame.Width}x{frame.Height}");
                 if (frame.From == PartnerId)
                 {
-                    var bmp = ScreenService.ConvertToBitmapImage(frame.ImageData);
-                    App.Current.Dispatcher.Invoke(() =>
+                    System.Diagnostics.Debug.WriteLine($"[REMOTE] Converting frame to BitmapImage");
+                    try
                     {
-                        ScreenView = bmp;
-                    });
+                        var bmp = ScreenService.ConvertToBitmapImage(frame.ImageData);
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[REMOTE] Updating ScreenView on UI thread");
+                            ScreenView = bmp;
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[REMOTE ERROR] {ex.Message}");
+                    }
+
                 }
             };
         }

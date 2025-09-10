@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Net;
 using RemoteX.Core.Services;
 using RemoteX.Core;
+using System;
 
 namespace RemoteX.Server.Controllers
 {
@@ -139,10 +140,20 @@ namespace RemoteX.Server.Controllers
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[SERVER] Processing ConnectRequest from {request.From} to {request.To}");
+                System.Diagnostics.Debug.WriteLine($"[SERVER] Total handlers: {_handlers.Count}");
+
+                // Debug all handlers
+                foreach (var h in _handlers)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SERVER] Handler: {h.Info?.Id} (Info is null: {h.Info == null})");
+                }
+
                 var target = _handlers.FirstOrDefault(h => h.Info.Id == request.To);
 
                 if (target == null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[SERVER] Target {request.To} not found");
                     await sender.SendAsync(new Log
                     {
                         From = "Server",
@@ -154,6 +165,7 @@ namespace RemoteX.Server.Controllers
 
                 if (target.Info.Password != request.Password)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[SERVER] Wrong password");
                     await sender.SendAsync(new Log
                     {
                         From = "Server",
@@ -163,28 +175,33 @@ namespace RemoteX.Server.Controllers
                     return;
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[SERVER] Creating connection mapping");
                 //Thêm vào dictionary
                 _activeConnection[request.From] = request.To;
                 _activeConnection[request.To] = request.From;
                 // Forward request tới target
                 //await target.SendAsync(request);
 
+                System.Diagnostics.Debug.WriteLine($"[SERVER] Sending success response");
                 await sender.SendAsync(new Log
                 {
                     From = "Server",
                     To = request.From,
                     Content = $" ✅ Đang kết nối tới {request.To}"
                 });
+                System.Diagnostics.Debug.WriteLine($"[SERVER] HandleConnectRequest completed successfully");
 
-                //await target.SendAsync(new Log
-                //{
-                //    From = request.From,
-                //    To = request.To,
-                //    Content = $" ✅ Đang kết nối tới {request.From}"
-                //});
+                await target.SendAsync(new Log
+                {
+                    From = request.From,
+                    To = request.To,
+                    Content = $" ✅ Đang được điều khiển bởi {request.From}"
+                });
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[SERVER ERROR] {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SERVER ERROR] {ex.StackTrace}");
                 StatusChanged?.Invoke($"[Lỗi kết nối] {ex.Message}");
                 try
                 {
@@ -195,7 +212,10 @@ namespace RemoteX.Server.Controllers
                         Content = " ❌ Lỗi kết nối"
                     });
                 }
-                catch { }
+                catch (Exception sendEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SERVER ERROR] Failed to send error response: {sendEx.Message}");
+                }
             }
         }
 
@@ -208,6 +228,7 @@ namespace RemoteX.Server.Controllers
                     targetID = _activeConnection.GetValueOrDefault(chat.From); //trả về value của dictionary có key = from
                     break;
                 case ScreenFrameMessage screenFrame:
+                    System.Diagnostics.Debug.WriteLine($"[SERVER] Forwarding Screen from {screenFrame.From} to {targetID}");
                     targetID = _activeConnection.GetValueOrDefault(screenFrame.From);
                     break;
                 case Log log:

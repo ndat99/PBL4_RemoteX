@@ -41,7 +41,7 @@ namespace RemoteX.Client.Controllers
                     Timestamp = DateTime.Now,
                 };
                 await MessageSender.Send(_clientController.TcpClient, frame);
-                await Task.Delay(100, token); //10fps
+                await Task.Delay(30, token); //10fps
             }
         }
     }
