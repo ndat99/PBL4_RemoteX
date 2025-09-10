@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
+using System.Windows.Media.Imaging;
 
 namespace RemoteX.Client.Services
 {
@@ -11,7 +12,7 @@ namespace RemoteX.Client.Services
         public static Bitmap CaptureScreen()
         {
             Rectangle bounds = Screen.PrimaryScreen.Bounds;
-            var bmp = new Bitmap(bounds.Width, bounds.Height);
+            using var bmp = new Bitmap(bounds.Width, bounds.Height);
 
             using (Graphics g = Graphics.FromImage(bmp))
             {
@@ -34,9 +35,24 @@ namespace RemoteX.Client.Services
             }
         }
 
+        public static BitmapImage ConvertToBitmapImage(byte[] data)
+        {
+            using var ms = new MemoryStream(data);
+            var bmpImage = new BitmapImage();
+            bmpImage.BeginInit();
+            bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+            bmpImage.StreamSource = ms;
+            bmpImage.EndInit();
+            bmpImage.Freeze(); // để dùng thread-safe
+            return bmpImage;
+        }
+
+
         private static ImageCodecInfo GetEncoder(ImageFormat format)
         {
             return Array.Find(ImageCodecInfo.GetImageDecoders(), c => c.FormatID == format.Guid);
         }
+
+
     }
 }

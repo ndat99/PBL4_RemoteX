@@ -16,11 +16,11 @@ namespace RemoteX.Client.Controllers
 {
     public class RemoteController
     {
-        private readonly ClientController _client;
+        public readonly ClientController _clientController;
 
         public RemoteController(ClientController clientController)
         {
-            _client = clientController;
+            _clientController = clientController;
         }
 
         public async Task StartStreaming(CancellationToken token)
@@ -37,7 +37,7 @@ namespace RemoteX.Client.Controllers
                     Height = bmp.Height,
                     Timestamp = DateTime.Now,
                 };
-                await MessageSender.Send(_client.TcpClient, frame);
+                await MessageSender.Send(_clientController.TcpClient, frame);
                 await Task.Delay(100, token);
             }
         }

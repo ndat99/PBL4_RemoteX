@@ -19,6 +19,7 @@ namespace RemoteX.Client.Controllers
     {
         private TcpClient _tcpClient;
         private ClientHandler _handler;
+        public string ClientId { get; private set; }
         public TcpClient TcpClient => _tcpClient;
 
         //Events
@@ -27,6 +28,7 @@ namespace RemoteX.Client.Controllers
         public event Action<ClientInfo> ClientConnected;
         public event Action<ConnectRequest> ConnectRequestReceived;
         public event Action<ChatMessage> ChatMessageReceived;
+        public event Action<ScreenFrameMessage> ScreenFrameReceived;
 
         public async void Connect(string IP, int port)
         {
@@ -39,6 +41,7 @@ namespace RemoteX.Client.Controllers
 
                 _handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
                 _handler.ChatMessageReceived += chatMsg => ChatMessageReceived?.Invoke(chatMsg);
+                _handler.ScreenFrameReceived += screen => ScreenFrameReceived?.Invoke(screen);
                 _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
 
                 //Gui info
@@ -48,7 +51,9 @@ namespace RemoteX.Client.Controllers
 
                 await _handler.SendAsync(info);
                 _ = _handler.StartAsync();
-                
+
+                ClientId = info.Id;
+
                 ClientConnected?.Invoke(info);
                 StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port}", System.Windows.Media.Brushes.Green);
             }

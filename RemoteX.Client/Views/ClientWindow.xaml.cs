@@ -36,10 +36,12 @@ namespace RemoteX.Client.Views
             _client.Connect("localhost", 5000);
         }
 
-        private void btnConnect_Click(object sender, RoutedEventArgs e)
+        private async Task btnConnect_Click(object sender, RoutedEventArgs e)
         {
-            RemoteWindow w = new RemoteWindow();
-            w.Show();
+            string targetId = txtPartnerID.Text;
+            string password = txtPartnerPass.Text;
+
+            await _cvm.SendConnectRquestAsync(targetId, password);
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
