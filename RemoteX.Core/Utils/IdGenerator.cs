@@ -25,7 +25,8 @@ namespace RemoteX.Core.Utils
                 _deviceConfig = JsonSerializer.Deserialize<DeviceConfig>(json);
 
                 _deviceConfig.DeviceID = IdGenerator.GetMacAddress();
-                _deviceConfig.Password = PasswordGenerator.GenerateRandomPassword();
+                //_deviceConfig.Password = PasswordGenerator.GenerateRandomPassword();
+                _deviceConfig.Password = 12345.ToString();
                 SaveConfig(_deviceConfig);
             }
             else
@@ -33,7 +34,8 @@ namespace RemoteX.Core.Utils
                 _deviceConfig = new DeviceConfig
                 {
                     DeviceID = GetMacAddress(),
-                    Password = PasswordGenerator.GenerateRandomPassword(),
+                    //Password = PasswordGenerator.GenerateRandomPassword(),
+                    Password = 12345.ToString(),
                     MachineName = Environment.MachineName
                 };
                 SaveConfig(_deviceConfig);
@@ -79,7 +81,8 @@ namespace RemoteX.Core.Utils
             _deviceConfig = new DeviceConfig
             {
                 DeviceID = GenerateRandomId(),
-                Password = PasswordGenerator.GenerateRandomPassword(),
+                //Password = PasswordGenerator.GenerateRandomPassword(),
+                Password = 12345.ToString(),
                 MachineName = RandomMachineName()
             };
             SaveConfig(_deviceConfig);

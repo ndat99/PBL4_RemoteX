@@ -1,28 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using RemoteX.Core;
+﻿using System.Windows;
+using RemoteX.Client.ViewModels;
+using RemoteX.Client.Controllers;
+using RemoteX.Core.Models;
 
 namespace RemoteX.Client.Views
 {
-    /// <summary>
-    /// Interaction logic for RemoteWindow.xaml
-    /// </summary>
     public partial class RemoteWindow : Window
     {
-        public RemoteWindow()
+        private RemoteViewModel _rvm;
+        private CancellationTokenSource _cts;
+        public RemoteWindow(ClientController clientController, string partnerId)
         {
             InitializeComponent();
+            _rvm = new RemoteViewModel(clientController, partnerId);
+            this.DataContext = _rvm;
         }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            _cts = new CancellationTokenSource();
+            _ = _rvm.StartStreamingAsync(_cts.Token); //Bắt đầu stream màn hình
+        }
+
+        private void btnDisconnect_Click(object sender, RoutedEventArgs e)
+        {
+            _cts?.Cancel();
+
+            var disconnectMsg = new ConnectRequest
+            {
+                From = _rvm.clientController.ClientId,
+                To = _rvm.PartnerId,
+                Status = "disconnect"
+            };
+            _ = _rvm.clientController.SendAsync(disconnectMsg);
+
+            this.Close();
+        }
+
+        private void btnScreenshot_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
     }
 }

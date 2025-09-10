@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="9.0.8" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
   </ItemGroup>
 
@@ -32,6 +34,7 @@
     </Resource>
     <Resource Include="Views\Images\RemoteX.png" />
     <Resource Include="Views\Images\Signal.png" />
+    <Resource Include="Views\Screenshot.png" />
   </ItemGroup>
 
 </Project>

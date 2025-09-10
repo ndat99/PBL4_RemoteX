@@ -1,29 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace RemoteX.Core.Networking
 {
     public static class MessageSender
     {
-        public static void Send<T>(TcpClient client, T obj, Enums.MessageType type)
+        public static async Task Send<T>(TcpClient client, T message) where T : Message
         {
-            if (client == null || !client.Connected) return;
             var stream = client.GetStream();
 
-            var msg = new Message
-            {
-                Type = type,
-                Payload = JsonSerializer.Serialize(obj) //Chuyen doi tuong thanh JSON
-            };
-
-            string json = JsonSerializer.Serialize(msg);
+            string json = Serialize(message);
             byte[] data = Encoding.UTF8.GetBytes(json + "\n");
-            stream.Write(data, 0, data.Length);
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Raw line: {data}");
+            System.Diagnostics.Debug.WriteLine($"[TX] {client.Client.RemoteEndPoint} | {json}");
+
+            await stream.WriteAsync(data, 0, data.Length);
+            await stream.FlushAsync();
+        }
+
+        public static string Serialize(Message msg)
+        {
+            return JsonSerializer.Serialize(msg, msg.GetType(), new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
         }
     }
 }
