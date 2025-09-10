@@ -1,13 +1,6 @@
-﻿using RemoteX.Core;
-using RemoteX.Core.Models;
+﻿using RemoteX.Core.Models;
 using RemoteX.Core.Networking;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace RemoteX.Core.Services
 {
@@ -27,6 +20,7 @@ namespace RemoteX.Core.Services
         public event Action<ChatMessage> ChatMessageReceived;
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
         public event Action<ConnectRequest> ConnectRequestReceived;
+        public event Action<Log> LogReceived;
         public ClientHandler(TcpClient client)
         {
             _client = client;
@@ -54,6 +48,9 @@ namespace RemoteX.Core.Services
 
                 case ConnectRequest connectRequest:
                     ConnectRequestReceived?.Invoke(connectRequest);
+                    break;
+                case Log logMsg:
+                    LogReceived?.Invoke(logMsg);
                     break;
 
                 default:

@@ -1,12 +1,4 @@
 ﻿using RemoteX.Core.Enums;
-using RemoteX.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace RemoteX.Core.Models
 {

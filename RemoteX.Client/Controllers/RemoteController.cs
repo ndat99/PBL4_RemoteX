@@ -23,22 +23,25 @@ namespace RemoteX.Client.Controllers
             _clientController = clientController;
         }
 
-        public async Task StartStreaming(CancellationToken token)
+        //Gửi frame lên server
+        public async Task StartStreamingAsync(string partnerId, CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
-                using var bmp = ScreenService.CaptureScreen(); //Bitmap screenShot
-                byte[] compressed = ScreenService.CompressToJpeg(bmp, 50); //JPEG 50% quality
+                using var bmp = ScreenService.CaptureScreen(); //Bitmap screenshot
+                byte[] jpeg = ScreenService.CompressToJpeg(bmp, 50); //JPEG 50% quality
 
                 var frame = new ScreenFrameMessage
                 {
-                    ImageData = compressed,
+                    From = _clientController.ClientId,
+                    To = partnerId,
+                    ImageData = jpeg,
                     Width = bmp.Width,
                     Height = bmp.Height,
                     Timestamp = DateTime.Now,
                 };
                 await MessageSender.Send(_clientController.TcpClient, frame);
-                await Task.Delay(100, token);
+                await Task.Delay(100, token); //10fps
             }
         }
     }

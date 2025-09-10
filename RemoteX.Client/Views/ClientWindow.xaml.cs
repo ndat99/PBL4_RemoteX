@@ -1,17 +1,7 @@
-﻿using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using RemoteX.Core;
 using RemoteX.Client.ViewModels;
 using RemoteX.Client.Controllers;
-using System.Threading.Tasks;
 
 namespace RemoteX.Client.Views
 {
@@ -25,6 +15,14 @@ namespace RemoteX.Client.Views
 
             _client = new ClientController();
             _cvm = new ClientViewModel(_client);
+            _cvm.PartnerConnected += partnerId =>
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var remoteWindow = new RemoteWindow(_client, partnerId);
+                    remoteWindow.Show();
+                });
+            };
 
             this.DataContext = _cvm;
 
@@ -33,15 +31,23 @@ namespace RemoteX.Client.Views
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             await Task.Delay(1000);                 // đợi 1s rồi connect
-            _client.Connect("localhost", 5000);
+            await _client.Connect("192.168.1.14", 5000);
         }
 
-        private async Task btnConnect_Click(object sender, RoutedEventArgs e)
+        private async void btnConnect_Click(object sender, RoutedEventArgs e)
         {
             string targetId = txtPartnerID.Text;
             string password = txtPartnerPass.Text;
 
-            await _cvm.SendConnectRquestAsync(targetId, password);
+            if (string.IsNullOrEmpty(targetId) || string.IsNullOrEmpty(password))
+            {
+                System.Windows.MessageBox.Show("Vui lòng nhập ID và Password");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[CONNECT] Sending request to {targetId} with password {password}");
+
+            await _cvm.SendConnectRequestAsync(targetId, password);
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)

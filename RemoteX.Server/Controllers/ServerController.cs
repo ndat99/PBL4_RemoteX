@@ -1,16 +1,7 @@
 ﻿using RemoteX.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Net;
-using RemoteX.Core.Networking;
-using System.Text.Json;
-using System.Threading;
-using RemoteX.Core.Models;
 using RemoteX.Core.Services;
 using RemoteX.Core;
 
@@ -23,6 +14,8 @@ namespace RemoteX.Server.Controllers
         private bool _isRunning;
         private readonly List<ClientHandler> _handlers = new();
         private readonly Dictionary<string, string> _activeConnection = new();
+
+        private readonly bool RequireAccept = true; //Auto accept thì chuyển sang false
         public ObservableCollection<ClientInfo> Clients { get; } = new();
         public event Action<string> StatusChanged;
 
@@ -52,6 +45,14 @@ namespace RemoteX.Server.Controllers
             _isRunning = false;
             _listener.Stop();
             _listenThread?.Join();
+            // Close all handlers
+            foreach (var handler in _handlers.ToList())
+            {
+                try { handler.Close(); } catch { }
+            }
+
+            _handlers.Clear();
+            _activeConnection.Clear();
             Clients.Clear();
 
             StatusChanged?.Invoke("Đã tắt Server");
@@ -67,38 +68,36 @@ namespace RemoteX.Server.Controllers
                 var handler = new ClientHandler(tcpClient);
 
                     // Khi client ngắt kết nối, xóa nó khỏi danh sách
-                    handler.Disconnected += async handler =>
+                    handler.Disconnected += async disconnectedHandler =>
                     {
-                        App.Current.Dispatcher.Invoke(() => Clients.Remove(handler.Info));
+                        App.Current.Dispatcher.Invoke(() => Clients.Remove(disconnectedHandler.Info));
 
                         //Xoá khỏi dictionary nếu tồn tại session
-                        if (_activeConnection.ContainsKey(handler.Info.Id))
+                        if (_activeConnection.ContainsKey(disconnectedHandler.Info.Id))
                         {
-                            var partnerID = _activeConnection[handler.Info.Id];
-                            _activeConnection.Remove(handler.Info.Id);
+                            var partnerID = _activeConnection[disconnectedHandler.Info.Id];
+                            _activeConnection.Remove(disconnectedHandler.Info.Id);
                             _activeConnection.Remove(partnerID);
 
                             var partnerHandler = _handlers.FirstOrDefault(x => x.Info.Id == partnerID);
                             if (partnerHandler != null)
                             {
-                                await partnerHandler.SendAsync(new ConnectRequest
+                                try
                                 {
-                                    From = "Server",
-                                    To = partnerID,
-                                    Status = "❌ Đối tác đã ngắt kết nối"
-                                });
+                                    await partnerHandler.SendAsync(new Log
+                                    {
+                                        From = "Server",
+                                        To = partnerID,
+                                        Content = "❌ Đối tác đã ngắt kết nối"
+                                    });
+                                }
+                                catch (Exception ex)
+                                {
+                                    StatusChanged?.Invoke($"[Disconnect Error] {ex.Message}");
+                                }
                             }
                         }
                     };
-                    //Khi nhận Connect Request
-                    handler.ConnectRequestReceived += request =>
-                    {
-                        HandleConnectRequest(handler, request);
-                    };
-
-                    _handlers.Add(handler);
-                    _ = handler.StartAsync();
-
                     // Khi nhận ClientInfo → thêm vào list
                     handler.ClientInfoReceived += info =>
                     {
@@ -108,8 +107,13 @@ namespace RemoteX.Server.Controllers
                             Clients.Add(info);
                         });
                     };
-                    _handlers.Add(handler);
-                    _ = handler.StartAsync();
+                    //Khi nhận Connect Request
+                    handler.ConnectRequestReceived += request =>
+                    {
+                        _ = Task.Run(() => HandleConnectRequest(handler, request));
+                    };
+
+
 
                     handler.ChatMessageReceived += async chatMsg =>
                     {
@@ -121,6 +125,8 @@ namespace RemoteX.Server.Controllers
                         await ForwardMessageAsync(screenMsg);
                     };
 
+                    _handlers.Add(handler);
+                    _ = handler.StartAsync();
                 }
                 catch(Exception ex)
                 {
@@ -129,37 +135,68 @@ namespace RemoteX.Server.Controllers
                 }
             }
         }
-        private async void HandleConnectRequest(ClientHandler sender, ConnectRequest request)
+        private async Task HandleConnectRequest(ClientHandler sender, ConnectRequest request)
         {
-            var target = _handlers.FirstOrDefault(h => h.Info.Id == request.To);
-
-            if (target == null)
+            try
             {
-                await sender.SendAsync(new ConnectRequest
+                var target = _handlers.FirstOrDefault(h => h.Info.Id == request.To);
+
+                if (target == null)
+                {
+                    await sender.SendAsync(new Log
+                    {
+                        From = "Server",
+                        To = request.From,
+                        Content = " ❌ Không tìm thấy đối tác"
+                    });
+                    return;
+                }
+
+                if (target.Info.Password != request.Password)
+                {
+                    await sender.SendAsync(new Log
+                    {
+                        From = "Server",
+                        To = request.From,
+                        Content = " ❌ Sai mật khẩu"
+                    });
+                    return;
+                }
+
+                //Thêm vào dictionary
+                _activeConnection[request.From] = request.To;
+                _activeConnection[request.To] = request.From;
+                // Forward request tới target
+                //await target.SendAsync(request);
+
+                await sender.SendAsync(new Log
                 {
                     From = "Server",
                     To = request.From,
-                    Status = "❌ Không tìm thấy đối tác"
+                    Content = $" ✅ Đang kết nối tới {request.To}"
                 });
-                return;
-            }
 
-            if (target.Info.Password != request.Password)
+                //await target.SendAsync(new Log
+                //{
+                //    From = request.From,
+                //    To = request.To,
+                //    Content = $" ✅ Đang kết nối tới {request.From}"
+                //});
+            }
+            catch (Exception ex)
             {
-                await sender.SendAsync(new ConnectRequest
+                StatusChanged?.Invoke($"[Lỗi kết nối] {ex.Message}");
+                try
                 {
-                    From = "Server",
-                    To = request.From,
-                    Status = "❌ Sai mật khẩu"
-                });
-                return;
+                    await sender.SendAsync(new Log
+                    {
+                        From = "Server",
+                        To = request.From,
+                        Content = " ❌ Lỗi kết nối"
+                    });
+                }
+                catch { }
             }
-
-            //Thêm vào dictionary
-            _activeConnection[request.From] = request.To;
-            _activeConnection[request.To] = request.From;
-            // Forward request tới target
-            await target.SendAsync(request);
         }
 
         public async Task ForwardMessageAsync(Message msg)
@@ -172,6 +209,9 @@ namespace RemoteX.Server.Controllers
                     break;
                 case ScreenFrameMessage screenFrame:
                     targetID = _activeConnection.GetValueOrDefault(screenFrame.From);
+                    break;
+                case Log log:
+                    targetID = _activeConnection.GetValueOrDefault(log.From);
                     break;
                 default:
                     return;
@@ -186,11 +226,11 @@ namespace RemoteX.Server.Controllers
             else
             {
                 var senderHandler = _handlers.FirstOrDefault(h => h.Info.Id == _activeConnection.GetValueOrDefault(msg.To));
-                await senderHandler.SendAsync(new ConnectRequest
+                await senderHandler.SendAsync(new Log
                 {
                     From = "Server",
                     To = msg.From,
-                    Status = "❌ Không tìm thấy đối tác"
+                    Content = "❌ Không tìm thấy đối tác"
                 });
                 return;
             }
