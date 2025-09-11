@@ -17,9 +17,12 @@ namespace RemoteX.Client.Views
             _cvm = new ClientViewModel(_client);
             _cvm.PartnerConnected += partnerId =>
             {
+                System.Diagnostics.Debug.WriteLine($"[MAIN] PartnerConnected event received: {partnerId}");
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
+                    System.Diagnostics.Debug.WriteLine($"[MAIN] Creating RemoteWindow");
                     var remoteWindow = new RemoteWindow(_client, partnerId);
+                    System.Diagnostics.Debug.WriteLine($"[MAIN] Showing RemoteWindow");
                     remoteWindow.Show();
                 });
             };
@@ -30,8 +33,8 @@ namespace RemoteX.Client.Views
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            await Task.Delay(1000);                 // đợi 1s rồi connect
-            await _client.Connect("192.168.1.14", 5000);
+            //await Task.Delay(1000); // đợi 1s rồi connect
+            await _client.Connect("localhost", 5000);
         }
 
         private async void btnConnect_Click(object sender, RoutedEventArgs e)

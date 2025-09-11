@@ -27,6 +27,8 @@ namespace RemoteX.Client.ViewModels
 
             _clientController.LogReceived += log =>
             {
+                System.Diagnostics.Debug.WriteLine($"[CLIENT] Received Log: {log.Content}");
+
                 InfoVM.StatusText = log.Content;
                 if (log.Content.Contains("❌"))
                 {
@@ -38,11 +40,19 @@ namespace RemoteX.Client.ViewModels
                     InfoVM.StatusColor = System.Windows.Media.Brushes.Green;
 
                     //Lấy PartnerId từ log
-                    if (log.Content.Contains("Đang"))
+                    if (log.Content.Contains("Đang kết nối tới"))
                     {
                         PartnerId = log.Content.Split(' ').Last();
-
-                        PartnerConnected?.Invoke(PartnerId);
+                        System.Diagnostics.Debug.WriteLine($"[CLIENT] Extracted PartnerId: {PartnerId}");
+                        System.Diagnostics.Debug.WriteLine($"[CLIENT] Triggering PartnerConnected event");
+                        PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
+                    }
+                    else if (log.Content.Contains("Đang được điều khiển"))
+                    {
+                        PartnerId = log.Content.Split(' ').Last();
+                        //PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
+                        var cts = new CancellationTokenSource();
+                        _ = new RemoteController(_clientController).StartStreamingAsync(PartnerId, cts.Token);
                     }
                 }
             };
