@@ -1,11 +1,5 @@
 ﻿using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
 
 namespace RemoteX.Client.ViewModels
 {
@@ -13,6 +7,7 @@ namespace RemoteX.Client.ViewModels
     {
         public InfoViewModel InfoVM { get; set; }
         public ChatViewModel ChatVM { get; set; }
+        public event Action<string> PartnerConnected;
 
         public readonly ClientController _clientController;
         public string PartnerId { get; set; }
@@ -30,22 +25,32 @@ namespace RemoteX.Client.ViewModels
                 InfoVM.StatusColor = System.Windows.Media.Brushes.Green;
             };
 
-            _clientController.ConnectRequestReceived += request =>
+            _clientController.LogReceived += log =>
             {
-                if (string.IsNullOrEmpty(request.Status))
-                {
-                    PartnerId = request.From;
-                    InfoVM.StatusText = $" ⬤  Có người kết nối: {request.From}";
-                    InfoVM.StatusColor = System.Windows.Media.Brushes.AliceBlue;
-                }
-                else
-                {
-                    InfoVM.StatusText = request.Status;
-                    InfoVM.StatusColor = System.Windows.Media.Brushes.Red;
+                System.Diagnostics.Debug.WriteLine($"[CLIENT] Received Log: {log.Content}");
 
-                    if (!request.Status.Contains("❌"))
+                InfoVM.StatusText = log.Content;
+                if (log.Content.Contains("❌"))
+                {
+                    InfoVM.StatusColor = System.Windows.Media.Brushes.Red;
+                    PartnerId = null;
+                }
+                else if (log.Content.Contains("✅"))
+                {
+                    InfoVM.StatusColor = System.Windows.Media.Brushes.Green;
+
+                    //Lấy PartnerId từ log
+                    if (log.Content.Contains("Đang kết nối tới"))
                     {
-                        StartStreaming();
+                        PartnerId = log.Content.Split(' ').Last();
+                        System.Diagnostics.Debug.WriteLine($"[CLIENT] Extracted PartnerId: {PartnerId}");
+                        System.Diagnostics.Debug.WriteLine($"[CLIENT] Triggering PartnerConnected event");
+                        PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
+                    }
+                    else if (log.Content.Contains("Đang được điều khiển"))
+                    {
+                        PartnerId = log.Content.Split(' ').Last();
+                        PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
                     }
                 }
             };
@@ -57,9 +62,11 @@ namespace RemoteX.Client.ViewModels
             };
         }
 
-        public Task SendConnectRquestAsync(string targetId, string password)
+        public Task SendConnectRequestAsync(string targetId, string password)
         {
             if (string.IsNullOrEmpty(targetId)) return Task.CompletedTask;
+
+            System.Diagnostics.Debug.WriteLine($"[CONNECT] Creating ConnectRequest from {_clientController.ClientId} to {targetId}");
 
             var request = new ConnectRequest
             {

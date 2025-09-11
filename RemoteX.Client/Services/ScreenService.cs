@@ -1,18 +1,16 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
+﻿using System.Drawing.Imaging;
 using System.IO;
-using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 
 namespace RemoteX.Client.Services
 {
     public static class ScreenService
     {
+        //Chụp màn hình hiện tại
         public static Bitmap CaptureScreen()
         {
             Rectangle bounds = Screen.PrimaryScreen.Bounds;
-            using var bmp = new Bitmap(bounds.Width, bounds.Height);
+            var bmp = new Bitmap(bounds.Width, bounds.Height);
 
             using (Graphics g = Graphics.FromImage(bmp))
             {
@@ -22,6 +20,7 @@ namespace RemoteX.Client.Services
             return bmp;
         }
 
+        //Nén ảnh
         public static byte[] CompressToJpeg(Bitmap bmp, long quality)
         {
             using (var ms = new MemoryStream())
@@ -35,6 +34,7 @@ namespace RemoteX.Client.Services
             }
         }
 
+        //Convert byte[] thành BitmapImage (thì mới hiện được trong WPF Image control)
         public static BitmapImage ConvertToBitmapImage(byte[] data)
         {
             using var ms = new MemoryStream(data);
@@ -43,7 +43,7 @@ namespace RemoteX.Client.Services
             bmpImage.CacheOption = BitmapCacheOption.OnLoad;
             bmpImage.StreamSource = ms;
             bmpImage.EndInit();
-            bmpImage.Freeze(); // để dùng thread-safe
+            bmpImage.Freeze(); //thread-safe
             return bmpImage;
         }
 

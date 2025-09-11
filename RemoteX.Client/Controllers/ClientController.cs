@@ -1,17 +1,7 @@
 ﻿using RemoteX.Core.Models;
-using RemoteX.Core.Networking;
 using RemoteX.Core.Utils;
-using RemoteX.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
-using System.Net.Http;
 using RemoteX.Core.Services;
-using RemoteX.Core;
 
 namespace RemoteX.Client.Controllers
 {
@@ -29,8 +19,9 @@ namespace RemoteX.Client.Controllers
         public event Action<ConnectRequest> ConnectRequestReceived;
         public event Action<ChatMessage> ChatMessageReceived;
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
+        public event Action<Log> LogReceived;
 
-        public async void Connect(string IP, int port)
+        public async Task Connect(string IP, int port)
         {
             try
             {
@@ -39,18 +30,19 @@ namespace RemoteX.Client.Controllers
 
                 _handler = new ClientHandler(_tcpClient);
 
-                _handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
+                //_handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
                 _handler.ChatMessageReceived += chatMsg => ChatMessageReceived?.Invoke(chatMsg);
                 _handler.ScreenFrameReceived += screen => ScreenFrameReceived?.Invoke(screen);
+                _handler.LogReceived += log => LogReceived?.Invoke(log);
                 _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
 
+                _ = _handler.StartAsync();
                 //Gui info
                 var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ TEST
                 //var config = IdGenerator.DeviceConfig(); //DÙNG CHÍNH THỨC
                 var info = new ClientInfo(config);
 
                 await _handler.SendAsync(info);
-                _ = _handler.StartAsync();
 
                 ClientId = info.Id;
 

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RemoteX.Core.Enums
 {
@@ -14,6 +11,7 @@ namespace RemoteX.Core.Enums
         File,
         Screen,
         MouseEvent,
-        KeyboardEvent
+        KeyboardEvent,
+        Log,
     }
 }
