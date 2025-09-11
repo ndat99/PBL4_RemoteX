@@ -50,7 +50,9 @@ namespace RemoteX.Client.ViewModels
                     else if (log.Content.Contains("Đang được điều khiển"))
                     {
                         PartnerId = log.Content.Split(' ').Last();
-                        PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
+                        //PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
+                        var cts = new CancellationTokenSource();
+                        _ = new RemoteController(_clientController).StartStreamingAsync(PartnerId, cts.Token);
                     }
                 }
             };

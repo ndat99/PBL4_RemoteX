@@ -17,6 +17,8 @@ namespace RemoteX.Client.Controllers
     public class RemoteController
     {
         public readonly ClientController _clientController;
+        private int fps = 30; //tốc độ khung hình
+        private int quality = 100; //chất lượng ảnh
 
         public RemoteController(ClientController clientController)
         {
@@ -29,7 +31,7 @@ namespace RemoteX.Client.Controllers
             while (!token.IsCancellationRequested)
             {
                 using var bmp = ScreenService.CaptureScreen(); //Bitmap screenshot
-                byte[] jpeg = ScreenService.CompressToJpeg(bmp, 50); //JPEG 50% quality
+                byte[] jpeg = ScreenService.CompressToJpeg(bmp, quality); //JPEG quality
 
                 var frame = new ScreenFrameMessage
                 {
@@ -41,7 +43,7 @@ namespace RemoteX.Client.Controllers
                     Timestamp = DateTime.Now,
                 };
                 await MessageSender.Send(_clientController.TcpClient, frame);
-                await Task.Delay(30, token); //10fps
+                await Task.Delay(1000/fps, token); //10fps
             }
         }
     }

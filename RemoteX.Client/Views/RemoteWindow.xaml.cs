@@ -17,8 +17,8 @@ namespace RemoteX.Client.Views
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _cts = new CancellationTokenSource();
-            _ = _rvm.StartStreamingAsync(_cts.Token); //Bắt đầu stream màn hình
+            //_cts = new CancellationTokenSource();
+            //_ = _rvm.StartStreamingAsync(_cts.Token); //Bắt đầu stream màn hình
         }
 
         private void btnDisconnect_Click(object sender, RoutedEventArgs e)

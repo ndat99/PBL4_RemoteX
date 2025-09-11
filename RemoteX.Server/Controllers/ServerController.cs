@@ -15,6 +15,7 @@ namespace RemoteX.Server.Controllers
         private bool _isRunning;
         private readonly List<ClientHandler> _handlers = new();
         private readonly Dictionary<string, string> _activeConnection = new();
+        private readonly object _lockObject = new object(); // Dùng _handlers làm lock object
 
         private readonly bool RequireAccept = true; //Auto accept thì chuyển sang false
         public ObservableCollection<ClientInfo> Clients { get; } = new();
@@ -42,21 +43,29 @@ namespace RemoteX.Server.Controllers
         public void Stop()
         {
             if (!_isRunning) return;
-
             _isRunning = false;
-            _listener.Stop();
-            _listenThread?.Join();
-            // Close all handlers
-            foreach (var handler in _handlers.ToList())
+
+            try
             {
-                try { handler.Close(); } catch { }
+                _listener.Stop();
+                _listenThread?.Join();
+                // Close all handlers
+                foreach (var handler in _handlers.ToList())
+                {
+                    try { handler.Close(); } catch { }
+                }
+
+                _handlers.Clear();
+                _activeConnection.Clear();
+                Clients.Clear();
+
+                StatusChanged?.Invoke("Đã tắt Server");
             }
+            catch (Exception e)
+            {
+                StatusChanged?.Invoke($"Stop error: {e.Message}");
 
-            _handlers.Clear();
-            _activeConnection.Clear();
-            Clients.Clear();
-
-            StatusChanged?.Invoke("Đã tắt Server");
+            }
         }
 
         private async void AcceptClients()
@@ -71,16 +80,34 @@ namespace RemoteX.Server.Controllers
                     // Khi client ngắt kết nối, xóa nó khỏi danh sách
                     handler.Disconnected += async disconnectedHandler =>
                     {
-                        App.Current.Dispatcher.Invoke(() => Clients.Remove(disconnectedHandler.Info));
-
-                        //Xoá khỏi dictionary nếu tồn tại session
-                        if (_activeConnection.ContainsKey(disconnectedHandler.Info.Id))
+                        try
                         {
-                            var partnerID = _activeConnection[disconnectedHandler.Info.Id];
-                            _activeConnection.Remove(disconnectedHandler.Info.Id);
-                            _activeConnection.Remove(partnerID);
+                            var id = disconnectedHandler.Info?.Id;
+                            if (string.IsNullOrEmpty(id)) return;
 
-                            var partnerHandler = _handlers.FirstOrDefault(x => x.Info.Id == partnerID);
+                            ClientHandler partnerHandler = null;
+                            string partnerID = null;
+
+                            // lock toàn bộ block thay vì chỉ _handlers
+                            lock (_lockObject)
+                            {
+                                _handlers.Remove(disconnectedHandler);
+
+                                if (_activeConnection.TryGetValue(id, out partnerID))
+                                {
+                                    partnerHandler = _handlers.FirstOrDefault(x => x.Info?.Id == partnerID);
+                                    _activeConnection.Remove(id);
+                                    _activeConnection.Remove(partnerID);
+                                }
+                            }
+
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                var clientToRemove = Clients.FirstOrDefault(c => c.Id == id);
+                                if (clientToRemove != null)
+                                    Clients.Remove(clientToRemove);
+                            });
+
                             if (partnerHandler != null)
                             {
                                 try
@@ -97,6 +124,11 @@ namespace RemoteX.Server.Controllers
                                     StatusChanged?.Invoke($"[Disconnect Error] {ex.Message}");
                                 }
                             }
+                        }
+                        catch (Exception e)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[Disconnect Handler Error] {e}");
+                            StatusChanged?.Invoke($"[Disconnect Error] {e.Message}");
                         }
                     };
                     // Khi nhận ClientInfo → thêm vào list
@@ -126,7 +158,10 @@ namespace RemoteX.Server.Controllers
                         await ForwardMessageAsync(screenMsg);
                     };
 
+                    lock (_lockObject)
+                    {
                     _handlers.Add(handler);
+                    }
                     _ = handler.StartAsync();
                 }
                 catch(Exception ex)
@@ -138,19 +173,31 @@ namespace RemoteX.Server.Controllers
         }
         private async Task HandleConnectRequest(ClientHandler sender, ConnectRequest request)
         {
+            ClientHandler target = null;
+            bool passwordValid = false;
+
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[SERVER] Processing ConnectRequest from {request.From} to {request.To}");
-                System.Diagnostics.Debug.WriteLine($"[SERVER] Total handlers: {_handlers.Count}");
 
-                // Debug all handlers
-                foreach (var h in _handlers)
+                lock (_lockObject)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SERVER] Handler: {h.Info?.Id} (Info is null: {h.Info == null})");
+                    System.Diagnostics.Debug.WriteLine($"[SERVER] Total handlers: {_handlers.Count}");
+
+                    // Tìm target và validate trong lock
+                    target = _handlers.FirstOrDefault(h => h.Info?.Id == request.To);
+
+                    if (target != null && target.Info.Password == request.Password)
+                    {
+                        passwordValid = true;
+                        // Tạo connection mapping trong lock
+                        _activeConnection[request.From] = request.To;
+                        _activeConnection[request.To] = request.From;
+                        System.Diagnostics.Debug.WriteLine($"[SERVER] Creating connection mapping");
+                    }
                 }
 
-                var target = _handlers.FirstOrDefault(h => h.Info.Id == request.To);
-
+                // Validation và gửi messages ngoài lock
                 if (target == null)
                 {
                     System.Diagnostics.Debug.WriteLine($"[SERVER] Target {request.To} not found");
@@ -163,7 +210,7 @@ namespace RemoteX.Server.Controllers
                     return;
                 }
 
-                if (target.Info.Password != request.Password)
+                if (!passwordValid)
                 {
                     System.Diagnostics.Debug.WriteLine($"[SERVER] Wrong password");
                     await sender.SendAsync(new Log
@@ -175,13 +222,6 @@ namespace RemoteX.Server.Controllers
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[SERVER] Creating connection mapping");
-                //Thêm vào dictionary
-                _activeConnection[request.From] = request.To;
-                _activeConnection[request.To] = request.From;
-                // Forward request tới target
-                //await target.SendAsync(request);
-
                 System.Diagnostics.Debug.WriteLine($"[SERVER] Sending success response");
                 await sender.SendAsync(new Log
                 {
@@ -189,7 +229,6 @@ namespace RemoteX.Server.Controllers
                     To = request.From,
                     Content = $" ✅ Đang kết nối tới {request.To}"
                 });
-                System.Diagnostics.Debug.WriteLine($"[SERVER] HandleConnectRequest completed successfully");
 
                 await target.SendAsync(new Log
                 {
@@ -197,6 +236,8 @@ namespace RemoteX.Server.Controllers
                     To = request.To,
                     Content = $" ✅ Đang được điều khiển bởi {request.From}"
                 });
+
+                System.Diagnostics.Debug.WriteLine($"[SERVER] HandleConnectRequest completed successfully");
             }
             catch (Exception ex)
             {
@@ -222,38 +263,69 @@ namespace RemoteX.Server.Controllers
         public async Task ForwardMessageAsync(Message msg)
         {
             string targetID = null;
-            switch (msg)
+            ClientHandler targetHandler = null;
+            ClientHandler senderHandler = null;
+
+            lock (_lockObject)
             {
-                case ChatMessage chat:
-                    targetID = _activeConnection.GetValueOrDefault(chat.From); //trả về value của dictionary có key = from
-                    break;
-                case ScreenFrameMessage screenFrame:
-                    System.Diagnostics.Debug.WriteLine($"[SERVER] Forwarding Screen from {screenFrame.From} to {targetID}");
-                    targetID = _activeConnection.GetValueOrDefault(screenFrame.From);
-                    break;
-                case Log log:
-                    targetID = _activeConnection.GetValueOrDefault(log.From);
-                    break;
-                default:
-                    return;
-            }   
-            if(targetID != null)
-            {
-                //Tìm handler của người nhận trong danh sách đang kết nối
-                var targetHandler = _handlers.FirstOrDefault(h => h.Info.Id == targetID);
-                if(targetHandler != null)
-                       await targetHandler.SendAsync(msg);
-            }
-            else
-            {
-                var senderHandler = _handlers.FirstOrDefault(h => h.Info.Id == _activeConnection.GetValueOrDefault(msg.To));
-                await senderHandler.SendAsync(new Log
+                switch (msg)
                 {
-                    From = "Server",
-                    To = msg.From,
-                    Content = "❌ Không tìm thấy đối tác"
-                });
-                return;
+                    case ChatMessage chat:
+                        targetID = _activeConnection.GetValueOrDefault(chat.From);
+                        break;
+                    case ScreenFrameMessage screenFrame:
+                        targetID = _activeConnection.GetValueOrDefault(screenFrame.From);
+                        System.Diagnostics.Debug.WriteLine($"[SERVER] Forwarding Screen from {screenFrame.From} to {targetID}");
+                        break;
+                    case Log log:
+                        targetID = _activeConnection.GetValueOrDefault(log.From);
+                        break;
+                    default:
+                        return;
+                }
+
+                if (targetID != null)
+                {
+                    targetHandler = _handlers.FirstOrDefault(h => h.Info?.Id == targetID);
+                }
+                else
+                {
+                    // Tìm sender handler để gửi error message
+                    var senderID = _activeConnection.GetValueOrDefault(msg.To);
+                    if (!string.IsNullOrEmpty(senderID))
+                    {
+                        senderHandler = _handlers.FirstOrDefault(h => h.Info?.Id == senderID);
+                    }
+                }
+            }
+
+            // Send messages ngoài lock
+            if (targetHandler != null)
+            {
+                try
+                {
+                    await targetHandler.SendAsync(msg);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Forward Error] {ex.Message}");
+                }
+            }
+            else if (senderHandler != null)
+            {
+                try
+                {
+                    await senderHandler.SendAsync(new Log
+                    {
+                        From = "Server",
+                        To = msg.From,
+                        Content = "❌ Không tìm thấy đối tác"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Error Send Failed] {ex.Message}");
+                }
             }
         }
     }
