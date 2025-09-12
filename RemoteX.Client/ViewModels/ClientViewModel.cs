@@ -35,7 +35,7 @@ namespace RemoteX.Client.ViewModels
                     InfoVM.StatusColor = System.Windows.Media.Brushes.Red;
                     PartnerId = null;
                 }
-                else if (log.Content.Contains("✅"))
+                else if (log.Content.Contains("✔"))
                 {
                     InfoVM.StatusColor = System.Windows.Media.Brushes.Green;
 
