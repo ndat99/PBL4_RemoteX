@@ -4,7 +4,7 @@
         Title="RemoteX - Remote Control" Height="600" Width="900"
         MinHeight="400" MinWidth="600"
         Background="Black"
-        Icon="/Views/Images/RemoteX.ico" Loaded="Window_Loaded">
+        Icon="/Views/Images/RemoteX.ico" Loaded="Window_Loaded" Closing="Window_Closing">
     <Window.Resources>
         <Style x:Key="ToolbarButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#4A90E2"/>

@@ -2,6 +2,9 @@
 using System.Windows.Input;
 using RemoteX.Client.ViewModels;
 using RemoteX.Client.Controllers;
+using RemoteX.Core.Utils;
+using System.Text.Json;
+using System.IO;
 
 namespace RemoteX.Client.Views
 {
@@ -9,6 +12,7 @@ namespace RemoteX.Client.Views
     {
         private ClientController _client;
         private ClientViewModel _cvm;
+        private NetworkConfig _config;
         public MainWindow()
         {
             InitializeComponent();
@@ -33,8 +37,9 @@ namespace RemoteX.Client.Views
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            LoadConfig();
             //await Task.Delay(1000); // đợi 1s rồi connect
-            await _client.Connect("localhost", 5000);
+            await _client.Connect(_config.IP, 5000);
         }
 
         private async void btnConnect_Click(object sender, RoutedEventArgs e)
@@ -90,6 +95,24 @@ namespace RemoteX.Client.Views
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void LoadConfig()
+        {
+            var path = "config.json";
+
+            if (!File.Exists(path))
+            {
+                var defaultConfig = new NetworkConfig
+                {
+                    IP = "127.0.0.1"
+                };
+                var json = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(path, json);
+            }
+
+            var fileContent = File.ReadAllText(path);
+            _config = JsonSerializer.Deserialize<NetworkConfig>(fileContent);
         }
     }
 }

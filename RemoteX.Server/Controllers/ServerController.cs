@@ -5,6 +5,7 @@ using System.Net;
 using RemoteX.Core.Services;
 using RemoteX.Core;
 using System;
+using System.IO;
 
 namespace RemoteX.Server.Controllers
 {
@@ -68,6 +69,21 @@ namespace RemoteX.Server.Controllers
             }
         }
 
+        private async Task SafeSendAsync(ClientHandler handler, Message message)
+        {
+            try
+            {
+                //Kiểm tra handler và connection còn tồn tại ko
+                if (handler?.Client?.Connected == true)
+                    //còn tồn tại connection thì mới gửi message
+                    await handler.SendAsync(message);
+            }
+            catch (Exception e) when (e is IOException || e is SocketException || e is ObjectDisposedException)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Network Error] Failed to send to {handler?.Info?.Id} : {e.Message}");
+            }
+        }
+
         private async void AcceptClients()
         {
             while (_isRunning)
@@ -112,7 +128,7 @@ namespace RemoteX.Server.Controllers
                             {
                                 try
                                 {
-                                    await partnerHandler.SendAsync(new Log
+                                    await SafeSendAsync(partnerHandler, new Log
                                     {
                                         From = "Server",
                                         To = partnerID,
@@ -173,6 +189,29 @@ namespace RemoteX.Server.Controllers
         }
         private async Task HandleConnectRequest(ClientHandler sender, ConnectRequest request)
         {
+            // Nếu client dừng điều khiển thì báo về trạng thái như cũ
+            if (request.Status == "Disconnect")
+            {
+                lock (_lockObject)
+                {
+                    if (_activeConnection.ContainsKey(request.From))
+                    {
+                        var partnerId = _activeConnection[request.From];
+                        _activeConnection.Remove(request.From);
+                        _activeConnection.Remove(partnerId);
+                    }
+                }
+
+                await sender.SendAsync(new Log
+                {
+                    From = "Server",
+                    To = request.From,
+                    Content = " ⬤  Đã kết nối tới Server"
+                });
+
+                return;
+            }
+
             ClientHandler target = null;
             bool passwordValid = false;
 
@@ -223,18 +262,18 @@ namespace RemoteX.Server.Controllers
                 }
 
                 System.Diagnostics.Debug.WriteLine($"[SERVER] Sending success response");
-                await sender.SendAsync(new Log
+                await SafeSendAsync(sender, new Log
                 {
                     From = "Server",
                     To = request.From,
-                    Content = $" ✅ Đang kết nối tới {request.To}"
+                    Content = $" ✔ Đang kết nối tới {request.To}"
                 });
 
-                await target.SendAsync(new Log
+                await SafeSendAsync(target, new Log
                 {
                     From = request.From,
                     To = request.To,
-                    Content = $" ✅ Đang được điều khiển bởi {request.From}"
+                    Content = $" ✔ Đang được điều khiển bởi {request.From}"
                 });
 
                 System.Diagnostics.Debug.WriteLine($"[SERVER] HandleConnectRequest completed successfully");
@@ -304,7 +343,7 @@ namespace RemoteX.Server.Controllers
             {
                 try
                 {
-                    await targetHandler.SendAsync(msg);
+                    await SafeSendAsync(targetHandler, msg);
                 }
                 catch (Exception ex)
                 {
@@ -315,7 +354,7 @@ namespace RemoteX.Server.Controllers
             {
                 try
                 {
-                    await senderHandler.SendAsync(new Log
+                    await SafeSendAsync(senderHandler, new Log
                     {
                         From = "Server",
                         To = msg.From,

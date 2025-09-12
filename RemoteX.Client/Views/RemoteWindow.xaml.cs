@@ -17,29 +17,40 @@ namespace RemoteX.Client.Views
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //_cts = new CancellationTokenSource();
-            //_ = _rvm.StartStreamingAsync(_cts.Token); //Bắt đầu stream màn hình
+
         }
 
         private void btnDisconnect_Click(object sender, RoutedEventArgs e)
         {
+            this.Close();
+        }
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var result = System.Windows.MessageBox.Show("Bạn có chắc chắn muốn ngắt kết nối không?",
+                 "Xác nhận",
+                 MessageBoxButton.YesNo,
+                 MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.No)
+            {
+                e.Cancel = true; // Hủy việc đóng
+                return;
+            }
+
             _cts?.Cancel();
 
             var disconnectMsg = new ConnectRequest
             {
                 From = _rvm.clientController.ClientId,
                 To = _rvm.PartnerId,
-                Status = "disconnect"
+                Status = "Disconnect"
             };
             _ = _rvm.clientController.SendAsync(disconnectMsg);
-
-            this.Close();
         }
 
         private void btnScreenshot_Click(object sender, RoutedEventArgs e)
         {
 
         }
-
     }
 }
