@@ -63,7 +63,24 @@ namespace RemoteX.Core.Services
             return _listener.StartAsync();
         }
 
-        public Task SendAsync(Message msg) => MessageSender.Send(_client, msg);
+        public async Task SendAsync(Message msg)
+        {
+            //Kiểm tra xem client còn connect ko
+            if (_client?.Connected != true)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ClientHandler] Cannot send - client {Info?.Id} is not connected");
+                return; //ko còn thì ko gửi
+            }
+
+            try
+            {
+                await MessageSender.Send(_client, msg);
+            }
+            catch (Exception ex) when (ex is IOException || ex is SocketException || ex is ObjectDisposedException)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ClientHandler] Send failed for {Info?.Id}: {ex.Message}");
+            }
+        }
         public void Close() => _client.Close();
     }
 }

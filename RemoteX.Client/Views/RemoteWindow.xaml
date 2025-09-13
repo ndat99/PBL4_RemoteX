@@ -4,7 +4,7 @@
         Title="RemoteX - Remote Control" Height="600" Width="900"
         MinHeight="400" MinWidth="600"
         Background="Black"
-        Icon="/Views/Images/RemoteX.ico" Loaded="Window_Loaded">
+        Icon="/Views/Images/RemoteX.ico" Loaded="Window_Loaded" Closing="Window_Closing">
     <Window.Resources>
         <Style x:Key="ToolbarButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#4A90E2"/>
@@ -84,7 +84,7 @@
         <StackPanel Orientation="Horizontal" 
                     HorizontalAlignment="Center" 
                     VerticalAlignment="Top" 
-                    Margin="0,10" 
+                    Margin="0,5" 
                     Background="#252526" 
                     Opacity="0.95">
             <StackPanel.Effect>
@@ -94,12 +94,12 @@
             <!-- Remote ID Display -->
 
             <!-- Action Buttons -->
-            <Border Background="Transparent" Padding="8,4">
+            <Border Background="Transparent" Padding="4,4">
                 <StackPanel Orientation="Horizontal">
-                    <Button x:Name="btnScreenshot" Content="Chụp màn hình" 
+                    <Button x:Name="btnScreenshot" Content="⛶  Chụp màn hình" 
                             Style="{StaticResource ToolbarButtonStyle}"
                             Click="btnScreenshot_Click"/>
-                    <Button x:Name="btnDisconnect" Content="Ngắt kết nối" 
+                    <Button x:Name="btnDisconnect" Content="⏻ Ngắt kết nối" 
                             Style="{StaticResource DisconnectButtonStyle}"
                             Click="btnDisconnect_Click"/>
                 </StackPanel>

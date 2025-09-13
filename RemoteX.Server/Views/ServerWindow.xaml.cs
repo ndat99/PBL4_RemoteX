@@ -40,15 +40,6 @@ public partial class MainWindow : Window
         this.WindowState = WindowState.Minimized;
     }
 
-    // Maximize window
-    private void btnMaximize_Click(object sender, RoutedEventArgs e)
-    {
-        if (this.WindowState == WindowState.Maximized)
-            this.WindowState = WindowState.Normal;
-        else
-            this.WindowState = WindowState.Maximized;
-    }
-
     private void btnClose_Click(object sender, RoutedEventArgs e)
     {
         _svm.StopServer();

@@ -18,6 +18,7 @@ namespace RemoteX.Client.ViewModels
             InfoVM = new InfoViewModel();
             ChatVM = new ChatViewModel(_clientController);
 
+            //Sự kiện kết nối tới server
             _clientController.ClientConnected += info =>
             {
                 InfoVM.ClientInfo = info;
@@ -25,6 +26,7 @@ namespace RemoteX.Client.ViewModels
                 InfoVM.StatusColor = System.Windows.Media.Brushes.Green;
             };
 
+            //Sự kiện nhận log về từ server
             _clientController.LogReceived += log =>
             {
                 System.Diagnostics.Debug.WriteLine($"[CLIENT] Received Log: {log.Content}");
@@ -35,9 +37,9 @@ namespace RemoteX.Client.ViewModels
                     InfoVM.StatusColor = System.Windows.Media.Brushes.Red;
                     PartnerId = null;
                 }
-                else if (log.Content.Contains("✅"))
+                else if (log.Content.Contains("✔"))
                 {
-                    InfoVM.StatusColor = System.Windows.Media.Brushes.Green;
+                    InfoVM.StatusColor = System.Windows.Media.Brushes.Yellow;
 
                     //Lấy PartnerId từ log
                     if (log.Content.Contains("Đang kết nối tới"))
@@ -55,12 +57,16 @@ namespace RemoteX.Client.ViewModels
                         _ = new RemoteController(_clientController).StartStreamingAsync(PartnerId, cts.Token);
                     }
                 }
+                else if (log.Content.Contains("⬤"))
+                {
+                    InfoVM.StatusColor = System.Windows.Media.Brushes.Green;
+                }
             };
 
             //Chat message nhận về
             _clientController.ChatMessageReceived += chat =>
             {
-                //ChatVM.AddMessage(chat);
+                ChatVM.ReceiveMessage(chat);
             };
         }
 

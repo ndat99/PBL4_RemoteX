@@ -17,8 +17,8 @@ namespace RemoteX.Client.Controllers
     public class RemoteController
     {
         public readonly ClientController _clientController;
-        private int fps = 30; //tốc độ khung hình
-        private int quality = 100; //chất lượng ảnh
+        private int fps = 20; //tốc độ khung hình
+        private int quality = 50; //chất lượng ảnh
 
         public RemoteController(ClientController clientController)
         {
