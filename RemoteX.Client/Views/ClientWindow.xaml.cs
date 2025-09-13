@@ -5,6 +5,7 @@ using RemoteX.Client.Controllers;
 using RemoteX.Core.Utils;
 using System.Text.Json;
 using System.IO;
+using System.Windows.Media.Animation;
 
 namespace RemoteX.Client.Views
 {
@@ -13,6 +14,10 @@ namespace RemoteX.Client.Views
         private ClientController _client;
         private ClientViewModel _cvm;
         private NetworkConfig _config;
+
+        private bool isChatExpanded = false;
+        private double compactHeight = 400;  // Chiều cao khi đóng chat
+        private double expandedHeight = 700; // Chiều cao khi mở chat
         public MainWindow()
         {
             InitializeComponent();
@@ -37,9 +42,23 @@ namespace RemoteX.Client.Views
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Căn vị trí màn hình thôi
+            this.Left = (SystemParameters.PrimaryScreenWidth - this.ActualWidth) / 2;
+            var top = (SystemParameters.PrimaryScreenHeight - this.ActualHeight) / 2 - 150;
+            this.Top = Math.Max(0, top);
+
             LoadConfig();
             //await Task.Delay(1000); // đợi 1s rồi connect
             await _client.Connect(_config.IP, 5000);
+
+            txtMessage.KeyDown += (s, args) =>
+            {
+                if (args.Key == System.Windows.Input.Key.Enter)
+                {
+                    btnSend_Click(s, args);
+                    args.Handled = true; //Ngăn Enter tạo xuống dòng
+                }
+            };
         }
 
         private async void btnConnect_Click(object sender, RoutedEventArgs e)
@@ -60,7 +79,22 @@ namespace RemoteX.Client.Views
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.MessageBox.Show("Gui tin nhan");
+            //System.Windows.MessageBox.Show("Gui tin nhan");
+            if (string.IsNullOrEmpty(_cvm.PartnerId))
+                return;
+
+            string messageText = txtMessage.Text?.Trim();
+            if (string.IsNullOrEmpty(messageText))
+                return;
+
+            _cvm.ChatVM.SendMessage(_cvm.InfoVM.ClientInfo?.Id, _cvm.PartnerId, messageText);
+
+            txtMessage.Clear();
+            txtMessage.Focus();
+
+            //auto scroll
+            if (svChatBox != null)
+                svChatBox.ScrollToBottom();
         }
 
         // Kéo thả cửa sổ bằng title bar
@@ -76,19 +110,6 @@ namespace RemoteX.Client.Views
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
-        }
-
-        // Maximize window
-        private void btnMaximize_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.WindowState == WindowState.Maximized)
-            {
-                this.WindowState = WindowState.Normal;
-            }
-            else
-            {
-                this.WindowState = WindowState.Maximized;
-            }
         }
 
         // Close window
@@ -114,5 +135,64 @@ namespace RemoteX.Client.Views
             var fileContent = File.ReadAllText(path);
             _config = JsonSerializer.Deserialize<NetworkConfig>(fileContent);
         }
+
+        // Event handler cho nút toggle chat
+        private void btnToggleChat_Click(object sender, RoutedEventArgs e)
+        {
+            if (isChatExpanded)
+            {
+                // Ẩn nội dung chat
+                CollapseChat();
+            }
+            else
+            {
+                // Hiện nội dung chat
+                ExpandChat();
+            }
+        }
+
+        private void ExpandChat()
+        {
+            // Hiện ChatPanel (chứa chatbox và input)
+            ChatPanel.Visibility = Visibility.Visible;
+            // Đổi content button
+            txtToggleText.Content = "Ẩn ▲";
+            // Animation mở rộng window nếu cần
+            var currentHeight = this.ActualHeight;
+            var targetHeight = Math.Max(currentHeight, 650);
+            if (currentHeight < targetHeight)
+            {
+                var windowAnimation = new DoubleAnimation
+                {
+                    From = currentHeight,
+                    To = targetHeight,
+                    Duration = TimeSpan.FromMilliseconds(200),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                };
+                this.BeginAnimation(Window.HeightProperty, windowAnimation);
+            }
+            isChatExpanded = true;
+        }
+
+        private void CollapseChat()
+        {
+            // Ẩn ChatPanel (chứa chatbox và input)
+            ChatPanel.Visibility = Visibility.Collapsed;
+            // Đổi content button
+            txtToggleText.Content = "Hiển thị ▼";
+            // Animation thu gọn window
+            var currentHeight = this.ActualHeight;
+            var targetHeight = 470; // Chiều cao chỉ đủ cho header, control panels và chat header
+            var windowAnimation = new DoubleAnimation
+            {
+                From = currentHeight,
+                To = targetHeight,
+                Duration = TimeSpan.FromMilliseconds(300),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+            };
+            this.BeginAnimation(Window.HeightProperty, windowAnimation);
+            isChatExpanded = false;
+        }
+
     }
 }

@@ -157,12 +157,10 @@
                 </StackPanel>
 
                 <!-- Window Controls -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Width="90">
                     <Button x:Name="btnMinimize" Content="−" Style="{StaticResource TitleBarButtonStyle}"
                             Click="btnMinimize_Click"/>
-                    <Button x:Name="btnMaximize" Content="□" Style="{StaticResource TitleBarButtonStyle}"
-                            FontSize="12" Click="btnMaximize_Click"/>
-                    <Button x:Name="btnClose" Content="×" Style="{StaticResource CloseButtonStyle}"
+                    <Button x:Name="btnClose" Content="⏻" Style="{StaticResource CloseButtonStyle}"
                             Click="btnClose_Click"/>
                 </StackPanel>
             </Grid>
@@ -233,7 +231,7 @@
                                     </Ellipse.Fill>
                                 </Ellipse>
                                 <TextBlock Text="Máy khách đã kết nối:" Style="{StaticResource HeaderTextStyle}"/>
-                                <TextBlock x:Name="txtClientCount" Text="(2)" Foreground="#4A90E2" FontSize="14" 
+                                <TextBlock x:Name="txtClientCount" Text="(*)" Foreground="#4A90E2" FontSize="14" 
                                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                             </StackPanel>
 
