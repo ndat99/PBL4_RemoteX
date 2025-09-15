@@ -1,6 +1,7 @@
 ﻿using RemoteX.Client.Controllers;
 using RemoteX.Client.Services;
 using RemoteX.Core.Models;
+using RemoteX.Core.Networking;
 using RemoteX.Core.Utils;
 
 using System.Windows.Media.Imaging;
@@ -12,15 +13,17 @@ namespace RemoteX.Client.ViewModels
         private BitmapImage _screen;
         private readonly ClientController _clientController;
         private readonly RemoteController _remoteController;
+
+        private readonly UDPScreenLReceiver _udpReceived;
         public ClientController clientController => _clientController;
 
         public BitmapImage ScreenView
         {
             get => _screen;
-            set 
+            set
             {
                 _screen = value;
-               OnPropertyChanged(nameof(ScreenView)); 
+                OnPropertyChanged(nameof(ScreenView));
             }
         }
         public string PartnerId { get; set; }
