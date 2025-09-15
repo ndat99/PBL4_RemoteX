@@ -40,6 +40,38 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
+        <Style x:Key="TitleButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}" TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="contentPresenter" Property="TextElement.Foreground"  Value="#4A90E2"/>
+                                <Setter TargetName="contentPresenter" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#4A90E2" BlurRadius="8" ShadowDepth="0"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="#4A90E2"/>
+                                <Setter TargetName="contentPresenter" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#4A90E2" BlurRadius="12" ShadowDepth="0"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="ButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#4A90E2"/>
             <Setter Property="Foreground" Value="White"/>
@@ -162,10 +194,10 @@
 
                 <!-- Window Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Width="90">
-                    <Button x:Name="btnMinimize" Content="−" Width="40" Height="40" Background="Transparent" 
-                        Foreground="White" BorderThickness="0" FontSize="16" Click="btnMinimize_Click"/>
-                    <Button x:Name="btnClose" Content="⏻" Width="40" Height="40" Background="Transparent" 
-                        Foreground="White" BorderThickness="0" FontSize="16" Click="btnClose_Click"/>
+                    <Button x:Name="btnMinimize" Content="−" Width="40" Height="40" Background="Transparent" Style="{StaticResource TitleButtonStyle}" 
+                        Foreground="White" BorderThickness="0" FontSize="20" Click="btnMinimize_Click" Cursor="Hand"/>
+                    <Button x:Name="btnClose" Content="⏻" Width="40" Height="40" Background="Transparent" Style="{StaticResource TitleButtonStyle}"
+                        Foreground="White" BorderThickness="0" FontSize="20" Click="btnClose_Click" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
 
@@ -342,11 +374,10 @@
                        Foreground="#4A90E2" FontSize="10" 
                        HorizontalAlignment="Right" VerticalAlignment="Top" 
                        Margin="0,4,15,0"/>
-                <Button x:Name="btnGuide" Content="Hướng dẫn sử dụng" 
-                    Background="#FFA93131" Foreground="White" 
-                    BorderThickness="0" Padding="10,5" 
+                <Button x:Name="btn" Content="🌣" 
+                    Style="{StaticResource InlineChatToggleStyle}" 
                     HorizontalAlignment="Left" Margin="10,-4,0,0"
-                    FontSize="11" Height="27" VerticalAlignment="Top" Width="126" Cursor="Hand"/>
+                    FontSize="20" Height="27"  Width="33" Cursor="Hand"/>
             </Grid>
         </Grid>
     </Border>
