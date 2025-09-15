@@ -1,28 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using RemoteX.Core;
+﻿using System.Windows;
+using RemoteX.Client.ViewModels;
+using RemoteX.Client.Controllers;
+using RemoteX.Core.Models;
 
 namespace RemoteX.Client.Views
 {
-    /// <summary>
-    /// Interaction logic for RemoteWindow.xaml
-    /// </summary>
     public partial class RemoteWindow : Window
     {
-        public RemoteWindow()
+        private RemoteViewModel _rvm;
+        private CancellationTokenSource _cts;
+        public RemoteWindow(ClientController clientController, string partnerId)
         {
             InitializeComponent();
+            _rvm = new RemoteViewModel(clientController, partnerId);
+            this.DataContext = _rvm;
+        }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnDisconnect_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var result = System.Windows.MessageBox.Show("Bạn có chắc chắn muốn ngắt kết nối không?",
+                 "Xác nhận",
+                 MessageBoxButton.YesNo,
+                 MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.No)
+            {
+                e.Cancel = true; // Hủy việc đóng
+                return;
+            }
+
+            _cts?.Cancel();
+
+            var disconnectMsg = new ConnectRequest
+            {
+                From = _rvm.clientController.ClientId,
+                To = _rvm.PartnerId,
+                Status = "Disconnect"
+            };
+            _ = _rvm.clientController.SendAsync(disconnectMsg);
+        }
+
+        private void btnScreenshot_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

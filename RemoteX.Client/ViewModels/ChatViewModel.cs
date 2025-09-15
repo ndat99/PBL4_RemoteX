@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RemoteX.Client.Controllers;
 using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
@@ -30,46 +27,52 @@ namespace RemoteX.Client.ViewModels
         public ChatViewModel(ClientController client)
         {
             _client = client;
-            InputMessage = "Nhập tin nhắn";
-            var msg = new ChatMessage()
+            //InputMessage = "Nhập tin nhắn";
+            //var msg = new ChatMessage()
+            //{
+            //    From = "123",
+            //    To = "456",
+            //    Message = "Hello, đây là tin nhắn mẫu để kiểm tra thử",
+            //    IsMine = false
+            //};
+            //Messages.Add(msg);
+        }
+
+        public void AddMessage(ChatMessage msg)
+        {
+            App.Current.Dispatcher.Invoke(() =>
             {
-                From = "123",
-                To = "456",
-                Message = "Hello, đây là tin nhắn mẫu để kiểm tra thử",
-                IsMine = false
-            };
-            Messages.Add(msg);
+                Messages.Add(msg);
+            });
         }
 
         //Gui tin nhan
-        //public void SendMessage(string myId, string partnerId)
-        //{
-        //    if (string.IsNullOrWhiteSpace(InputMessage)) return;
+        public void SendMessage(string myId, string partnerId, string messageText)
+        {
+            //kiem tra input
+            if (string.IsNullOrWhiteSpace(InputMessage)) return;
 
-        //    var msg = new ChatMessage
-        //    {
-        //        From = myId,
-        //        To = partnerId,
-        //        Message = InputMessage,
-        //        IsMine = true
-        //    };
+            var chat = new ChatMessage
+            {
+                From = myId,
+                To = partnerId,
+                Message = InputMessage,
+                IsMine = true,
+                Timestamp = DateTime.Now
+            };
 
-        //    _client.SendMessage(msg);
+            _ = _client.SendAsync(chat);
 
-        //    App.Current.Dispatcher.Invoke(() =>
-        //    {
-        //        Messages.Add(msg);
-        //        InputMessage = string.Empty;
-        //    });
-        //}
+            AddMessage(chat);
+
+            InputMessage = "";
+        }
 
         //Nhan tin nhan
-        //public void ReceiveMessage(ChatMessage msg)
-        //{
-        //    App.Current.Dispatcher.Invoke(() => {
-        //        msg.IsMine = false;
-        //        Messages.Add(msg);
-        //    });
-        //}
+        public void ReceiveMessage(ChatMessage msg)
+        {
+            msg.IsMine = false;
+            AddMessage(msg);
+        }
     }
 }

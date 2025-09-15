@@ -1,18 +1,6 @@
-﻿using System.Text;
-using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using RemoteX.Server.Services;
-using RemoteX.Core;
 using RemoteX.Server.ViewModels;
-using RemoteX.Core.Models;
 
 namespace RemoteX.Server.Views;
 
@@ -50,15 +38,6 @@ public partial class MainWindow : Window
     private void btnMinimize_Click(object sender, RoutedEventArgs e)
     {
         this.WindowState = WindowState.Minimized;
-    }
-
-    // Maximize window
-    private void btnMaximize_Click(object sender, RoutedEventArgs e)
-    {
-        if (this.WindowState == WindowState.Maximized)
-            this.WindowState = WindowState.Normal;
-        else
-            this.WindowState = WindowState.Maximized;
     }
 
     private void btnClose_Click(object sender, RoutedEventArgs e)

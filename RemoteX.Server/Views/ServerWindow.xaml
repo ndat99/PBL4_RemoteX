@@ -95,43 +95,36 @@
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
-        <!-- Responsive Title Bar Button Style -->
-        <Style x:Key="TitleBarButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
+        <Style x:Key="TitleButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontSize" Value="16"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"/>
-                        </Border>
+                        <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}" TextElement.Foreground="{TemplateBinding Foreground}"/>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#3E3E42"/>
+                                <Setter TargetName="contentPresenter" Property="TextElement.Foreground"  Value="#4A90E2"/>
+                                <Setter TargetName="contentPresenter" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#4A90E2" BlurRadius="8" ShadowDepth="0"/>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#2D2D30"/>
+                                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="#4A90E2"/>
+                                <Setter TargetName="contentPresenter" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#4A90E2" BlurRadius="12" ShadowDepth="0"/>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
-
-        <Style x:Key="CloseButtonStyle" TargetType="Button" BasedOn="{StaticResource TitleBarButtonStyle}">
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E81123"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#C50E1F"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
     </Window.Resources>
 
@@ -157,19 +150,17 @@
                 </StackPanel>
 
                 <!-- Window Controls -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button x:Name="btnMinimize" Content="−" Style="{StaticResource TitleBarButtonStyle}"
-                            Click="btnMinimize_Click"/>
-                    <Button x:Name="btnMaximize" Content="□" Style="{StaticResource TitleBarButtonStyle}"
-                            FontSize="12" Click="btnMaximize_Click"/>
-                    <Button x:Name="btnClose" Content="×" Style="{StaticResource CloseButtonStyle}"
-                            Click="btnClose_Click"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Width="90">
+                    <Button x:Name="btnMinimize" Content="−" Width="40" Height="40" Background="Transparent" Style="{StaticResource TitleButtonStyle}" 
+                        Foreground="White" BorderThickness="0" FontSize="20" Click="btnMinimize_Click" Cursor="Hand"/>
+                    <Button x:Name="btnClose" Content="⏻" Width="40" Height="40" Background="Transparent" Style="{StaticResource TitleButtonStyle}"
+                        Foreground="White" BorderThickness="0" FontSize="20" Click="btnClose_Click" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
 
             <!-- Footer - Fixed at bottom -->
             <Border DockPanel.Dock="Bottom" Height="30" Background="Transparent">
-                <TextBlock Text="RemoteX Server" 
+                <TextBlock Text="Nguyen Hoang Phuc - Nguyen Dang Anh Tien" 
                            Foreground="#4A90E2" FontSize="10" 
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
@@ -233,7 +224,7 @@
                                     </Ellipse.Fill>
                                 </Ellipse>
                                 <TextBlock Text="Máy khách đã kết nối:" Style="{StaticResource HeaderTextStyle}"/>
-                                <TextBlock x:Name="txtClientCount" Text="(2)" Foreground="#4A90E2" FontSize="14" 
+                                <TextBlock x:Name="txtClientCount" Text="(*)" Foreground="#4A90E2" FontSize="14" 
                                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                             </StackPanel>
 
@@ -284,7 +275,6 @@
                     <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
                         <Button x:Name="btnStart" Content="Khởi động" Style="{StaticResource ButtonStyle}" Click="btnStart_Click" Command="{Binding StartCommand}"/>
                         <Button x:Name="btnStop" Content="Dừng lại" Style="{StaticResource StopButtonStyle}" Click="btnStop_Click" Command="{Binding StopCommand}"/>
-                        <Button x:Name="btnClearLog" Content="Xóa nhật ký" Style="{StaticResource ClearButtonStyle}"/>
                     </StackPanel>
                 </Grid>
             </ScrollViewer>

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace RemoteX.Core
 {
-    public class Message
+    public abstract class Message
     {
         public MessageType Type { get; set; }
-        public string Payload { get; set; } //Nội dung tin nhắn, có thể là JSON hoặc dữ liệu khác tùy loại tin nhắn
+        //public string Payload { get; set; } //Nội dung tin nhắn, có thể là JSON hoặc dữ liệu khác tùy loại tin nhắn
         public string From { get; set; }
         public string To { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;

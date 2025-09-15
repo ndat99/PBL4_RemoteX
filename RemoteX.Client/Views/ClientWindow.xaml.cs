@@ -1,17 +1,11 @@
-﻿using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using RemoteX.Core;
 using RemoteX.Client.ViewModels;
 using RemoteX.Client.Controllers;
-using System.Threading.Tasks;
+using RemoteX.Core.Utils;
+using System.Text.Json;
+using System.IO;
+using System.Windows.Media.Animation;
 
 namespace RemoteX.Client.Views
 {
@@ -19,12 +13,28 @@ namespace RemoteX.Client.Views
     {
         private ClientController _client;
         private ClientViewModel _cvm;
+        private NetworkConfig _config;
+
+        private bool isChatExpanded = false;
+        private double compactHeight = 400;  // Chiều cao khi đóng chat
+        private double expandedHeight = 700; // Chiều cao khi mở chat
         public MainWindow()
         {
             InitializeComponent();
 
             _client = new ClientController();
             _cvm = new ClientViewModel(_client);
+            _cvm.PartnerConnected += partnerId =>
+            {
+                System.Diagnostics.Debug.WriteLine($"[MAIN] PartnerConnected event received: {partnerId}");
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"[MAIN] Creating RemoteWindow");
+                    var remoteWindow = new RemoteWindow(_client, partnerId);
+                    System.Diagnostics.Debug.WriteLine($"[MAIN] Showing RemoteWindow");
+                    remoteWindow.Show();
+                });
+            };
 
             this.DataContext = _cvm;
 
@@ -32,18 +42,59 @@ namespace RemoteX.Client.Views
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            await Task.Delay(1000);                 // đợi 1s rồi connect
-            _client.Connect("localhost", 5000);
+            // Căn vị trí màn hình thôi
+            this.Left = (SystemParameters.PrimaryScreenWidth - this.ActualWidth) / 2;
+            var top = (SystemParameters.PrimaryScreenHeight - this.ActualHeight) / 2 - 150;
+            this.Top = Math.Max(0, top);
+
+            LoadConfig();
+            //await Task.Delay(1000); // đợi 1s rồi connect
+            await _client.Connect(_config.IP, 5000);
+
+            txtMessage.KeyDown += (s, args) =>
+            {
+                if (args.Key == System.Windows.Input.Key.Enter)
+                {
+                    btnSend_Click(s, args);
+                    args.Handled = true; //Ngăn Enter tạo xuống dòng
+                }
+            };
         }
 
-        private void btnConnect_Click(object sender, RoutedEventArgs e)
+        private async void btnConnect_Click(object sender, RoutedEventArgs e)
         {
+            string targetId = txtPartnerID.Text;
+            string password = txtPartnerPass.Text;
 
+            if (string.IsNullOrEmpty(targetId) || string.IsNullOrEmpty(password))
+            {
+                System.Windows.MessageBox.Show("Vui lòng nhập ID và Password");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[CONNECT] Sending request to {targetId} with password {password}");
+
+            await _cvm.SendConnectRequestAsync(targetId, password);
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Gui tin nhan");
+            //System.Windows.MessageBox.Show("Gui tin nhan");
+            if (string.IsNullOrEmpty(_cvm.PartnerId))
+                return;
+
+            string messageText = txtMessage.Text?.Trim();
+            if (string.IsNullOrEmpty(messageText))
+                return;
+
+            _cvm.ChatVM.SendMessage(_cvm.InfoVM.ClientInfo?.Id, _cvm.PartnerId, messageText);
+
+            txtMessage.Clear();
+            txtMessage.Focus();
+
+            //auto scroll
+            if (svChatBox != null)
+                svChatBox.ScrollToBottom();
         }
 
         // Kéo thả cửa sổ bằng title bar
@@ -61,23 +112,87 @@ namespace RemoteX.Client.Views
             this.WindowState = WindowState.Minimized;
         }
 
-        // Maximize window
-        private void btnMaximize_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.WindowState == WindowState.Maximized)
-            {
-                this.WindowState = WindowState.Normal;
-            }
-            else
-            {
-                this.WindowState = WindowState.Maximized;
-            }
-        }
-
         // Close window
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
+
+        private void LoadConfig()
+        {
+            var path = "config.json";
+
+            if (!File.Exists(path))
+            {
+                var defaultConfig = new NetworkConfig
+                {
+                    IP = "127.0.0.1"
+                };
+                var json = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(path, json);
+            }
+
+            var fileContent = File.ReadAllText(path);
+            _config = JsonSerializer.Deserialize<NetworkConfig>(fileContent);
+        }
+
+        // Event handler cho nút toggle chat
+        private void btnToggleChat_Click(object sender, RoutedEventArgs e)
+        {
+            if (isChatExpanded)
+            {
+                // Ẩn nội dung chat
+                CollapseChat();
+            }
+            else
+            {
+                // Hiện nội dung chat
+                ExpandChat();
+            }
+        }
+
+        private void ExpandChat()
+        {
+            // Hiện ChatPanel (chứa chatbox và input)
+            ChatPanel.Visibility = Visibility.Visible;
+            // Đổi content button
+            txtToggleText.Content = "Ẩn ▲";
+            // Animation mở rộng window nếu cần
+            var currentHeight = this.ActualHeight;
+            var targetHeight = Math.Max(currentHeight, 650);
+            if (currentHeight < targetHeight)
+            {
+                var windowAnimation = new DoubleAnimation
+                {
+                    From = currentHeight,
+                    To = targetHeight,
+                    Duration = TimeSpan.FromMilliseconds(200),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                };
+                this.BeginAnimation(Window.HeightProperty, windowAnimation);
+            }
+            isChatExpanded = true;
+        }
+
+        private void CollapseChat()
+        {
+            // Ẩn ChatPanel (chứa chatbox và input)
+            ChatPanel.Visibility = Visibility.Collapsed;
+            // Đổi content button
+            txtToggleText.Content = "Hiển thị ▼";
+            // Animation thu gọn window
+            var currentHeight = this.ActualHeight;
+            var targetHeight = 470; // Chiều cao chỉ đủ cho header, control panels và chat header
+            var windowAnimation = new DoubleAnimation
+            {
+                From = currentHeight,
+                To = targetHeight,
+                Duration = TimeSpan.FromMilliseconds(300),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+            };
+            this.BeginAnimation(Window.HeightProperty, windowAnimation);
+            isChatExpanded = false;
+        }
+
     }
 }
