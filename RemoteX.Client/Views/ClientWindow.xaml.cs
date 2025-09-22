@@ -49,7 +49,7 @@ namespace RemoteX.Client.Views
 
             LoadConfig();
             //await Task.Delay(1000); // đợi 1s rồi connect
-            await _client.Connect(_config.IP, 5000);
+            await _client.Connect("127.0.0.1", 5000);
 
             txtMessage.KeyDown += (s, args) =>
             {
@@ -97,6 +97,24 @@ namespace RemoteX.Client.Views
                 svChatBox.ScrollToBottom();
         }
 
+        private void LoadConfig()
+        {
+            var path = "config.json";
+
+            if (!File.Exists(path))
+            {
+                var defaultConfig = new NetworkConfig
+                {
+                    IP = "127.0.0.1"
+                };
+                var json = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(path, json);
+            }
+
+            var fileContent = File.ReadAllText(path);
+            _config = JsonSerializer.Deserialize<NetworkConfig>(fileContent);
+        }
+
         // Kéo thả cửa sổ bằng title bar
         private void titleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -116,24 +134,6 @@ namespace RemoteX.Client.Views
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
-        }
-
-        private void LoadConfig()
-        {
-            var path = "config.json";
-
-            if (!File.Exists(path))
-            {
-                var defaultConfig = new NetworkConfig
-                {
-                    IP = "127.0.0.1"
-                };
-                var json = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(path, json);
-            }
-
-            var fileContent = File.ReadAllText(path);
-            _config = JsonSerializer.Deserialize<NetworkConfig>(fileContent);
         }
 
         // Event handler cho nút toggle chat

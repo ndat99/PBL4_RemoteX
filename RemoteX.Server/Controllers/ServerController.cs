@@ -4,21 +4,25 @@ using System.Collections.ObjectModel;
 using System.Net;
 using RemoteX.Core.Services;
 using RemoteX.Core;
-using System;
+using RemoteX.Core.Networking;
 using System.IO;
+using System.Collections.Concurrent;
 
 namespace RemoteX.Server.Controllers
 {
     public class ServerController
     {
-        private TcpListener _listener;
-        private Thread _listenThread;
+        private TcpListener _tcpListener;
+        private UdpClient _udpListener;
+        private Thread _tcpListenThread;
+        private Thread _udpListenThread;
         private bool _isRunning;
+
         private readonly List<ClientHandler> _handlers = new();
         private readonly Dictionary<string, string> _activeConnection = new();
+        private readonly ConcurrentDictionary<string, IPEndPoint> _clientUdpEndPoints = new(); //mapping từ ID -> IPEndPoint để UDP biết mà gửi
         private readonly object _lockObject = new object(); // Dùng _handlers làm lock object
 
-        private readonly bool RequireAccept = true; //Auto accept thì chuyển sang false
         public ObservableCollection<ClientInfo> Clients { get; } = new();
         public event Action<string> StatusChanged;
 
@@ -28,12 +32,17 @@ namespace RemoteX.Server.Controllers
             {
                 if (_isRunning) return;
 
-                _listener = new TcpListener(IPAddress.Any, port);
-                _listener.Start();
+                _tcpListener = new TcpListener(IPAddress.Any, port);
+                _tcpListener.Start();
+                _udpListener = new UdpClient(port + 1);
                 _isRunning = true;
 
-                _listenThread = new Thread(AcceptClients) { IsBackground = true };
-                _listenThread.Start();
+                _tcpListenThread = new Thread(AcceptClients) { IsBackground = true };
+                _tcpListenThread.Start();
+
+                _udpListenThread = new Thread(AcceptUdpMessages) { IsBackground = true };
+                _udpListenThread.Start();
+
                 StatusChanged?.Invoke($"Server đang chạy trên cổng {port}");
             }
             catch (Exception ex)
@@ -48,8 +57,11 @@ namespace RemoteX.Server.Controllers
 
             try
             {
-                _listener.Stop();
-                _listenThread?.Join();
+                _tcpListener.Stop();
+                _udpListener.Close();
+
+                _tcpListenThread?.Join(1000);
+                _udpListenThread?.Join(1000);
                 // Close all handlers
                 foreach (var handler in _handlers.ToList())
                 {
@@ -58,6 +70,7 @@ namespace RemoteX.Server.Controllers
 
                 _handlers.Clear();
                 _activeConnection.Clear();
+                _clientUdpEndPoints.Clear();
                 Clients.Clear();
 
                 StatusChanged?.Invoke("Đã tắt Server");
@@ -69,6 +82,52 @@ namespace RemoteX.Server.Controllers
             }
         }
 
+        private async void AcceptUdpMessages()
+        {
+            while (_isRunning)
+            {
+                try
+                {
+                    var result = await _udpListener.ReceiveAsync();
+                    var json = System.Text.Encoding.UTF8.GetString(result.Buffer);
+                    var msg = MessageListener.Deserialize(json);
+                    System.Diagnostics.Debug.WriteLine($"[UDP] Received from {result.RemoteEndPoint}: {msg.From} -> {msg.To}");
+
+                    //lưu mapping ID -> IPEndPoint
+                    if (!string.IsNullOrEmpty(msg.From))
+                    {
+                        _clientUdpEndPoints[msg.From] = result.RemoteEndPoint;
+                    }
+                    await ForwardUdpMessageAsync(msg);
+                }
+                catch (Exception ex)
+                {
+                    if (_isRunning)
+                        System.Diagnostics.Debug.WriteLine($"[UDP Error] {ex.Message}");
+                }
+            }
+        }
+
+        private async Task ForwardUdpMessageAsync(Message msg)
+        {
+            string targetID = null;
+            lock (_lockObject)
+            {
+                targetID = _activeConnection.GetValueOrDefault(msg.From);
+            }
+            if (targetID != null && _clientUdpEndPoints.TryGetValue(targetID, out IPEndPoint targetEndPoint))
+            {
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"[UDP] Forwarding to {targetID} at {targetEndPoint}");
+                    await MessageSender.Send(_udpListener, targetEndPoint, msg);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[UDP Forward Error] {ex.Message}");
+                }
+            }
+        }
         private async Task SafeSendAsync(ClientHandler handler, Message message)
         {
             try
@@ -90,9 +149,11 @@ namespace RemoteX.Server.Controllers
             {
                 try
                 {
-                var tcpClient = await _listener.AcceptTcpClientAsync();
-                var handler = new ClientHandler(tcpClient);
-
+                var tcpClient = await _tcpListener.AcceptTcpClientAsync();
+                var serverPort = ((IPEndPoint)_tcpListener.LocalEndpoint).Port;
+                var udpPort = serverPort + 1;
+            
+                var handler = new ClientHandler(tcpClient, "127.0.0.1", udpPort);
                     // Khi client ngắt kết nối, xóa nó khỏi danh sách
                     handler.Disconnected += async disconnectedHandler =>
                     {
@@ -117,6 +178,7 @@ namespace RemoteX.Server.Controllers
                                 }
                             }
 
+                            _clientUdpEndPoints.TryRemove(id, out _);
                             App.Current.Dispatcher.Invoke(() =>
                             {
                                 var clientToRemove = Clients.FirstOrDefault(c => c.Id == id);
@@ -164,15 +226,15 @@ namespace RemoteX.Server.Controllers
 
 
 
-                    handler.ChatMessageReceived += async chatMsg =>
-                    {
-                        await ForwardMessageAsync(chatMsg);
-                    };
+                    //handler.ChatMessageReceived += async chatMsg =>
+                    //{
+                    //    await ForwardMessageAsync(chatMsg);
+                    //};
 
-                    handler.ScreenFrameReceived += async screenMsg =>
-                    {
-                        await ForwardMessageAsync(screenMsg);
-                    };
+                    //handler.ScreenFrameReceived += async screenMsg =>
+                    //{
+                    //    await ForwardMessageAsync(screenMsg);
+                    //};
 
                     lock (_lockObject)
                     {
@@ -299,7 +361,7 @@ namespace RemoteX.Server.Controllers
             }
         }
 
-        public async Task ForwardMessageAsync(Message msg)
+        public async Task ForwardTcpMessageAsync(Message msg)
         {
             string targetID = null;
             ClientHandler targetHandler = null;
@@ -309,13 +371,13 @@ namespace RemoteX.Server.Controllers
             {
                 switch (msg)
                 {
-                    case ChatMessage chat:
-                        targetID = _activeConnection.GetValueOrDefault(chat.From);
-                        break;
-                    case ScreenFrameMessage screenFrame:
-                        targetID = _activeConnection.GetValueOrDefault(screenFrame.From);
-                        System.Diagnostics.Debug.WriteLine($"[SERVER] Forwarding Screen from {screenFrame.From} to {targetID}");
-                        break;
+                    //case ChatMessage chat:
+                    //    targetID = _activeConnection.GetValueOrDefault(chat.From);
+                    //    break;
+                    //case ScreenFrameMessage screenFrame:
+                    //    targetID = _activeConnection.GetValueOrDefault(screenFrame.From);
+                    //    System.Diagnostics.Debug.WriteLine($"[SERVER] Forwarding Screen from {screenFrame.From} to {targetID}");
+                    //    break;
                     case Log log:
                         targetID = _activeConnection.GetValueOrDefault(log.From);
                         break;

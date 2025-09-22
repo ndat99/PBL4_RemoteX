@@ -14,7 +14,6 @@ namespace RemoteX.Client.Controllers
 
         //Events
         public event Action<string, System.Windows.Media.Brush> StatusChanged;
-        //public event Action<ClientInfo> SelfInfoReady;
         public event Action<ClientInfo> ClientConnected;
         public event Action<ConnectRequest> ConnectRequestReceived;
         public event Action<ChatMessage> ChatMessageReceived;
@@ -28,7 +27,7 @@ namespace RemoteX.Client.Controllers
                 _tcpClient = new TcpClient();
                 await _tcpClient.ConnectAsync(IP, port);
 
-                _handler = new ClientHandler(_tcpClient);
+                _handler = new ClientHandler(_tcpClient, IP, port);
 
                 //_handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
                 _handler.ChatMessageReceived += chatMsg => ChatMessageReceived?.Invoke(chatMsg);
@@ -37,7 +36,7 @@ namespace RemoteX.Client.Controllers
                 _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
 
                 _ = _handler.StartAsync();
-                //Gui info
+                //Gui info qua tcp
                 var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ TEST
                 //var config = IdGenerator.DeviceConfig(); //DÙNG CHÍNH THỨC
                 var info = new ClientInfo(config);
@@ -47,7 +46,7 @@ namespace RemoteX.Client.Controllers
                 ClientId = info.Id;
 
                 ClientConnected?.Invoke(info);
-                StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port}", System.Windows.Media.Brushes.Green);
+                StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port} (UDP:{port + 1})", System.Windows.Media.Brushes.Green);
             }
             catch (Exception ex)
             {
