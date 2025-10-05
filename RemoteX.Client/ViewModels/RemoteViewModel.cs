@@ -27,7 +27,7 @@ namespace RemoteX.Client.ViewModels
 
         public RemoteViewModel(ClientController clientController, string partnerId)
         {
-            ////Để test thử hiển thị như nào thôi
+            ////Màn hình loading
             var bmp = new BitmapImage(new Uri("pack://application:,,,/Views/Screenshot.png"));
             ScreenView = bmp;
 

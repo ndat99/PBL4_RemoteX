@@ -8,32 +8,51 @@ namespace RemoteX.Core.Networking
 {
     public class MessageListener
     {
-        private readonly TcpClient _client;
+        private readonly TcpClient? _tcpClient;
+        private readonly UdpClient? _udpClient;
+        private readonly bool _useUdp;
+        private bool _isRunning; //để chủ động stop listener cho udp
+
         public event Action<Message> MessageReceived;
         public event Action ClientDisconnected;
 
         public MessageListener(TcpClient client)
         {
-            _client = client;
+            _tcpClient = client;
+            _useUdp = false;
+        }
+
+        public MessageListener(UdpClient client)
+        {
+            _udpClient = client;
+            _useUdp = true;
         }
 
         public async Task StartAsync()
         {
+            _isRunning = true;
             try
             {
-                var stream = _client.GetStream();
-                using var reader = new StreamReader(_client.GetStream(), Encoding.UTF8);
-                var endpoint = _client.Client.RemoteEndPoint?.ToString();
-
-                while (true)
+                if (_useUdp)
                 {
-                    var line = await reader.ReadLineAsync();
-                    if (line == null) break; //client dong stream
-                    System.Diagnostics.Debug.WriteLine($"[RX] {endpoint} | {line}");
-                    var msg = Deserialize(line);
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Raw line: {line}");
-                    System.Diagnostics.Debug.WriteLine($"[PARSE] {endpoint} | Type={msg.Type} From={msg.From} To={msg.To}");
-                    MessageReceived?.Invoke(msg);
+                    while (_isRunning)
+                    {
+                        var result = await _udpClient.ReceiveAsync();
+                        //ReceiveAsync là hàm chặn, đợi có gói tin đến, nó chạy mãi nên phải có _isRunning để chủ động dừng
+                        HandleMessage(result.Buffer, result.RemoteEndPoint.ToString());
+                    }
+                }
+                else
+                {
+                    using var reader = new StreamReader(_tcpClient.GetStream(), Encoding.UTF8);
+                    var endpoint = _tcpClient.Client.RemoteEndPoint?.ToString();
+
+                    while (true)
+                    {
+                        var line = await reader.ReadLineAsync(); //đọc từng dòng json từ tcp stream
+                        if (line == null) break; //client dong stream
+                        HandleMessage(Encoding.UTF8.GetBytes(line), endpoint);
+                    }
                 }
             }
             catch (IOException)
@@ -46,9 +65,24 @@ namespace RemoteX.Core.Networking
             }
             finally
             {
-                ClientDisconnected?.Invoke();
-                _client.Close();
+                ClientDisconnected?.Invoke(); //báo cho client handler biết client đã disconnect
+
+                //cái nào có thì đóng cái đó
+                _tcpClient?.Close();
+                _udpClient?.Close();
             }
+        }
+
+        private void HandleMessage(byte[] buffer, string endpoint)
+        {
+            var json = Encoding.UTF8.GetString(buffer);
+            var prefix = _useUdp ? "[UDP RX]" : "[TCP RX]";
+            System.Diagnostics.Debug.WriteLine($"{prefix} {endpoint} | {json}");
+
+            var message = Deserialize(json);
+
+            System.Diagnostics.Debug.WriteLine($"[PARSE] {endpoint} | Type={message.Type} From={message.From} To={message.To}");
+            MessageReceived?.Invoke(message);
         }
 
         public static Message Deserialize(string json)
@@ -64,6 +98,12 @@ namespace RemoteX.Core.Networking
                 MessageType.Log => JsonSerializer.Deserialize<Log>(json),
                 _ => throw new NotSupportedException($"Unsupported message type {type}")
             };
+        }
+
+        //Dừng listener (chủ động)
+        public void Stop()
+        {
+            _isRunning = false;
         }
     }
 }

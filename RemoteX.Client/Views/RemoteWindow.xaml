@@ -84,7 +84,7 @@
         <StackPanel Orientation="Horizontal" 
                     HorizontalAlignment="Center" 
                     VerticalAlignment="Top" 
-                    Margin="0,10" 
+                    Margin="0,5" 
                     Background="#252526" 
                     Opacity="0.95">
             <StackPanel.Effect>
@@ -94,12 +94,12 @@
             <!-- Remote ID Display -->
 
             <!-- Action Buttons -->
-            <Border Background="Transparent" Padding="8,4">
+            <Border Background="Transparent" Padding="4,4">
                 <StackPanel Orientation="Horizontal">
-                    <Button x:Name="btnScreenshot" Content="Chụp màn hình" 
+                    <Button x:Name="btnScreenshot" Content="⛶  Chụp màn hình" 
                             Style="{StaticResource ToolbarButtonStyle}"
                             Click="btnScreenshot_Click"/>
-                    <Button x:Name="btnDisconnect" Content="Ngắt kết nối" 
+                    <Button x:Name="btnDisconnect" Content="⏻ Ngắt kết nối" 
                             Style="{StaticResource DisconnectButtonStyle}"
                             Click="btnDisconnect_Click"/>
                 </StackPanel>
