@@ -25,8 +25,8 @@ namespace RemoteX.Core.Utils
                 _deviceConfig = JsonSerializer.Deserialize<DeviceConfig>(json);
 
                 _deviceConfig.DeviceID = IdGenerator.GetMacAddress();
-                //_deviceConfig.Password = PasswordGenerator.GenerateRandomPassword();
-                _deviceConfig.Password = 12345.ToString();
+                _deviceConfig.Password = PasswordGenerator.GenerateRandomPassword();
+                //_deviceConfig.Password = 12345.ToString();
                 SaveConfig(_deviceConfig);
             }
             else
