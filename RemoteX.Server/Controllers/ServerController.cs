@@ -84,6 +84,8 @@ namespace RemoteX.Server.Controllers
 
         private async void AcceptUdpMessages()
         {
+            System.Diagnostics.Debug.WriteLine($"[UDP] Listener started on port {((IPEndPoint)_udpListener.Client.LocalEndPoint).Port}");
+
             while (_isRunning)
             {
                 try
@@ -91,7 +93,7 @@ namespace RemoteX.Server.Controllers
                     var result = await _udpListener.ReceiveAsync();
                     var json = System.Text.Encoding.UTF8.GetString(result.Buffer);
                     var msg = MessageListener.Deserialize(json);
-                    System.Diagnostics.Debug.WriteLine($"[UDP] Received from {result.RemoteEndPoint}: {msg.From} -> {msg.To}");
+                    System.Diagnostics.Debug.WriteLine($"[UDP RX] ✅ From {result.RemoteEndPoint}: Type={msg.Type}, From={msg.From}, To={msg.To}");
 
                     //lưu mapping ID -> IPEndPoint
                     if (!string.IsNullOrEmpty(msg.From))
@@ -155,13 +157,18 @@ namespace RemoteX.Server.Controllers
             while (_isRunning)
             {
                 try
-                {
-                var tcpClient = await _tcpListener.AcceptTcpClientAsync();
-                var serverPort = ((IPEndPoint)_tcpListener.LocalEndpoint).Port;
-                var udpPort = serverPort + 1;
+                    {
+                    var tcpClient = await _tcpListener.AcceptTcpClientAsync();
 
-                var serverIP = ((IPEndPoint)_tcpListener.LocalEndpoint).Address.ToString();
-                if (serverIP == "0.0.0.0")  serverIP = "127.0.0.1"; //nếu bind Any thì đổi thành localhost
+                    var localEndpoint = (IPEndPoint)tcpClient.Client.LocalEndPoint;
+                    string serverIP = localEndpoint.Address.ToString();
+
+                    var serverPort = ((IPEndPoint)_tcpListener.LocalEndpoint).Port;
+                    int udpPort = serverPort + 1;
+
+                    if (serverIP == "0.0.0.0" || serverIP == "::")
+                        serverIP = "127.0.0.1"; //nếu bind Any thì đổi thành localhost
+                    System.Diagnostics.Debug.WriteLine($"[SERVER] Client connected, using server IP: {serverIP} for UDP");
 
                     var handler = new ClientHandler(tcpClient, serverIP, udpPort);
                     // Khi client ngắt kết nối, xóa nó khỏi danh sách
