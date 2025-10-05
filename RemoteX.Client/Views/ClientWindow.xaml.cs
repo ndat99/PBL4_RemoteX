@@ -49,7 +49,8 @@ namespace RemoteX.Client.Views
 
             LoadConfig();
             //await Task.Delay(1000); // đợi 1s rồi connect
-            await _client.Connect("127.0.0.1", 5000);
+            //await _client.Connect("127.0.0.1", 5000);
+            await _client.Connect(_config.IP, 5000);
 
             txtMessage.KeyDown += (s, args) =>
             {

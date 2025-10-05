@@ -28,7 +28,9 @@ namespace RemoteX.Core.Services
         public ClientHandler(TcpClient client, string serverIP, int udpPort)
         {
             _tcpClient = client;
-            _udpClient = new UdpClient(0);
+            _udpClient = new UdpClient(0); //random port
+
+            //var remoteEndPoint = (IPEndPoint)client.Client.RemoteEndPoint;
             _serverUdpEndpoint = new IPEndPoint(IPAddress.Parse(serverIP), udpPort);
 
             // tcp listener
@@ -100,10 +102,12 @@ namespace RemoteX.Core.Services
             {
                 if (msg is ChatMessage || msg is ScreenFrameMessage)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[ClientHandler] Sending UDP: {msg.GetType().Name} from {msg.From} to {msg.To}");
                     await MessageSender.Send(_udpClient, _serverUdpEndpoint, msg);
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine($"[ClientHandler] Sending TCP: {msg.GetType().Name} from {msg.From} to {msg.To}");
                     await MessageSender.Send(_tcpClient, msg);
                 }
             }

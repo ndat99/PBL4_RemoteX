@@ -97,6 +97,7 @@ namespace RemoteX.Server.Controllers
                     if (!string.IsNullOrEmpty(msg.From))
                     {
                         _clientUdpEndPoints[msg.From] = result.RemoteEndPoint;
+                        System.Diagnostics.Debug.WriteLine($"[UDP] Registered endpoint for {msg.From}: {result.RemoteEndPoint}");
                     }
                     await ForwardUdpMessageAsync(msg);
                 }
@@ -110,6 +111,12 @@ namespace RemoteX.Server.Controllers
 
         private async Task ForwardUdpMessageAsync(Message msg)
         {
+            if (msg is ChatMessage chat && chat.Message == "UDP_INIT")
+            {
+                //Dùng để client gửi port udp lên server
+                System.Diagnostics.Debug.WriteLine($"[UDP] Received UDP_INIT from {chat.From}");
+                return;
+            }
             string targetID = null;
             lock (_lockObject)
             {
@@ -152,8 +159,11 @@ namespace RemoteX.Server.Controllers
                 var tcpClient = await _tcpListener.AcceptTcpClientAsync();
                 var serverPort = ((IPEndPoint)_tcpListener.LocalEndpoint).Port;
                 var udpPort = serverPort + 1;
-            
-                var handler = new ClientHandler(tcpClient, "127.0.0.1", udpPort);
+
+                var serverIP = ((IPEndPoint)_tcpListener.LocalEndpoint).Address.ToString();
+                if (serverIP == "0.0.0.0")  serverIP = "127.0.0.1"; //nếu bind Any thì đổi thành localhost
+
+                    var handler = new ClientHandler(tcpClient, serverIP, udpPort);
                     // Khi client ngắt kết nối, xóa nó khỏi danh sách
                     handler.Disconnected += async disconnectedHandler =>
                     {
@@ -226,15 +236,15 @@ namespace RemoteX.Server.Controllers
 
 
 
-                    //handler.ChatMessageReceived += async chatMsg =>
-                    //{
-                    //    await ForwardMessageAsync(chatMsg);
-                    //};
+                    handler.ChatMessageReceived += async chatMsg =>
+                    {
+                        await ForwardUdpMessageAsync(chatMsg);
+                    };
 
-                    //handler.ScreenFrameReceived += async screenMsg =>
-                    //{
-                    //    await ForwardMessageAsync(screenMsg);
-                    //};
+                    handler.ScreenFrameReceived += async screenMsg =>
+                    {
+                        await ForwardUdpMessageAsync(screenMsg);
+                    };
 
                     lock (_lockObject)
                     {
