@@ -84,6 +84,8 @@ namespace RemoteX.Server.Controllers
 
         private async void AcceptUdpMessages()
         {
+            System.Diagnostics.Debug.WriteLine($"[UDP] Listener started on port {((IPEndPoint)_udpListener.Client.LocalEndPoint).Port}");
+
             while (_isRunning)
             {
                 try
@@ -91,12 +93,13 @@ namespace RemoteX.Server.Controllers
                     var result = await _udpListener.ReceiveAsync();
                     var json = System.Text.Encoding.UTF8.GetString(result.Buffer);
                     var msg = MessageListener.Deserialize(json);
-                    System.Diagnostics.Debug.WriteLine($"[UDP] Received from {result.RemoteEndPoint}: {msg.From} -> {msg.To}");
+                    System.Diagnostics.Debug.WriteLine($"[UDP RX] ✅ From {result.RemoteEndPoint}: Type={msg.Type}, From={msg.From}, To={msg.To}");
 
                     //lưu mapping ID -> IPEndPoint
                     if (!string.IsNullOrEmpty(msg.From))
                     {
                         _clientUdpEndPoints[msg.From] = result.RemoteEndPoint;
+                        System.Diagnostics.Debug.WriteLine($"[UDP] Registered endpoint for {msg.From}: {result.RemoteEndPoint}");
                     }
                     await ForwardUdpMessageAsync(msg);
                 }
@@ -110,6 +113,12 @@ namespace RemoteX.Server.Controllers
 
         private async Task ForwardUdpMessageAsync(Message msg)
         {
+            if (msg is ChatMessage chat && chat.Message == "UDP_INIT")
+            {
+                //Dùng để client gửi port udp lên server
+                System.Diagnostics.Debug.WriteLine($"[UDP] Received UDP_INIT from {chat.From}");
+                return;
+            }
             string targetID = null;
             lock (_lockObject)
             {
@@ -148,12 +157,20 @@ namespace RemoteX.Server.Controllers
             while (_isRunning)
             {
                 try
-                {
-                var tcpClient = await _tcpListener.AcceptTcpClientAsync();
-                var serverPort = ((IPEndPoint)_tcpListener.LocalEndpoint).Port;
-                var udpPort = serverPort + 1;
-            
-                var handler = new ClientHandler(tcpClient, "127.0.0.1", udpPort);
+                    {
+                    var tcpClient = await _tcpListener.AcceptTcpClientAsync();
+
+                    var localEndpoint = (IPEndPoint)tcpClient.Client.LocalEndPoint;
+                    string serverIP = localEndpoint.Address.ToString();
+
+                    var serverPort = ((IPEndPoint)_tcpListener.LocalEndpoint).Port;
+                    int udpPort = serverPort + 1;
+
+                    if (serverIP == "0.0.0.0" || serverIP == "::")
+                        serverIP = "127.0.0.1"; //nếu bind Any thì đổi thành localhost
+                    System.Diagnostics.Debug.WriteLine($"[SERVER] Client connected, using server IP: {serverIP} for UDP");
+
+                    var handler = new ClientHandler(tcpClient, serverIP, udpPort);
                     // Khi client ngắt kết nối, xóa nó khỏi danh sách
                     handler.Disconnected += async disconnectedHandler =>
                     {
@@ -226,15 +243,15 @@ namespace RemoteX.Server.Controllers
 
 
 
-                    //handler.ChatMessageReceived += async chatMsg =>
-                    //{
-                    //    await ForwardMessageAsync(chatMsg);
-                    //};
+                    handler.ChatMessageReceived += async chatMsg =>
+                    {
+                        await ForwardUdpMessageAsync(chatMsg);
+                    };
 
-                    //handler.ScreenFrameReceived += async screenMsg =>
-                    //{
-                    //    await ForwardMessageAsync(screenMsg);
-                    //};
+                    handler.ScreenFrameReceived += async screenMsg =>
+                    {
+                        await ForwardUdpMessageAsync(screenMsg);
+                    };
 
                     lock (_lockObject)
                     {
