@@ -76,7 +76,8 @@ namespace RemoteX.Core.Networking
         private void HandleMessage(byte[] buffer, string endpoint)
         {
             var json = Encoding.UTF8.GetString(buffer);
-            System.Diagnostics.Debug.WriteLine($"[UDP RX] {endpoint} | {json}");
+            var prefix = _useUdp ? "[UDP RX]" : "[TCP RX]";
+            System.Diagnostics.Debug.WriteLine($"{prefix} {endpoint} | {json}");
 
             var message = Deserialize(json);
 

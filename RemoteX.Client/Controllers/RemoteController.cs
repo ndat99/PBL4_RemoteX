@@ -18,7 +18,7 @@ namespace RemoteX.Client.Controllers
     {
         public readonly ClientController _clientController;
         private int fps = 20; //tốc độ khung hình
-        private int quality = 50; //chất lượng ảnh
+        private int quality =1 ; //chất lượng ảnh
 
         public RemoteController(ClientController clientController)
         {
@@ -42,7 +42,8 @@ namespace RemoteX.Client.Controllers
                     Height = bmp.Height,
                     Timestamp = DateTime.Now,
                 };
-                await MessageSender.Send(_clientController.TcpClient, frame);
+                //await MessageSender.Send(_clientController.TcpClient, frame);
+                await _clientController.SendAsync(frame);
                 await Task.Delay(1000/fps, token); //10fps
             }
         }

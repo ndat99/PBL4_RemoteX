@@ -27,7 +27,8 @@ namespace RemoteX.Client.Controllers
                 _tcpClient = new TcpClient();
                 await _tcpClient.ConnectAsync(IP, port);
 
-                _handler = new ClientHandler(_tcpClient, IP, port);
+                int udpPort = port + 1;
+                _handler = new ClientHandler(_tcpClient, IP, udpPort);
 
                 //_handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
                 _handler.ChatMessageReceived += chatMsg => ChatMessageReceived?.Invoke(chatMsg);
@@ -42,11 +43,20 @@ namespace RemoteX.Client.Controllers
                 var info = new ClientInfo(config);
 
                 await _handler.SendAsync(info);
-
                 ClientId = info.Id;
 
+                await Task.Delay(100); //đợi tcp gửi clientInfo xong
+                var udpInit = new ChatMessage
+                {
+                    From = ClientId,
+                    To = "Server",
+                    Message = "UDP_INIT", //Dùng để server biết port UDP của client
+                    Timestamp = DateTime.Now
+                };
+                await _handler.SendAsync(udpInit);
+
                 ClientConnected?.Invoke(info);
-                StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port} (UDP:{port + 1})", System.Windows.Media.Brushes.Green);
+                StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port} (UDP:{udpPort})", System.Windows.Media.Brushes.Green);
             }
             catch (Exception ex)
             {
