@@ -2,6 +2,7 @@
 using RemoteX.Core.Utils;
 using System.Net.Sockets;
 using RemoteX.Core.Services;
+using RemoteX.Client.Services;
 
 namespace RemoteX.Client.Controllers
 {
@@ -19,6 +20,7 @@ namespace RemoteX.Client.Controllers
         public event Action<ChatMessage> ChatMessageReceived;
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
         public event Action<Log> LogReceived;
+        public event Action<MouseEventMessage> MouseEventReceived;
 
         public async Task Connect(string IP, int port)
         {
@@ -34,6 +36,7 @@ namespace RemoteX.Client.Controllers
                 _handler.ChatMessageReceived += chatMsg => ChatMessageReceived?.Invoke(chatMsg);
                 _handler.ScreenFrameReceived += screen => ScreenFrameReceived?.Invoke(screen);
                 _handler.LogReceived += log => LogReceived?.Invoke(log);
+                _handler.MouseEventReceived += mouseMsg => MouseService.ExecuteMouseEvent(mouseMsg);
                 _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
 
                 _ = _handler.StartAsync();

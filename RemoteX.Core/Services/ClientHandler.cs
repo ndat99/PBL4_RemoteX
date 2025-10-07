@@ -25,6 +25,7 @@ namespace RemoteX.Core.Services
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
         public event Action<ConnectRequest> ConnectRequestReceived;
         public event Action<Log> LogReceived;
+        public event Action<MouseEventMessage> MouseEventReceived;
         public ClientHandler(TcpClient client, string serverIP, int udpPort)
         {
             _tcpClient = client;
@@ -76,6 +77,9 @@ namespace RemoteX.Core.Services
                 case ScreenFrameMessage frameMsg:
                     ScreenFrameReceived?.Invoke(frameMsg);
                     break;
+                case MouseEventMessage mouseMsg:
+                    MouseEventReceived?.Invoke(mouseMsg);
+                    break;
                 default:
                     break;
             }
@@ -100,7 +104,7 @@ namespace RemoteX.Core.Services
 
             try
             {
-                if (msg is ChatMessage || msg is ScreenFrameMessage)
+                if (msg is ChatMessage || msg is ScreenFrameMessage || msg is MouseEventMessage)
                 {
                     System.Diagnostics.Debug.WriteLine($"[ClientHandler] Sending UDP: {msg.GetType().Name} from {msg.From} to {msg.To}");
                     await MessageSender.Send(_udpClient, _serverUdpEndpoint, msg);

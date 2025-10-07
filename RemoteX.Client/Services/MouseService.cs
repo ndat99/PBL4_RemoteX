@@ -60,11 +60,53 @@ namespace RemoteX.Client.Services
             int remoteScreenWidth,
             int remoteScreenHeight)
         {
-            double remoteAspect = (double)remoteScreenWidth / remoteScreenHeight; //tỷ lệ màn hình remote
-            double controlAspect = (double)imageControlSize.Width / imageControlSize.Height; //tỷ lệ của Image Control
+            //tỷ lệ màn hình remote (màn hình thật)
+            double remoteAspect = (double)remoteScreenWidth / remoteScreenHeight;
+            //tỷ lệ của Image Control (màn hình điều khiển)
+            double controlAspect = (double)imageControlSize.Width / imageControlSize.Height;
             
             double actualImageWidth, actualImageHeight;
             double offsetX = 0, offsetY = 0;
+
+            //xử lý phần letterbox (viền đen thừa ra trên/dưới hoặc trái/phải)
+            //tỷ lệ màn hình điều khiển > tỷ lệ màn hình thật => viền đen trái/phải
+            if (controlAspect > remoteAspect)
+            {
+                //chiều cao thực = chiều cao ảnh hiển thị
+                actualImageHeight = imageControlSize.Height;
+                //chiều rộng thực = chiều cao thực * tỷ lệ màn hình thật
+                actualImageWidth = actualImageHeight * remoteAspect;
+                //viền đen thừa ra ở mỗi bên trái/phải = (chiều dài màn hình điều khiển - chiều dài thực) chia 2
+                offsetX = (imageControlSize.Width - actualImageWidth) / 2;
+            }
+            else //viền đen trên/dưới
+            {
+                //chiều rộng thực = chiều rộng ảnh hiển thị
+                actualImageWidth = imageControlSize.Width;
+                //chiều cao thực = chiều rộng thực / tỷ lệ màn hình thật
+                actualImageHeight = actualImageWidth / remoteAspect;
+                //viền đen thừa ra ở mỗi phía trên/dưới = (chiều rộng màn hình điều khiển - chiều rộng thực) chia 2
+                offsetY = (imageControlSize.Height - actualImageHeight) / 2;
+            }
+            //tọa độ tương đối trong vùng ảnh thực tế (trừ đi tọa độ biên phần viền đen)
+            double relativeX = localPoint.X - offsetX;
+            double relativeY = localPoint.Y - offsetY;
+
+            //kiểm tra xem có click vào phần viền đen hay không
+            if (relativeX < 0 || relativeX >actualImageWidth ||
+                relativeY < 0 || relativeY > actualImageHeight)
+            {
+                return (-1, -1);
+            }
+
+            //scale lên tọa độ thực
+            int remoteX = (int)(relativeX / actualImageHeight * remoteScreenHeight);
+            int remoteY = (int)(relativeY / actualImageWidth * remoteScreenHeight);
+
+            remoteX = Math.Max(0, Math.Min(remoteScreenWidth - 1, remoteX));
+            remoteY = Math.Max(0, Math.Min(remoteScreenHeight - 1, remoteY));
+
+            return (remoteX, remoteY);
         }
     }
 }
