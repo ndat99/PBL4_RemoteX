@@ -55,8 +55,8 @@ namespace RemoteX.Client.Services
         }
 
         public static (int X, int Y) ConvertToRemoteCoordinates(
-            System.Windows.Point localPoint,
-            System.Windows.Size imageControlSize,
+            System.Windows.Point localPoint, //tọa độ click trong Image Control (màn hình điều khiển, tính cả letterbox)
+            System.Windows.Size imageControlSize, //kích thước Image Control (màn hình điều khiển, tính cả letterbox)
             int remoteScreenWidth,
             int remoteScreenHeight)
         {
@@ -85,7 +85,7 @@ namespace RemoteX.Client.Services
                 actualImageWidth = imageControlSize.Width;
                 //chiều cao thực = chiều rộng thực / tỷ lệ màn hình thật
                 actualImageHeight = actualImageWidth / remoteAspect;
-                //viền đen thừa ra ở mỗi phía trên/dưới = (chiều rộng màn hình điều khiển - chiều rộng thực) chia 2
+                //viền đen thừa ra ở mỗi phía trên/dưới = (chiều cao màn hình điều khiển - chiều cao thực) chia 2
                 offsetY = (imageControlSize.Height - actualImageHeight) / 2;
             }
             //tọa độ tương đối trong vùng ảnh thực tế (trừ đi tọa độ biên phần viền đen)
@@ -93,15 +93,15 @@ namespace RemoteX.Client.Services
             double relativeY = localPoint.Y - offsetY;
 
             //kiểm tra xem có click vào phần viền đen hay không
-            if (relativeX < 0 || relativeX >actualImageWidth ||
+            if (relativeX < 0 || relativeX > actualImageWidth ||
                 relativeY < 0 || relativeY > actualImageHeight)
             {
                 return (-1, -1);
             }
 
             //scale lên tọa độ thực
-            int remoteX = (int)(relativeX / actualImageHeight * remoteScreenHeight);
-            int remoteY = (int)(relativeY / actualImageWidth * remoteScreenHeight);
+            int remoteX = (int)(relativeX / actualImageWidth * remoteScreenWidth);
+            int remoteY = (int)(relativeY / actualImageHeight * remoteScreenHeight);
 
             remoteX = Math.Max(0, Math.Min(remoteScreenWidth - 1, remoteX));
             remoteY = Math.Max(0, Math.Min(remoteScreenHeight - 1, remoteY));

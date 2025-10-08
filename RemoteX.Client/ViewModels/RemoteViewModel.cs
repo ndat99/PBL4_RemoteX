@@ -3,6 +3,8 @@ using RemoteX.Client.Services;
 using RemoteX.Core.Models;
 using RemoteX.Core.Utils;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 
@@ -71,6 +73,39 @@ namespace RemoteX.Client.ViewModels
         public Task StartStreamingAsync(CancellationToken token)
         {
             return _remoteController.StartStreamingAsync(PartnerId, token);
+        }
+
+        //chụp màn hình
+        public void SaveScreenShot()
+        {
+            if (ScreenView == null)
+            {
+                return;
+            }
+
+            try
+            {
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string fileName = $"Screenshot_{DateTime.Now:dd-MM-yyyy_HH-mm-ss}.jpg";
+                string fullPath = Path.Combine(path, fileName);
+
+                //tạo mã hóa JPEG
+                JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+                encoder.QualityLevel = 100;
+                encoder.Frames.Add(BitmapFrame.Create(ScreenView));
+
+                using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                {
+                    encoder.Save(fileStream);
+                    System.Diagnostics.Debug.WriteLine($"[SCREENSHOT] Screenshot saved to {fullPath}");
+                    System.Windows.MessageBox.Show($"Đã lưu ảnh chụp màn hình thành công vào {path}", "Hoàn tất",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SCREENSHOT ERROR] {e.Message}");
+            }
         }
 
         //gửi click event
