@@ -96,6 +96,7 @@ namespace RemoteX.Core.Networking
                 MessageType.Chat => JsonSerializer.Deserialize<ChatMessage>(json),
                 MessageType.Screen => JsonSerializer.Deserialize<ScreenFrameMessage>(json),
                 MessageType.Log => JsonSerializer.Deserialize<Log>(json),
+                MessageType.MouseEvent => JsonSerializer.Deserialize<MouseEventMessage>(json),
                 _ => throw new NotSupportedException($"Unsupported message type {type}")
             };
         }
