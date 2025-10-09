@@ -25,6 +25,7 @@ namespace RemoteX.Core.Services
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
         public event Action<ConnectRequest> ConnectRequestReceived;
         public event Action<Log> LogReceived;
+        public event Action<MouseEventMessage> MouseEventReceived;
         public ClientHandler(TcpClient client, string serverIP, int udpPort)
         {
             _tcpClient = client;
@@ -76,20 +77,23 @@ namespace RemoteX.Core.Services
                 case ScreenFrameMessage frameMsg:
                     ScreenFrameReceived?.Invoke(frameMsg);
                     break;
+                case MouseEventMessage mouseMsg:
+                    MouseEventReceived?.Invoke(mouseMsg);
+                    break;
                 default:
                     break;
             }
         }
 
-        public Task StartAsync()
+        public void Start()
         {
             //start cả 2 listener
-            _= _tcpListener.StartAsync();
-            _= _udpListener.StartAsync();
-            return Task.CompletedTask;
+            _tcpListener.Start();
+            _udpListener.Start();
+            return;
         }
 
-        public async Task SendAsync(Message msg)
+        public void Send(Message msg)
         {
             //Kiểm tra xem client còn connect ko
             if (_tcpClient?.Connected != true)
@@ -100,15 +104,15 @@ namespace RemoteX.Core.Services
 
             try
             {
-                if (msg is ChatMessage || msg is ScreenFrameMessage)
+                if (msg is ChatMessage || msg is ScreenFrameMessage || msg is MouseEventMessage)
                 {
                     System.Diagnostics.Debug.WriteLine($"[ClientHandler] Sending UDP: {msg.GetType().Name} from {msg.From} to {msg.To}");
-                    await MessageSender.Send(_udpClient, _serverUdpEndpoint, msg);
+                    MessageSender.Send(_udpClient, _serverUdpEndpoint, msg);
                 }
                 else
                 {
                     System.Diagnostics.Debug.WriteLine($"[ClientHandler] Sending TCP: {msg.GetType().Name} from {msg.From} to {msg.To}");
-                    await MessageSender.Send(_tcpClient, msg);
+                    MessageSender.Send(_tcpClient, msg);
                 }
             }
             catch (Exception ex) when (ex is IOException || ex is SocketException || ex is ObjectDisposedException)
