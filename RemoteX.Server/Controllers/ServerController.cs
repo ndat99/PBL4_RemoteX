@@ -82,7 +82,7 @@ namespace RemoteX.Server.Controllers
             }
         }
 
-        private async void AcceptUdpMessages()
+        private void AcceptUdpMessages()
         {
             System.Diagnostics.Debug.WriteLine($"[UDP] Listener started on port {((IPEndPoint)_udpListener.Client.LocalEndPoint).Port}");
 
@@ -90,18 +90,19 @@ namespace RemoteX.Server.Controllers
             {
                 try
                 {
-                    var result = await _udpListener.ReceiveAsync();
-                    var json = System.Text.Encoding.UTF8.GetString(result.Buffer);
+                    var remoteEP = new IPEndPoint(IPAddress.Any, 0);
+                    byte[] buffer = _udpListener.Receive(ref remoteEP); //trả về mảng byte và điền thông tin người gửi vào biến remoteEP
+                    var json = System.Text.Encoding.UTF8.GetString(buffer);
                     var msg = MessageListener.Deserialize(json);
-                    System.Diagnostics.Debug.WriteLine($"[UDP RX] ✅ From {result.RemoteEndPoint}: Type={msg.Type}, From={msg.From}, To={msg.To}");
+                    System.Diagnostics.Debug.WriteLine($"[UDP RX] ✅ From {remoteEP}: Type={msg.Type}, From={msg.From}, To={msg.To}");
 
                     //lưu mapping ID -> IPEndPoint
                     if (!string.IsNullOrEmpty(msg.From))
                     {
-                        _clientUdpEndPoints[msg.From] = result.RemoteEndPoint;
-                        System.Diagnostics.Debug.WriteLine($"[UDP] Registered endpoint for {msg.From}: {result.RemoteEndPoint}");
+                        _clientUdpEndPoints[msg.From] = remoteEP;
+                        System.Diagnostics.Debug.WriteLine($"[UDP] Registered endpoint for {msg.From}: {remoteEP}");
                     }
-                    await ForwardUdpMessageAsync(msg);
+                    ForwardUdpMessage(msg);
                 }
                 catch (Exception ex)
                 {
@@ -111,7 +112,7 @@ namespace RemoteX.Server.Controllers
             }
         }
 
-        private async Task ForwardUdpMessageAsync(Message msg)
+        private void ForwardUdpMessage(Message msg)
         {
             if (msg is ChatMessage chat && chat.Message == "UDP_INIT")
             {
@@ -129,7 +130,7 @@ namespace RemoteX.Server.Controllers
                 try
                 {
                     System.Diagnostics.Debug.WriteLine($"[UDP] Forwarding to {targetID} at {targetEndPoint}");
-                    await MessageSender.Send(_udpListener, targetEndPoint, msg);
+                    MessageSender.Send(_udpListener, targetEndPoint, msg);
                 }
                 catch (Exception ex)
                 {
@@ -137,14 +138,14 @@ namespace RemoteX.Server.Controllers
                 }
             }
         }
-        private async Task SafeSendAsync(ClientHandler handler, Message message)
+        private void SafeSend(ClientHandler handler, Message message)
         {
             try
             {
                 //Kiểm tra handler và connection còn tồn tại ko
                 if (handler?.Client?.Connected == true)
                     //còn tồn tại connection thì mới gửi message
-                    await handler.SendAsync(message);
+                    handler.Send(message);
             }
             catch (Exception e) when (e is IOException || e is SocketException || e is ObjectDisposedException)
             {
@@ -152,13 +153,13 @@ namespace RemoteX.Server.Controllers
             }
         }
 
-        private async void AcceptClients()
+        private void AcceptClients()
         {
             while (_isRunning)
             {
                 try
                     {
-                    var tcpClient = await _tcpListener.AcceptTcpClientAsync();
+                    var tcpClient = _tcpListener.AcceptTcpClient();
 
                     var localEndpoint = (IPEndPoint)tcpClient.Client.LocalEndPoint;
                     string serverIP = localEndpoint.Address.ToString();
@@ -172,7 +173,7 @@ namespace RemoteX.Server.Controllers
 
                     var handler = new ClientHandler(tcpClient, serverIP, udpPort);
                     // Khi client ngắt kết nối, xóa nó khỏi danh sách
-                    handler.Disconnected += async disconnectedHandler =>
+                    handler.Disconnected += disconnectedHandler =>
                     {
                         try
                         {
@@ -207,7 +208,7 @@ namespace RemoteX.Server.Controllers
                             {
                                 try
                                 {
-                                    await SafeSendAsync(partnerHandler, new Log
+                                    SafeSend(partnerHandler, new Log
                                     {
                                         From = "Server",
                                         To = partnerID,
@@ -238,26 +239,24 @@ namespace RemoteX.Server.Controllers
                     //Khi nhận Connect Request
                     handler.ConnectRequestReceived += request =>
                     {
-                        _ = Task.Run(() => HandleConnectRequest(handler, request));
+                        new Thread(() => HandleConnectRequest(handler, request)) { IsBackground = true }.Start();
                     };
 
-
-
-                    handler.ChatMessageReceived += async chatMsg =>
+                    handler.ChatMessageReceived += chatMsg =>
                     {
-                        await ForwardUdpMessageAsync(chatMsg);
+                        ForwardUdpMessage(chatMsg);
                     };
 
-                    handler.ScreenFrameReceived += async screenMsg =>
+                    handler.ScreenFrameReceived += screenMsg =>
                     {
-                        await ForwardUdpMessageAsync(screenMsg);
+                        ForwardUdpMessage(screenMsg);
                     };
 
                     lock (_lockObject)
                     {
-                    _handlers.Add(handler);
+                        _handlers.Add(handler);
                     }
-                    _ = handler.StartAsync();
+                    handler.Start();
                 }
                 catch(Exception ex)
                 {
@@ -266,7 +265,7 @@ namespace RemoteX.Server.Controllers
                 }
             }
         }
-        private async Task HandleConnectRequest(ClientHandler sender, ConnectRequest request)
+        private void HandleConnectRequest(ClientHandler sender, ConnectRequest request)
         {
             // Nếu client dừng điều khiển thì báo về trạng thái như cũ
             if (request.Status == "Disconnect")
@@ -281,7 +280,7 @@ namespace RemoteX.Server.Controllers
                     }
                 }
 
-                await sender.SendAsync(new Log
+                sender.Send(new Log
                 {
                     From = "Server",
                     To = request.From,
@@ -319,7 +318,7 @@ namespace RemoteX.Server.Controllers
                 if (target == null)
                 {
                     System.Diagnostics.Debug.WriteLine($"[SERVER] Target {request.To} not found");
-                    await sender.SendAsync(new Log
+                    sender.Send(new Log
                     {
                         From = "Server",
                         To = request.From,
@@ -331,7 +330,7 @@ namespace RemoteX.Server.Controllers
                 if (!passwordValid)
                 {
                     System.Diagnostics.Debug.WriteLine($"[SERVER] Wrong password");
-                    await sender.SendAsync(new Log
+                    sender.Send(new Log
                     {
                         From = "Server",
                         To = request.From,
@@ -341,14 +340,14 @@ namespace RemoteX.Server.Controllers
                 }
 
                 System.Diagnostics.Debug.WriteLine($"[SERVER] Sending success response");
-                await SafeSendAsync(sender, new Log
+                SafeSend(sender, new Log
                 {
                     From = "Server",
                     To = request.From,
                     Content = $" ✔ Đang kết nối tới {request.To}"
                 });
 
-                await SafeSendAsync(target, new Log
+                SafeSend(target, new Log
                 {
                     From = request.From,
                     To = request.To,
@@ -364,7 +363,7 @@ namespace RemoteX.Server.Controllers
                 StatusChanged?.Invoke($"[Lỗi kết nối] {ex.Message}");
                 try
                 {
-                    await sender.SendAsync(new Log
+                    sender.Send(new Log
                     {
                         From = "Server",
                         To = request.From,
@@ -378,7 +377,7 @@ namespace RemoteX.Server.Controllers
             }
         }
 
-        public async Task ForwardTcpMessageAsync(Message msg)
+        public void ForwardTcpMessage(Message msg)
         {
             string targetID = null;
             ClientHandler targetHandler = null;
@@ -422,7 +421,7 @@ namespace RemoteX.Server.Controllers
             {
                 try
                 {
-                    await SafeSendAsync(targetHandler, msg);
+                    SafeSend(targetHandler, msg);
                 }
                 catch (Exception ex)
                 {
@@ -433,7 +432,7 @@ namespace RemoteX.Server.Controllers
             {
                 try
                 {
-                    await SafeSendAsync(senderHandler, new Log
+                    SafeSend(senderHandler, new Log
                     {
                         From = "Server",
                         To = msg.From,

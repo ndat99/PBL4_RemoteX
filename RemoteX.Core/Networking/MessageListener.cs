@@ -1,5 +1,6 @@
 ﻿using RemoteX.Core.Enums;
 using RemoteX.Core.Models;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -28,49 +29,67 @@ namespace RemoteX.Core.Networking
             _useUdp = true;
         }
 
-        public async Task StartAsync()
+        public void Start()
         {
             _isRunning = true;
-            try
+            Thread listenThread = new Thread(() =>
             {
-                if (_useUdp)
+                try
                 {
-                    while (_isRunning)
+                    if (_useUdp)
                     {
-                        var result = await _udpClient.ReceiveAsync();
-                        //ReceiveAsync là hàm chặn, đợi có gói tin đến, nó chạy mãi nên phải có _isRunning để chủ động dừng
-                        HandleMessage(result.Buffer, result.RemoteEndPoint.ToString());
+                        while (_isRunning)
+                        {
+                            try
+                            {
+                                var remoteEP = new IPEndPoint(IPAddress.Any, 0);
+                                byte[] buffer = _udpClient.Receive(ref remoteEP);
+                                HandleMessage(buffer, remoteEP.ToString());
+                            }
+                            catch (SocketException)
+                            {
+                                //udp client bị đóng thì ném exception rồi thoát vòng lặp
+                                if (!_isRunning) break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        using var reader = new StreamReader(_tcpClient.GetStream(), Encoding.UTF8);
+                        var endpoint = _tcpClient.Client.RemoteEndPoint?.ToString();
+
+                        while (true)
+                        {
+                            var line = reader.ReadLine(); //đọc từng dòng json từ tcp stream
+                            if (line == null) break; //client dong stream
+                            HandleMessage(Encoding.UTF8.GetBytes(line), endpoint);
+                        }
                     }
                 }
-                else
+                catch (IOException ex)
                 {
-                    using var reader = new StreamReader(_tcpClient.GetStream(), Encoding.UTF8);
-                    var endpoint = _tcpClient.Client.RemoteEndPoint?.ToString();
-
-                    while (true)
-                    {
-                        var line = await reader.ReadLineAsync(); //đọc từng dòng json từ tcp stream
-                        if (line == null) break; //client dong stream
-                        HandleMessage(Encoding.UTF8.GetBytes(line), endpoint);
-                    }
+                    System.Diagnostics.Debug.WriteLine($"[Listener IO Error] {ex.Message}");
                 }
-            }
-            catch (IOException)
-            {
+                catch (SocketException ex)
+                {
+                    //client tat app
+                    System.Diagnostics.Debug.WriteLine($"[Listener Socket Error] {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Listener General Error] {ex.ToString()}");
+                }
+                finally
+                {
+                    ClientDisconnected?.Invoke(); //báo cho client handler biết client đã disconnect
 
-            }
-            catch (SocketException)
-            {
-                //client tat app
-            }
-            finally
-            {
-                ClientDisconnected?.Invoke(); //báo cho client handler biết client đã disconnect
-
-                //cái nào có thì đóng cái đó
-                _tcpClient?.Close();
-                _udpClient?.Close();
-            }
+                    //cái nào có thì đóng cái đó
+                    _tcpClient?.Close();
+                    _udpClient?.Close();
+                }
+            });
+            listenThread.IsBackground = true; //để luồng tự tắt khi thoát ứng dụng
+            listenThread.Start();
         }
 
         private void HandleMessage(byte[] buffer, string endpoint)

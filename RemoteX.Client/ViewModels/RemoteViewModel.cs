@@ -70,9 +70,9 @@ namespace RemoteX.Client.ViewModels
             };
         }
 
-        public Task StartStreamingAsync(CancellationToken token)
+        public void StartStreaming(CancellationToken token)
         {
-            return _remoteController.StartStreamingAsync(PartnerId, token);
+            _remoteController.StartStreaming(PartnerId, token);
         }
 
         //chụp màn hình
@@ -109,7 +109,7 @@ namespace RemoteX.Client.ViewModels
         }
 
         //gửi click event
-        public async Task SendMouseEventAsync(MouseEventMessage.MouseAction action, System.Windows.Point localPoint, System.Windows.Size imageControlSize)
+        public void SendMouseEvent(MouseEventMessage.MouseAction action, System.Windows.Point localPoint, System.Windows.Size imageControlSize)
         {
             if (_remoteScreenWidth == 0 || _remoteScreenHeight == 0)
             {
@@ -140,10 +140,10 @@ namespace RemoteX.Client.ViewModels
                 ScreenWidth = _remoteScreenWidth,
                 ScreenHeight = _remoteScreenHeight
             };
-            await _clientController.SendAsync(mouseEvent);
+            _clientController.Send(mouseEvent);
         }
         //gửi scroll event
-        public async Task SendScrollEventAsync(int delta)
+        public void SendScrollEvent(int delta)
         {
             var mouseEvent = new MouseEventMessage
             {
@@ -155,7 +155,7 @@ namespace RemoteX.Client.ViewModels
                 ScreenWidth = _remoteScreenWidth,
                 ScreenHeight = _remoteScreenHeight
             };
-            await _clientController.SendAsync(mouseEvent);
+            _clientController.Send(mouseEvent);
         }
     }
 

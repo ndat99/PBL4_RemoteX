@@ -40,7 +40,7 @@ namespace RemoteX.Client.Views
 
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Căn vị trí màn hình thôi
             this.Left = (SystemParameters.PrimaryScreenWidth - this.ActualWidth) / 2;
@@ -48,9 +48,9 @@ namespace RemoteX.Client.Views
             this.Top = Math.Max(0, top);
 
             LoadConfig();
-            //await Task.Delay(1000); // đợi 1s rồi connect
-            //await _client.Connect("127.0.0.1", 5000);
-            await _client.Connect(_config.IP, 5000);
+            //Thread.Sleep(1000); // đợi 1s rồi connect
+            //_client.Connect("127.0.0.1", 5000);
+            _client.Connect(_config.IP, 5000);
 
             txtMessage.KeyDown += (s, args) =>
             {
@@ -62,7 +62,7 @@ namespace RemoteX.Client.Views
             };
         }
 
-        private async void btnConnect_Click(object sender, RoutedEventArgs e)
+        private void btnConnect_Click(object sender, RoutedEventArgs e)
         {
             string targetId = txtPartnerID.Text;
             string password = txtPartnerPass.Text;
@@ -75,7 +75,10 @@ namespace RemoteX.Client.Views
 
             System.Diagnostics.Debug.WriteLine($"[CONNECT] Sending request to {targetId} with password {password}");
 
-            await _cvm.SendConnectRequestAsync(targetId, password);
+            new Thread(() =>
+            {
+                _cvm.SendConnectRequest(targetId, password);
+            }).Start();
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
