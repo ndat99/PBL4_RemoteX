@@ -10,9 +10,10 @@ namespace RemoteX.Core.Models
 {
     public class ScreenFrameMessage : Message
     {
-        //public override MessageType Type => MessageType.ScreenFrame;
-
-        public byte[] ImageData { get; set; } // frame nén JPEG/PNG
+        public long FrameID { get; set; } //ID khung hình
+        public int PacketIndex { get; set; } //index các gói tin nhỏ
+        public int TotalPackets { get; set; } //số gói tin
+        public byte[] ImageData { get; set; } //dữ liệu của gói tin
         public int Width { get; set; }
         public int Height { get; set; }
         public DateTime Timestamp { get; set; }

@@ -12,6 +12,8 @@ namespace RemoteX.Client.ViewModels
 {
     public class RemoteViewModel : BaseViewModel
     {
+        //kho chứa các gói tin chưa hoàn chỉnh với key là FrameID
+        private readonly Dictionary<long, List<ScreenFrameMessage>> _frameBuffer = new();
         private BitmapImage _screen;
         private readonly ClientController _clientController;
         private readonly RemoteController _remoteController;
@@ -41,38 +43,57 @@ namespace RemoteX.Client.ViewModels
             _remoteController = new RemoteController(_clientController);
             PartnerId = partnerId;
 
-            //nhận frame từ partner
-            _clientController.ScreenFrameReceived += frame =>
-            {
-                System.Diagnostics.Debug.WriteLine($"[REMOTE] Received frame from {frame.From}, expecting from {PartnerId}");
-                System.Diagnostics.Debug.WriteLine($"[REMOTE] Frame size: {frame.ImageData?.Length} bytes, {frame.Width}x{frame.Height}");
-                if (frame.From == PartnerId)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[REMOTE] Converting frame to BitmapImage");
-                    try
-                    {
-                        _remoteScreenHeight = frame.Height;
-                        _remoteScreenWidth = frame.Width;
-
-                        var bmp = ScreenService.ConvertToBitmapImage(frame.ImageData);
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[REMOTE] Updating ScreenView on UI thread");
-                            ScreenView = bmp;
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[REMOTE ERROR] {ex.Message}");
-                    }
-
-                }
-            };
+            //nhận frame packet từ partner
+            _clientController.ScreenFrameReceived += OnScreenFramePacketReceived;
         }
 
-        public Task StartStreamingAsync(CancellationToken token)
+        private void OnScreenFramePacketReceived(ScreenFrameMessage packet)
         {
-            return _remoteController.StartStreamingAsync(PartnerId, token);
+            if (packet == null || packet.From != PartnerId) return;
+            //nếu chưa tồn tại FrameID này trong kho thì tạo một ds mới
+            if (!_frameBuffer.ContainsKey(packet.FrameID))
+            {
+                _frameBuffer[packet.FrameID] = new List<ScreenFrameMessage>();
+            }
+
+            _frameBuffer[packet.FrameID].Add(packet); //thêm gói tin vào kho
+
+            //kiểm tra đã nhận đủ gói tin cho FrameID này chưa
+            if (_frameBuffer[packet.FrameID].Count == packet.TotalPackets)
+            {
+                var completedPackets = _frameBuffer[packet.FrameID];
+                _frameBuffer.Remove(packet.FrameID); //xóa kho chứa gói tin này
+
+                //sắp xếp gói tin theo PacketIndex
+                completedPackets.Sort((p1, p2) => p1.PacketIndex.CompareTo(p2.PacketIndex));
+
+                //ghép các gói tin lại thành mảng byte hoàn chỉnh
+                int totalImageSize = 0;
+                foreach (var p in completedPackets)
+                {
+                    totalImageSize += p.ImageData.Length;
+                }
+                byte[] finalImageData = new byte[totalImageSize];
+                int currentPosition = 0;
+                
+                foreach (var p in completedPackets)
+                {
+                    Buffer.BlockCopy(p.ImageData, 0, finalImageData, currentPosition, p.ImageData.Length);
+                    currentPosition += p.ImageData.Length;
+                }
+                var bmp = ScreenService.ConvertToBitmapImage(finalImageData);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    ScreenView = bmp;
+                    _remoteScreenHeight = packet.Height;
+                    _remoteScreenWidth = packet.Width;
+                });
+            }
+        }
+
+        public void StartStreaming(CancellationToken token)
+        {
+            _remoteController.StartStreaming(PartnerId, token);
         }
 
         //chụp màn hình
@@ -109,7 +130,7 @@ namespace RemoteX.Client.ViewModels
         }
 
         //gửi click event
-        public async Task SendMouseEventAsync(MouseEventMessage.MouseAction action, System.Windows.Point localPoint, System.Windows.Size imageControlSize)
+        public void SendMouseEvent(MouseEventMessage.MouseAction action, System.Windows.Point localPoint, System.Windows.Size imageControlSize)
         {
             if (_remoteScreenWidth == 0 || _remoteScreenHeight == 0)
             {
@@ -140,10 +161,10 @@ namespace RemoteX.Client.ViewModels
                 ScreenWidth = _remoteScreenWidth,
                 ScreenHeight = _remoteScreenHeight
             };
-            await _clientController.SendAsync(mouseEvent);
+            _clientController.Send(mouseEvent);
         }
         //gửi scroll event
-        public async Task SendScrollEventAsync(int delta)
+        public void SendScrollEvent(int delta)
         {
             var mouseEvent = new MouseEventMessage
             {
@@ -155,7 +176,7 @@ namespace RemoteX.Client.ViewModels
                 ScreenWidth = _remoteScreenWidth,
                 ScreenHeight = _remoteScreenHeight
             };
-            await _clientController.SendAsync(mouseEvent);
+            _clientController.Send(mouseEvent);
         }
     }
 
