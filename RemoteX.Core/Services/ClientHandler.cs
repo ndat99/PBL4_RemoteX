@@ -26,6 +26,7 @@ namespace RemoteX.Core.Services
         public event Action<ConnectRequest> ConnectRequestReceived;
         public event Action<Log> LogReceived;
         public event Action<MouseEventMessage> MouseEventReceived;
+        public event Action<KeyboardEventMessage> KeyboardEventReceived;
         public ClientHandler(TcpClient client, string serverIP, int udpPort)
         {
             _tcpClient = client;
@@ -53,14 +54,15 @@ namespace RemoteX.Core.Services
                     Info = clientInfoMsg;
                     ClientInfoReceived?.Invoke(Info);
                     break;
-
                 case ConnectRequest connectRequest:
                     ConnectRequestReceived?.Invoke(connectRequest);
                     break;
                 case Log logMsg:
                     LogReceived?.Invoke(logMsg);
                     break;
-
+                case KeyboardEventMessage keyMsg:
+                    KeyboardEventReceived?.Invoke(keyMsg);
+                    break;
                 default:
                     break;
             }

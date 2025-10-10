@@ -9,16 +9,11 @@ namespace RemoteX.Core.Models
 {
     public class KeyboardEventMessage : Message
     {
-        //public override MessageType Type => MessageType.KeyboardEvent;
-
-        public int KeyCode { get; set; }   // virtual key code
-        public KeyAction Action { get; set; }
-    }
-
-    public enum KeyAction
-    {
-        Down,
-        Up,
-        Press
+        public int KeyCode { get; set; }   //virtual key code (mã của phím được nhấn)
+        public bool IsKeyUp { get; set; } //true nếu phím được thả ra, false nếu phím được nhấn xuống
+        public KeyboardEventMessage()
+        {
+            Type = MessageType.KeyboardEvent;
+        }
     }
 }

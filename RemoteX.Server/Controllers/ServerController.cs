@@ -241,16 +241,20 @@ namespace RemoteX.Server.Controllers
                     {
                         new Thread(() => HandleConnectRequest(handler, request)) { IsBackground = true }.Start();
                     };
-
-                    handler.ChatMessageReceived += chatMsg =>
+                    handler.KeyboardEventReceived += keyMsg =>
                     {
-                        ForwardUdpMessage(chatMsg);
+                        ForwardTcpMessage(keyMsg);
                     };
 
-                    handler.ScreenFrameReceived += screenMsg =>
-                    {
-                        ForwardUdpMessage(screenMsg);
-                    };
+                    //handler.ChatMessageReceived += chatMsg =>
+                    //{
+                    //    ForwardUdpMessage(chatMsg);
+                    //};
+
+                    //handler.ScreenFrameReceived += screenMsg =>
+                    //{
+                    //    ForwardUdpMessage(screenMsg);
+                    //};
 
                     lock (_lockObject)
                     {
@@ -397,6 +401,9 @@ namespace RemoteX.Server.Controllers
                     case Log log:
                         targetID = _activeConnection.GetValueOrDefault(log.From);
                         break;
+                    case KeyboardEventMessage keyMsg:
+                        targetID = _activeConnection.GetValueOrDefault(keyMsg.From);
+                        break;
                     default:
                         return;
                 }
@@ -421,6 +428,7 @@ namespace RemoteX.Server.Controllers
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine($"[TCP FORWARD] Forwarding KeyboardEvent from {msg.From} to {targetID}");
                     SafeSend(targetHandler, msg);
                 }
                 catch (Exception ex)

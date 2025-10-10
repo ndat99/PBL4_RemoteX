@@ -21,6 +21,7 @@ namespace RemoteX.Client.Controllers
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
         public event Action<Log> LogReceived;
         public event Action<MouseEventMessage> MouseEventReceived;
+        public event Action<KeyboardEventMessage> KeyboardEventReceived;
 
         public void Connect(string IP, int port)
         {
@@ -39,6 +40,11 @@ namespace RemoteX.Client.Controllers
                     _handler.ScreenFrameReceived += screen => ScreenFrameReceived?.Invoke(screen);
                     _handler.LogReceived += log => LogReceived?.Invoke(log);
                     _handler.MouseEventReceived += mouseMsg => MouseService.ExecuteMouseEvent(mouseMsg);
+                    _handler.KeyboardEventReceived += keyMsg =>
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[KEYBOARD RX] ClientController received key: {keyMsg.KeyCode}, IsUp: {keyMsg.IsKeyUp}");
+                        KeyboardService.ExecuteKeyboardEvent(keyMsg);
+                    };
                     _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
 
                     _handler.Start();

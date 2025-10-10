@@ -2,6 +2,7 @@
 using RemoteX.Client.ViewModels;
 using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
+using System.Windows.Input;
 
 namespace RemoteX.Client.Views
 {
@@ -15,7 +16,10 @@ namespace RemoteX.Client.Views
             InitializeComponent();
             _rvm = new RemoteViewModel(clientController, partnerId);
             this.DataContext = _rvm;
+
             RegisterMouseEvent();
+            this.KeyDown += OnKeyEvent;
+            this.KeyUp += OnKeyEvent;
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -60,7 +64,7 @@ namespace RemoteX.Client.Views
             //move
             imgRemoteScreen.MouseMove += (s, e) =>
             {
-                //if (!_isMouseDown) return; //nếu nút chuột trái không được nhấn giữ thì không làm gì cả
+                //if (!_isMouseDown) return; //nếu chuột trái không được click thì không bắt event move
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
                 new Thread(() =>
@@ -142,6 +146,26 @@ namespace RemoteX.Client.Views
                 }).Start();
                 e.Handled = true;
             };
+        }
+
+        //bắt sự kiện bàn phím
+        private void OnKeyEvent(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            int keyCode = KeyInterop.VirtualKeyFromKey(e.Key); //lấy mã phím
+            bool isKeyUp = e.IsUp; //kiểm tra phím nhấn hay thả
+
+            new Thread(() =>
+            {
+                var keyEventMsg = new KeyboardEventMessage
+                {
+                    From = _rvm.clientController.ClientId,
+                    To = _rvm.PartnerId,
+                    KeyCode = keyCode,
+                    IsKeyUp = isKeyUp
+                };
+                _rvm.clientController.Send(keyEventMsg);
+            }).Start();
+            e.Handled = true; //đánh dấu sự kiện đã được xử lý
         }
     }
 }
