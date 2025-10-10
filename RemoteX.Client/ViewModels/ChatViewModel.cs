@@ -61,7 +61,7 @@ namespace RemoteX.Client.ViewModels
                 Timestamp = DateTime.Now
             };
 
-            _ = _client.SendAsync(chat);
+            _client.Send(chat);
 
             AddMessage(chat);
 

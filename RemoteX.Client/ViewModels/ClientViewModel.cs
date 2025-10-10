@@ -54,7 +54,7 @@ namespace RemoteX.Client.ViewModels
                         PartnerId = log.Content.Split(' ').Last();
                         //PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
                         var cts = new CancellationTokenSource();
-                        _ = new RemoteController(_clientController).StartStreamingAsync(PartnerId, cts.Token);
+                        new RemoteController(_clientController).StartStreaming(PartnerId, cts.Token);
                     }
                 }
                 else if (log.Content.Contains("⬤"))
@@ -70,9 +70,9 @@ namespace RemoteX.Client.ViewModels
             };
         }
 
-        public Task SendConnectRequestAsync(string targetId, string password)
+        public void SendConnectRequest(string targetId, string password)
         {
-            if (string.IsNullOrEmpty(targetId)) return Task.CompletedTask;
+            if (string.IsNullOrEmpty(targetId)) return;
 
             System.Diagnostics.Debug.WriteLine($"[CONNECT] Creating ConnectRequest from {_clientController.ClientId} to {targetId}");
 
@@ -83,12 +83,12 @@ namespace RemoteX.Client.ViewModels
                 Password = password,
                 Status = null
             };
-            return _clientController.SendAsync(request);
+            _clientController.Send(request);
         }
 
-        public Task SendChatAsync(string text)
+        public void SendChat(string text)
         {
-            if (string.IsNullOrEmpty(PartnerId)) return Task.CompletedTask;
+            if (string.IsNullOrEmpty(PartnerId)) return;
 
             var msg = new ChatMessage
             {
@@ -97,7 +97,7 @@ namespace RemoteX.Client.ViewModels
                 Message = text,
                 Timestamp = DateTime.Now,
             };
-            return _clientController.SendAsync(msg);
+            _clientController.Send(msg);
         }
     }
 }

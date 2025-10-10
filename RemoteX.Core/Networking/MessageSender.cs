@@ -8,7 +8,7 @@ namespace RemoteX.Core.Networking
     public static class MessageSender
     {
         //tcp
-        public static async Task Send<T>(TcpClient client, T message) where T : Message
+        public static void Send<T>(TcpClient client, T message) where T : Message
         {
             var stream = client.GetStream(); //lấy stream từ tcpClient
 
@@ -18,12 +18,12 @@ namespace RemoteX.Core.Networking
             System.Diagnostics.Debug.WriteLine($"[DEBUG] Raw line: {data}");
             System.Diagnostics.Debug.WriteLine($"[TX] {client.Client.RemoteEndPoint} | {json}");
 
-            await stream.WriteAsync(data, 0, data.Length); //gửi dữ liệu qua tcp stream
-            await stream.FlushAsync(); //gửi dữ liệu ngay lập tức
+            stream.Write(data, 0, data.Length); //gửi dữ liệu qua tcp stream
+            stream.Flush(); //gửi dữ liệu ngay lập tức
         }
 
         //udp
-        public static async Task Send<T>(UdpClient client, IPEndPoint endPoint, T message) where T : Message
+        public static void Send<T>(UdpClient client, IPEndPoint endPoint, T message) where T : Message
         {
             //endpoint là ip + port (udp phải có vì nó ko giữ kết nối như tcp nên phải luôn biết gửi đến đâu)
             string json = Serialize(message);
@@ -31,7 +31,7 @@ namespace RemoteX.Core.Networking
 
             System.Diagnostics.Debug.WriteLine($"[UDP TX] {endPoint}: {json}"); //debug
             //  socket UDP       dữ liệu              nơi nhận
-            await client.SendAsync(data, data.Length, endPoint); //gửi dữ liệu đến endpoint (ko cần stream như tcp)
+            client.Send(data, data.Length, endPoint); //gửi dữ liệu đến endpoint (ko cần stream như tcp)
         }
 
         public static string Serialize(Message msg)
