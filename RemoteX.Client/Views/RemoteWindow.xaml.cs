@@ -3,6 +3,7 @@ using RemoteX.Client.ViewModels;
 using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
 using System.Windows.Input;
+using RemoteX.Client.Services;
 
 namespace RemoteX.Client.Views
 {
@@ -24,6 +25,13 @@ namespace RemoteX.Client.Views
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             imgRemoteScreen.Focus(); //đặt focus vào image để nhận sự kiện chuột
+            this.Activate(); //đặt focus vào cửa sổ để nhận sự kiện bàn phím
+            new Thread(() => {
+                Thread.Sleep(500); // Đợi nửa giây cho chắc chắn
+                App.Current.Dispatcher.Invoke(() => {
+                    KeyboardService.TestKeyboard();
+                });
+            }).Start();
         }
 
         private void btnDisconnect_Click(object sender, RoutedEventArgs e)
@@ -151,6 +159,12 @@ namespace RemoteX.Client.Views
         //bắt sự kiện bàn phím
         private void OnKeyEvent(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            if (KeyboardService.IsSimulating)
+            {
+                KeyboardService.IsSimulating = false; //reset cờ
+                e.Handled = true; //ngăn chặn sự kiện được xử lý tiếp
+                return; //nếu đang giả lập bàn phím thì không gửi sự kiện
+            }
             int keyCode = KeyInterop.VirtualKeyFromKey(e.Key); //lấy mã phím
             bool isKeyUp = e.IsUp; //kiểm tra phím nhấn hay thả
 

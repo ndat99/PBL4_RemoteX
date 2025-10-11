@@ -163,7 +163,6 @@ namespace RemoteX.Server.Controllers
 
                     var localEndpoint = (IPEndPoint)tcpClient.Client.LocalEndPoint;
                     string serverIP = localEndpoint.Address.ToString();
-
                     var serverPort = ((IPEndPoint)_tcpListener.LocalEndpoint).Port;
                     int udpPort = serverPort + 1;
 
@@ -172,89 +171,8 @@ namespace RemoteX.Server.Controllers
                     System.Diagnostics.Debug.WriteLine($"[SERVER] Client connected, using server IP: {serverIP} for UDP");
 
                     var handler = new ClientHandler(tcpClient, serverIP, udpPort);
-                    // Khi client ngắt kết nối, xóa nó khỏi danh sách
-                    handler.Disconnected += disconnectedHandler =>
-                    {
-                        try
-                        {
-                            var id = disconnectedHandler.Info?.Id;
-                            if (string.IsNullOrEmpty(id)) return;
-
-                            ClientHandler partnerHandler = null;
-                            string partnerID = null;
-
-                            // lock toàn bộ block thay vì chỉ _handlers
-                            lock (_lockObject)
-                            {
-                                _handlers.Remove(disconnectedHandler);
-
-                                if (_activeConnection.TryGetValue(id, out partnerID))
-                                {
-                                    partnerHandler = _handlers.FirstOrDefault(x => x.Info?.Id == partnerID);
-                                    _activeConnection.Remove(id);
-                                    _activeConnection.Remove(partnerID);
-                                }
-                            }
-
-                            _clientUdpEndPoints.TryRemove(id, out _);
-                            App.Current.Dispatcher.Invoke(() =>
-                            {
-                                var clientToRemove = Clients.FirstOrDefault(c => c.Id == id);
-                                if (clientToRemove != null)
-                                    Clients.Remove(clientToRemove);
-                            });
-
-                            if (partnerHandler != null)
-                            {
-                                try
-                                {
-                                    SafeSend(partnerHandler, new Log
-                                    {
-                                        From = "Server",
-                                        To = partnerID,
-                                        Content = "❌ Đối tác đã ngắt kết nối"
-                                    });
-                                }
-                                catch (Exception ex)
-                                {
-                                    StatusChanged?.Invoke($"[Disconnect Error] {ex.Message}");
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[Disconnect Handler Error] {e}");
-                            StatusChanged?.Invoke($"[Disconnect Error] {e.Message}");
-                        }
-                    };
-                    // Khi nhận ClientInfo → thêm vào list
-                    handler.ClientInfoReceived += info =>
-                    {
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            //StatusChanged?.Invoke($"Đã nhận client: {info.Id} - {info.Password}");
-                            Clients.Add(info);
-                        });
-                    };
-                    //Khi nhận Connect Request
-                    handler.ConnectRequestReceived += request =>
-                    {
-                        new Thread(() => HandleConnectRequest(handler, request)) { IsBackground = true }.Start();
-                    };
-                    handler.KeyboardEventReceived += keyMsg =>
-                    {
-                        ForwardTcpMessage(keyMsg);
-                    };
-
-                    //handler.ChatMessageReceived += chatMsg =>
-                    //{
-                    //    ForwardUdpMessage(chatMsg);
-                    //};
-
-                    //handler.ScreenFrameReceived += screenMsg =>
-                    //{
-                    //    ForwardUdpMessage(screenMsg);
-                    //};
+                    handler.Disconnected += OnClientDisconnected;
+                    handler.TcpMessageReceived += OnTcpMessageReceived;
 
                     lock (_lockObject)
                     {
@@ -269,6 +187,115 @@ namespace RemoteX.Server.Controllers
                 }
             }
         }
+        private void OnClientDisconnected(ClientHandler disconnectedHandler)
+        {
+            try
+            {
+                var id = disconnectedHandler.Info?.Id;
+                if (string.IsNullOrEmpty(id)) return;
+
+                ClientHandler partnerHandler = null;
+                string partnerID = null;
+
+                lock (_lockObject)
+                {
+                    _handlers.Remove(disconnectedHandler);
+                    if (_activeConnection.TryGetValue(id, out partnerID))
+                    {
+                        partnerHandler = _handlers.FirstOrDefault(x => x.Info?.Id == partnerID);
+                        _activeConnection.Remove(id);
+                        _activeConnection.Remove(partnerID);
+                    }
+                }
+
+                _clientUdpEndPoints.TryRemove(id, out _);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    var clientToRemove = Clients.FirstOrDefault(c => c.Id == id);
+                    if (clientToRemove != null) Clients.Remove(clientToRemove);
+                });
+
+                if (partnerHandler != null)
+                {
+                    SafeSend(partnerHandler, new Log
+                    {
+                        From = "Server",
+                        To = partnerID,
+                        Content = "❌ Đối tác đã ngắt kết nối"
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Disconnect Handler Error] {e}");
+            }
+        }
+
+        private void OnTcpMessageReceived(ClientHandler sender, Message message)
+        {
+            switch (message)
+            {
+                case ClientInfo info:
+                    App.Current.Dispatcher.Invoke(() => Clients.Add(info));
+                    break;
+                case ConnectRequest connectRequest:
+                    new Thread(() => HandleConnectRequest(sender, connectRequest)) { IsBackground = true }.Start();
+                    break;
+                case KeyboardEventMessage keyMsg:
+                    ForwardTcpMessage(sender, keyMsg);
+                    break;
+                case Log log:
+                    ForwardTcpMessage(sender,log);
+                    break;
+            }
+        }
+
+        public void ForwardTcpMessage(ClientHandler sender, Message msg)
+        {
+            string targetID = null;
+            ClientHandler targetHandler = null;
+
+            lock (_lockObject)
+            {
+                targetID = _activeConnection.GetValueOrDefault(msg.From);
+                if (targetID != null)
+                {
+                    targetHandler = _handlers.FirstOrDefault(h => h.Info?.Id == targetID);
+                }
+            }
+
+            // Send messages ngoài lock
+            if (targetHandler != null)
+            {
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"[TCP FORWARD] Forwarding KeyboardEvent from {msg.From} to {targetID}");
+                    SafeSend(targetHandler, msg);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Forward Error] {ex.Message}");
+                }
+            }
+            else
+            {
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"[TCP FORWARD] Target not found for {msg.From}. Sending error back.");
+                    SafeSend(sender, new Log
+                    {
+                        From = "Server",
+                        To = msg.From,
+                        Content = "❌ Không tìm thấy đối tác"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Error Send Failed] {ex.Message}");
+                }
+            }
+        }
+
         private void HandleConnectRequest(ClientHandler sender, ConnectRequest request)
         {
             // Nếu client dừng điều khiển thì báo về trạng thái như cũ
@@ -377,79 +404,6 @@ namespace RemoteX.Server.Controllers
                 catch (Exception sendEx)
                 {
                     System.Diagnostics.Debug.WriteLine($"[SERVER ERROR] Failed to send error response: {sendEx.Message}");
-                }
-            }
-        }
-
-        public void ForwardTcpMessage(Message msg)
-        {
-            string targetID = null;
-            ClientHandler targetHandler = null;
-            ClientHandler senderHandler = null;
-
-            lock (_lockObject)
-            {
-                switch (msg)
-                {
-                    //case ChatMessage chat:
-                    //    targetID = _activeConnection.GetValueOrDefault(chat.From);
-                    //    break;
-                    //case ScreenFrameMessage screenFrame:
-                    //    targetID = _activeConnection.GetValueOrDefault(screenFrame.From);
-                    //    System.Diagnostics.Debug.WriteLine($"[SERVER] Forwarding Screen from {screenFrame.From} to {targetID}");
-                    //    break;
-                    case Log log:
-                        targetID = _activeConnection.GetValueOrDefault(log.From);
-                        break;
-                    case KeyboardEventMessage keyMsg:
-                        targetID = _activeConnection.GetValueOrDefault(keyMsg.From);
-                        break;
-                    default:
-                        return;
-                }
-
-                if (targetID != null)
-                {
-                    targetHandler = _handlers.FirstOrDefault(h => h.Info?.Id == targetID);
-                }
-                else
-                {
-                    // Tìm sender handler để gửi error message
-                    var senderID = _activeConnection.GetValueOrDefault(msg.To);
-                    if (!string.IsNullOrEmpty(senderID))
-                    {
-                        senderHandler = _handlers.FirstOrDefault(h => h.Info?.Id == senderID);
-                    }
-                }
-            }
-
-            // Send messages ngoài lock
-            if (targetHandler != null)
-            {
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine($"[TCP FORWARD] Forwarding KeyboardEvent from {msg.From} to {targetID}");
-                    SafeSend(targetHandler, msg);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[Forward Error] {ex.Message}");
-                }
-            }
-            else if (senderHandler != null)
-            {
-                try
-                {
-                    SafeSend(senderHandler, new Log
-                    {
-                        From = "Server",
-                        To = msg.From,
-                        Content = "❌ Không tìm thấy đối tác"
-                    });
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[Error Send Failed] {ex.Message}");
                 }
             }
         }

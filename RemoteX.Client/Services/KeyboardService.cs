@@ -28,12 +28,23 @@ namespace RemoteX.Client.Services
         [StructLayout(LayoutKind.Explicit)]
         private struct InputUnion
         {
-            //[FieldOffset(0)]
-            //public MOUSEINPUT mi;
+            [FieldOffset(0)]
+            public MOUSEINPUT mi;
             [FieldOffset(0)]
             public KEYBDINPUT ki;
-            //[FieldOffset(0)]
-            //public HARDWAREINPUT hi;
+            [FieldOffset(0)]
+            public HARDWAREINPUT hi;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MOUSEINPUT
+        {
+            public int dx;
+            public int dy;
+            public uint mouseData;
+            public uint dwFlags;
+            public uint time;
+            public IntPtr dwExtraInfo;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -46,11 +57,41 @@ namespace RemoteX.Client.Services
             public IntPtr dwExtraInfo;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct HARDWAREINPUT
+        {
+            public uint uMsg;
+            public ushort wParamL;
+            public ushort wParamH;
+        }
+
+        // THÊM HÀM NÀY ĐỂ HỎI LỖI CỦA WINDOWS
+        [DllImport("kernel32.dll")]
+        private static extern uint GetLastError();
+        public static bool IsSimulating { get; set; }
+        public static void TestKeyboard()
+        {
+            // Test gửi phím 'A'
+            ExecuteKeyboardEvent(new KeyboardEventMessage
+            {
+                KeyCode = 65, // A
+                IsKeyUp = false
+            });
+
+            Thread.Sleep(100);
+
+            ExecuteKeyboardEvent(new KeyboardEventMessage
+            {
+                KeyCode = 65,
+                IsKeyUp = true
+            });
+        }
         //thực thi sự kiện bàn phím
         public static void ExecuteKeyboardEvent(KeyboardEventMessage e)
         {
             System.Diagnostics.Debug.WriteLine($"[KEYBOARD EXEC] Executing key: {e.KeyCode}, IsUp: {e.IsKeyUp}");
             //1. Tạo cấu trúc INPUT
+            IsSimulating = true;
             INPUT[] inputs = new INPUT[1];
             inputs[0] = new INPUT
             {
@@ -69,7 +110,6 @@ namespace RemoteX.Client.Services
                     }
                 }
             };
-            //4. Gửi sự kiện bàn phím
             SendInput(1, inputs, Marshal.SizeOf(typeof(INPUT)));
         }
     }

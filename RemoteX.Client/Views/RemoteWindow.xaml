@@ -10,7 +10,7 @@
             <Setter Property="Background" Value="#4A90E2"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Padding" Value="10,6"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Height" Value="28"/>
@@ -98,9 +98,13 @@
                 <StackPanel Orientation="Horizontal">
                     <Button x:Name="btnScreenshot" Content="⛶  Chụp màn hình" 
                             Style="{StaticResource ToolbarButtonStyle}"
+                            FontSize="10" Padding="8,4"
+                            Height="24" MinWidth="60"
                             Click="btnScreenshot_Click"/>
                     <Button x:Name="btnDisconnect" Content="⏻ Ngắt kết nối" 
                             Style="{StaticResource DisconnectButtonStyle}"
+                            FontSize="10" Padding="8,4"
+                            Height="24" MinWidth="60"
                             Click="btnDisconnect_Click"/>
                 </StackPanel>
             </Border>
