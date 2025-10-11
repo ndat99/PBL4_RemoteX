@@ -23,12 +23,12 @@ namespace RemoteX.Client.Controllers
         //Events
         public event Action<string, System.Windows.Media.Brush> StatusChanged;
         public event Action<ClientInfo> ClientConnected;
-        public event Action<ConnectRequest> ConnectRequestReceived;
+        //public event Action<ConnectRequest> ConnectRequestReceived;
         public event Action<ChatMessage> ChatMessageReceived;
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
         public event Action<Log> LogReceived;
-        public event Action<MouseEventMessage> MouseEventReceived;
-        public event Action<KeyboardEventMessage> KeyboardEventReceived;
+        //public event Action<MouseEventMessage> MouseEventReceived;
+        //public event Action<KeyboardEventMessage> KeyboardEventReceived;
 
         public void Connect(string IP, int port)
         {
@@ -43,15 +43,8 @@ namespace RemoteX.Client.Controllers
                     _handler = new ClientHandler(_tcpClient, IP, udpPort);
 
                     //_handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
-                    _handler.ChatMessageReceived += chatMsg => ChatMessageReceived?.Invoke(chatMsg);
-                    _handler.ScreenFrameReceived += screen => ScreenFrameReceived?.Invoke(screen);
-                    _handler.LogReceived += log => LogReceived?.Invoke(log);
-                    _handler.MouseEventReceived += mouseMsg => MouseService.ExecuteMouseEvent(mouseMsg);
-                    _handler.KeyboardEventReceived += keyMsg =>
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[KEYBOARD RX] ClientController received key: {keyMsg.KeyCode}, IsUp: {keyMsg.IsKeyUp}");
-                        KeyboardService.ExecuteKeyboardEvent(keyMsg);
-                    };
+                    _handler.TcpMessageReceived += (sender, msg) => OnMessageReceived(msg);
+                    _handler.UdpMessageReceived += (sender, msg) => OnMessageReceived(msg);
                     _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
 
                     _handler.Start();
@@ -90,6 +83,31 @@ namespace RemoteX.Client.Controllers
 
             connectThread.IsBackground = true; //để luồng tự tắt khi thoát ứng dụng
             connectThread.Start();
+        }
+        private void OnMessageReceived(RemoteX.Core.Message msg)
+        {
+            switch (msg)
+            {
+                //tcp message
+                case KeyboardEventMessage keyEvent:
+                    System.Diagnostics.Debug.WriteLine($"[KEYBOARD RX] ClientController received key: {keyEvent.KeyCode}, IsUp: {keyEvent.IsKeyUp}");
+                    KeyboardService.ExecuteKeyboardEvent(keyEvent);
+                    break;
+                case Log log:
+                    LogReceived?.Invoke(log);
+                    break;
+
+                //udp message
+                case MouseEventMessage mouseEvent:
+                    MouseService.ExecuteMouseEvent(mouseEvent);
+                    break;
+                case ChatMessage chatMsg:
+                    ChatMessageReceived?.Invoke(chatMsg);
+                    break;
+                case ScreenFrameMessage screenFrame:
+                    ScreenFrameReceived?.Invoke(screenFrame);
+                    break;
+            }
         }
         public void Send(RemoteX.Core.Message msg) => _handler.Send(msg);
     }

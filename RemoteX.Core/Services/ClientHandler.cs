@@ -20,19 +20,12 @@ namespace RemoteX.Core.Services
 
         //Events
         public event Action<ClientHandler> Disconnected;
-        public event Action<ClientInfo> ClientInfoReceived;
-        public event Action<ChatMessage> ChatMessageReceived;
-        public event Action<ScreenFrameMessage> ScreenFrameReceived;
-        public event Action<ConnectRequest> ConnectRequestReceived;
-        public event Action<Log> LogReceived;
-        public event Action<MouseEventMessage> MouseEventReceived;
-        public event Action<KeyboardEventMessage> KeyboardEventReceived;
+        public event Action<ClientHandler, Message> TcpMessageReceived;
+        public event Action<ClientHandler, Message> UdpMessageReceived;
         public ClientHandler(TcpClient client, string serverIP, int udpPort)
         {
             _tcpClient = client;
             _udpClient = new UdpClient(0); //random port
-
-            //var remoteEndPoint = (IPEndPoint)client.Client.RemoteEndPoint;
             _serverUdpEndpoint = new IPEndPoint(IPAddress.Parse(serverIP), udpPort);
 
             // tcp listener
@@ -48,43 +41,16 @@ namespace RemoteX.Core.Services
 
         private void OnTcpMessageReceived(Message msg)
         {
-            switch (msg)
+            if (msg is ClientInfo clientInfoMsg)
             {
-                case ClientInfo clientInfoMsg:
-                    Info = clientInfoMsg;
-                    ClientInfoReceived?.Invoke(Info);
-                    break;
-                case ConnectRequest connectRequest:
-                    ConnectRequestReceived?.Invoke(connectRequest);
-                    break;
-                case Log logMsg:
-                    LogReceived?.Invoke(logMsg);
-                    break;
-                case KeyboardEventMessage keyMsg:
-                    KeyboardEventReceived?.Invoke(keyMsg);
-                    break;
-                default:
-                    break;
+                Info = clientInfoMsg;
             }
+            TcpMessageReceived?.Invoke(this, msg);
         }
 
         private void OnUdpMessageReceived(Message msg)
         {
-            switch (msg)
-            {
-                case ChatMessage chatMsg:
-                    ChatMessageReceived?.Invoke(chatMsg);
-                    break;
-
-                case ScreenFrameMessage frameMsg:
-                    ScreenFrameReceived?.Invoke(frameMsg);
-                    break;
-                case MouseEventMessage mouseMsg:
-                    MouseEventReceived?.Invoke(mouseMsg);
-                    break;
-                default:
-                    break;
-            }
+            UdpMessageReceived?.Invoke(this, msg);
         }
 
         public void Start()
@@ -125,7 +91,6 @@ namespace RemoteX.Core.Services
         public void Close()
         {
             _udpListener?.Stop();
-
             _tcpClient.Close();
             _udpClient.Close();
         }
