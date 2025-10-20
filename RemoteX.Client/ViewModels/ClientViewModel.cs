@@ -80,7 +80,7 @@ namespace RemoteX.Client.ViewModels
 
             _clientController.FileChunkReceived += fileChunk =>
             {
-                ChatVM.ReceiveMessage(fileChunk);
+                //ChatVM.ReceiveMessage(fileChunk);
             };
         }
 

@@ -356,10 +356,10 @@
                                             <TextBlock Text="{Binding FileName}" TextDecorations="Underline" FontWeight="SemiBold" Foreground="White" Cursor="Hand"/>
                                             <TextBlock Text="{Binding FileSize, StringFormat={}{0:N0} bytes}" Foreground="LightGray" FontSize="10" Margin="0,2,0,5"/>
 
-                                            <Button x:Name="btnDownload" Content="📥 Tải về"
-                                Visibility="{Binding IsMine, ConverterParameter=inverse, Converter={StaticResource BoolToVisibilityConverter}}"
-                                Tag="{Binding FileId}"
-                                Click="btnDownload_Click"/>
+                                            <Button x:Name="btnDownload" 
+                                                Content="📥 Tải về"
+                                                Tag="{Binding FileID}"
+                                                Click="btnDownload_Click"/>
 
                                             <TextBlock Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}" Foreground="LightGray" FontSize="9" HorizontalAlignment="Right" Margin="0,5,0,0"/>
                                         </StackPanel>
