@@ -117,8 +117,21 @@ namespace RemoteX.Core.Networking
                 MessageType.Log => JsonSerializer.Deserialize<Log>(json),
                 MessageType.MouseEvent => JsonSerializer.Deserialize<MouseEventMessage>(json),
                 MessageType.KeyboardEvent => JsonSerializer.Deserialize<KeyboardEventMessage>(json),
+                MessageType.File => DeserializeFileMessage(json, doc),
                 _ => throw new NotSupportedException($"Unsupported message type {type}")
             };
+        }
+
+        private static Message DeserializeFileMessage(string json, JsonDocument doc)
+        {
+            if (doc.RootElement.TryGetProperty("FileName", out _))
+            {
+                return JsonSerializer.Deserialize<FileMessage>(json);
+            }
+            else
+            {
+                return JsonSerializer.Deserialize<FileChunk>(json);
+            }
         }
 
         //Dừng listener (chủ động)

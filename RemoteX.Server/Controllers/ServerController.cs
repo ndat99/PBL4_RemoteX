@@ -247,6 +247,10 @@ namespace RemoteX.Server.Controllers
                 case Log log:
                     ForwardTcpMessage(sender,log);
                     break;
+                case FileMessage fileMsg:
+                case FileChunk fileChunk:
+                    ForwardTcpMessage(sender, message);
+                    break;
             }
         }
 

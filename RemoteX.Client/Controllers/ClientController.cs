@@ -10,6 +10,13 @@ namespace RemoteX.Client.Controllers
     {
         private TcpClient _tcpClient;
         private ClientHandler _handler;
+
+        //Udp rieng cho screen + info server
+        private UdpClient _udp;  //Socket UDP dung gui chunk nhi phan
+        public UdpClient UdpClient => _udp;
+        public string ServerIP { get; set; }
+        public string ServerPort { get; set; }
+
         public string ClientId { get; private set; }
         public TcpClient TcpClient => _tcpClient;
 
@@ -20,6 +27,8 @@ namespace RemoteX.Client.Controllers
         public event Action<ChatMessage> ChatMessageReceived;
         public event Action<ScreenFrameMessage> ScreenFrameReceived;
         public event Action<Log> LogReceived;
+        public event Action<FileMessage> FileMessageReceived;
+        public event Action<FileChunk> FileChunkReceived;
         //public event Action<MouseEventMessage> MouseEventReceived;
         //public event Action<KeyboardEventMessage> KeyboardEventReceived;
 
@@ -100,6 +109,13 @@ namespace RemoteX.Client.Controllers
                 case ScreenFrameMessage screenFrame:
                     ScreenFrameReceived?.Invoke(screenFrame);
                     break;
+                case FileMessage fileMessage:
+                    FileMessageReceived?.Invoke(fileMessage);
+                    break;
+                case FileChunk fileChunk:
+                    FileChunkReceived?.Invoke(fileChunk);
+                    break;
+
             }
         }
         public void Send(RemoteX.Core.Message msg) => _handler.Send(msg);

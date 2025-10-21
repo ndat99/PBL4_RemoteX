@@ -1,5 +1,6 @@
 ﻿using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
+using System.IO;
 
 namespace RemoteX.Client.ViewModels
 {
@@ -10,6 +11,9 @@ namespace RemoteX.Client.ViewModels
         public event Action<string> PartnerConnected;
 
         public readonly ClientController _clientController;
+
+        // Tạo một Dictionary để lưu lại đường dẫn các file đã gửi
+        private readonly Dictionary<Guid, string> _mySentFiles = new Dictionary<Guid, string>();
         public string PartnerId { get; set; }
 
         public ClientViewModel(ClientController clientController)
@@ -68,6 +72,16 @@ namespace RemoteX.Client.ViewModels
             {
                 ChatVM.ReceiveMessage(chat);
             };
+
+            _clientController.FileMessageReceived += fileMsg =>
+            {
+                ChatVM.ReceiveMessage(fileMsg);
+            };
+
+            _clientController.FileChunkReceived += fileChunk =>
+            {
+                //ChatVM.ReceiveMessage(fileChunk);
+            };
         }
 
         public void SendConnectRequest(string targetId, string password)
@@ -84,6 +98,39 @@ namespace RemoteX.Client.ViewModels
                 Status = null
             };
             _clientController.Send(request);
+        }
+      
+        public void SendChat(string text)
+        {
+            if (string.IsNullOrEmpty(PartnerId)) return;
+
+            var msg = new ChatMessage
+            {
+                From = InfoVM.ClientInfo.Id,
+                To = PartnerId,
+                Message = text,
+                Timestamp = DateTime.Now,
+            };
+            _clientController.Send(msg);
+        }
+
+        public void SendFileMessage(string filePath)
+        {
+            var fileInfo = new FileInfo(filePath);
+
+            var fileMsg = new FileMessage
+            {
+                FileID = Guid.NewGuid(),   //Tạo một mã số duy nhất
+                FileName = fileInfo.Name,
+                FileSize = fileInfo.Length,
+                IsMine = true,
+                From = InfoVM.ClientInfo.Id,
+                To = PartnerId
+            };
+
+            _mySentFiles[fileMsg.FileID] = filePath;
+
+            _clientController.Send(fileMsg);
         }
     }
 }
