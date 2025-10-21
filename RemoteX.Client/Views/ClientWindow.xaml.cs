@@ -1,11 +1,15 @@
-﻿using System.Windows;
-using System.Windows.Input;
+﻿using RemoteX.Client.Controllers;
 using RemoteX.Client.ViewModels;
-using RemoteX.Client.Controllers;
+using RemoteX.Core.Models;
 using RemoteX.Core.Utils;
-using System.Text.Json;
 using System.IO;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Microsoft.Win32;
 
 namespace RemoteX.Client.Views
 {
@@ -18,6 +22,30 @@ namespace RemoteX.Client.Views
         private bool isChatExpanded = false;
         private double compactHeight = 400;  // Chiều cao khi đóng chat
         private double expandedHeight = 700; // Chiều cao khi mở chat
+
+        // Dán hàm này vào bên trong lớp MainWindow
+        public static T FindVisualChild<T>(DependencyObject parent, Func<T, bool> predicate) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild && predicate(typedChild))
+                {
+                    return typedChild;
+                }
+                else
+                {
+                    var result = FindVisualChild<T>(child, predicate);
+                    if (result != null) return result;
+                }
+            }
+            return null;
+        }
+
+        // Theo dõi các file đang nhận
+        private Dictionary<Guid, FileStream> _receivedFiles = new Dictionary<Guid, FileStream>();
         public MainWindow()
         {
             InitializeComponent();
@@ -36,9 +64,44 @@ namespace RemoteX.Client.Views
                 });
             };
 
-            this.DataContext = _cvm;
+            _client.FileChunkReceived += chunk =>
+            {
+                //Khi nhan duoc mot manh file, ghi nos vao FileStream tuong ung
+                if (_receivedFiles.TryGetValue(chunk.FileID, out FileStream fs))
+                {
+                    try
+                    {
+                        fs.Write(chunk.Data, 0, chunk.Data.Length);
 
-        }
+                        if (chunk.IsLastChunk)
+                        {
+                            fs.Close();
+                            _receivedFiles.Remove(chunk.FileID);
+
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                var fileMsgContainer = FindVisualChild<ContentPresenter>(svChatBox, presenter =>
+                                (presenter.Content as FileMessage)?.FileID == chunk.FileID);
+
+                                if (fileMsgContainer != null)
+                                {
+                                    var button = FindVisualChild<System.Windows.Controls.Button>(fileMsgContainer, btn => btn.Name == "btnDownload");
+                                    if (button != null)
+                                    {
+                                        //button.Content = "Done!!";
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[FILE WRITE ERROR] {ex.Message}");
+                    }
+                }
+            };
+                this.DataContext = _cvm;
+       }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -125,6 +188,92 @@ namespace RemoteX.Client.Views
             if (e.ButtonState == MouseButtonState.Pressed)
             {
                 this.DragMove();
+            }
+        }
+
+        // Xử lý gửi File
+        private void btnFile_Click(object sender, EventArgs e)
+        {
+            if(string.IsNullOrEmpty(_cvm.PartnerId)) return;
+
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog();
+            if(openFileDialog.ShowDialog() == true)
+            {
+                var filePath = openFileDialog.FileName;
+                var fileInfo = new FileInfo(filePath);
+
+                var fileMessage = new FileMessage
+                {
+                    From = _cvm.InfoVM.ClientInfo.Id,
+                    To = _cvm.PartnerId,
+                    FileName = fileInfo.Name,
+                    FileSize = fileInfo.Length,
+                    FileID = Guid.NewGuid(),
+                    IsMine = true,
+                    Timestamp = DateTime.Now,
+                };
+
+                _client.Send(fileMessage);
+
+                _cvm.ChatVM.AddMessage(fileMessage);
+
+                new Thread(() => SendFileChunks(filePath, fileMessage.FileID, _cvm.PartnerId)).Start();
+            }
+        }
+
+        private void SendFileChunks(string filePath, Guid FileId, string PartnerId)
+        {
+            try
+            {
+                const int chunkSize = 64 * 1024;
+                byte[] buffer = new byte[chunkSize];
+
+                using (var fileStream = new System.IO.FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    int bytesRead;
+                    while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        var chunk = new FileChunk
+                        {
+                            FileID = FileId,
+                            Data = buffer.Take(bytesRead).ToArray(),
+                            IsLastChunk = (fileStream.Position == fileStream.Length),
+                            From = _cvm.InfoVM.ClientInfo.Id,
+                            To = _cvm.PartnerId
+                        };
+                        _client.Send(chunk);
+                        Thread.Sleep(1);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FILE SEND ERROR] {ex.Message}");
+            }
+        }
+
+
+    private void btnDownload_Click(object sender, EventArgs e)
+        {
+            var btn = sender as System.Windows.Controls.Button;
+            if (btn == null || btn.Tag == null) return;
+            var fileId = (Guid)btn.Tag;
+            var fileMessage = _cvm.ChatVM.Messages.OfType<FileMessage>().FirstOrDefault(f => f.FileID == fileId);
+            if(fileMessage == null) return;
+
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = fileMessage.FileName,
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                var fileStream = new System.IO.FileStream(saveFileDialog.FileName, FileMode.Create, FileAccess.Write);
+                _receivedFiles[fileId] = fileStream;
+
+                btn.IsEnabled = false;
+                btn.Content = "Downloading...";
             }
         }
 

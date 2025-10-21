@@ -8,10 +8,10 @@ namespace RemoteX.Core.Enums
         ConnectRequest,
         ClientInfo,
         Chat,
-        File,
         Screen,
         MouseEvent,
         KeyboardEvent,
         Log,
+        File,
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using RemoteX.Client.Controllers;
+﻿using System.Collections.ObjectModel;
 using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
 using RemoteX.Core.Utils;
@@ -11,7 +8,7 @@ namespace RemoteX.Client.ViewModels
     public class ChatViewModel : BaseViewModel
     {
         private readonly ClientController _client;
-        public ObservableCollection<ChatMessage> Messages { get; set; } = new();
+        public ObservableCollection<RemoteX.Core.Message> Messages { get; set; } = new();
         private string _inputMessage;
 
         public string InputMessage
@@ -38,7 +35,7 @@ namespace RemoteX.Client.ViewModels
             //Messages.Add(msg);
         }
 
-        public void AddMessage(ChatMessage msg)
+        public void AddMessage(RemoteX.Core.Message msg)
         {
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -69,9 +66,10 @@ namespace RemoteX.Client.ViewModels
         }
 
         //Nhan tin nhan
-        public void ReceiveMessage(ChatMessage msg)
+        public void ReceiveMessage(RemoteX.Core.Message msg)
         {
-            msg.IsMine = false;
+            if (msg is ChatMessage chat) chat.IsMine = false;
+            if (msg is FileMessage file) file.IsMine = false;
             AddMessage(msg);
         }
     }

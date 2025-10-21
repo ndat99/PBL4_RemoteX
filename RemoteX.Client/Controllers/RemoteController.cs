@@ -34,6 +34,7 @@ namespace RemoteX.Client.Controllers
                 const int MAX_PACKET_SIZE = 1024; //kích thước gói tin tối đa
                 while (!token.IsCancellationRequested)
                 {
+                    Thread.Sleep(1); //nhường luồng khác có cơ hội chạy (để dọn rác, tránh rò rỉ)
                     using var bmp = ScreenService.CaptureScreen(); //Bitmap screenshot
                     int newWidth = bmp.Width /3*2;
                     int newHeight = bmp.Height /3*2;
