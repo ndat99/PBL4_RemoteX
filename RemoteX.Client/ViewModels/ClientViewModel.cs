@@ -85,19 +85,5 @@ namespace RemoteX.Client.ViewModels
             };
             _clientController.Send(request);
         }
-
-        public void SendChat(string text)
-        {
-            if (string.IsNullOrEmpty(PartnerId)) return;
-
-            var msg = new ChatMessage
-            {
-                From = InfoVM.ClientInfo.Id,
-                To = PartnerId,
-                Message = text,
-                Timestamp = DateTime.Now,
-            };
-            _clientController.Send(msg);
-        }
     }
 }

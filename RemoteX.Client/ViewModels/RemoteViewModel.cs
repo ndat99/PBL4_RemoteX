@@ -3,10 +3,8 @@ using RemoteX.Client.Services;
 using RemoteX.Core.Models;
 using RemoteX.Core.Utils;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
 using System.IO;
 using System.Windows;
-using System.Windows.Input;
 
 namespace RemoteX.Client.ViewModels
 {

@@ -12,7 +12,6 @@ public partial class MainWindow : Window
         InitializeComponent();
         _svm = new ServerViewModel();
         this.DataContext = _svm; //Gan ViewModel vao UI
-
     }
 
     private void btnStart_Click(object sender, RoutedEventArgs e)

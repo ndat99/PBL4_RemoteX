@@ -362,7 +362,7 @@
                         <Button x:Name="btnImage" Grid.Column="1" Content="🏜" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14"/>
                         <TextBox x:Name="txtMessage" Grid.Column="2" Style="{StaticResource InputTextBoxStyle}" 
                              Text="{Binding ChatVM.InputMessage, UpdateSourceTrigger=PropertyChanged}" Foreground="#CCCCCC" Background="#FF454545"/>
-                        <Button x:Name="btnSend" Grid.Column="3" Content="▶" Style="{StaticResource ButtonStyle}" 
+                        <Button x:Name="btnSend" Grid.Column="3" Content="➤" Style="{StaticResource ButtonStyle}" 
                              Width="40" Margin="5,0,0,0" Padding="0" Height="30" VerticalAlignment="Top" Click="btnSend_Click"/>
                     </Grid>
                 </Grid>
