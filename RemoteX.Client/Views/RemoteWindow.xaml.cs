@@ -26,12 +26,6 @@ namespace RemoteX.Client.Views
         {
             imgRemoteScreen.Focus(); //đặt focus vào image để nhận sự kiện chuột
             this.Activate(); //đặt focus vào cửa sổ để nhận sự kiện bàn phím
-            new Thread(() => {
-                Thread.Sleep(500); // Đợi nửa giây cho chắc chắn
-                App.Current.Dispatcher.Invoke(() => {
-                    KeyboardService.TestKeyboard();
-                });
-            }).Start();
         }
 
         private void btnDisconnect_Click(object sender, RoutedEventArgs e)

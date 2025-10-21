@@ -99,7 +99,7 @@ namespace RemoteX.Client.ViewModels
             };
             _clientController.Send(request);
         }
-
+      
         public void SendChat(string text)
         {
             if (string.IsNullOrEmpty(PartnerId)) return;
@@ -132,7 +132,5 @@ namespace RemoteX.Client.ViewModels
 
             _clientController.Send(fileMsg);
         }
-
-        
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using RemoteX.Core.Models;
 
 namespace RemoteX.Client.Services
@@ -64,28 +59,7 @@ namespace RemoteX.Client.Services
             public ushort wParamL;
             public ushort wParamH;
         }
-
-        // THÊM HÀM NÀY ĐỂ HỎI LỖI CỦA WINDOWS
-        [DllImport("kernel32.dll")]
-        private static extern uint GetLastError();
         public static bool IsSimulating { get; set; }
-        public static void TestKeyboard()
-        {
-            // Test gửi phím 'A'
-            ExecuteKeyboardEvent(new KeyboardEventMessage
-            {
-                KeyCode = 65, // A
-                IsKeyUp = false
-            });
-
-            Thread.Sleep(100);
-
-            ExecuteKeyboardEvent(new KeyboardEventMessage
-            {
-                KeyCode = 65,
-                IsKeyUp = true
-            });
-        }
         //thực thi sự kiện bàn phím
         public static void ExecuteKeyboardEvent(KeyboardEventMessage e)
         {
