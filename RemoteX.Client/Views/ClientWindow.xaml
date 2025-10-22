@@ -11,11 +11,15 @@
         ResizeMode="CanResize" WindowStartupLocation="Manual" Icon="/Views/Images/RemoteX.ico" Loaded="Window_Loaded">
 
     <Window.Resources>
-        <converters:BoolToAlignConverter x:Key="BoolToAlignConverter"/>
-        <converters:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <SolidColorBrush x:Key="MyBubbleBackground" Color="#0078D7" />
+        <SolidColorBrush x:Key="TheirBubbleBackground" Color="#F1F1F1" />
+        <SolidColorBrush x:Key="MyTextColor" Color="White" />
+        <SolidColorBrush x:Key="TheirTextColor" Color="Black" />
+        <SolidColorBrush x:Key="MyTimestampColor" Color="#DDDDDD" />
+        <SolidColorBrush x:Key="TheirTimestampColor" Color="#666666" />
 
-            <!-- Styles -->
+        <!-- Styles -->
         <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -26,14 +30,14 @@
 
         <Style x:Key="LabelTextStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Foreground" Value="#555555"/>
             <Setter Property="Margin" Value="0,5,0,2"/>
         </Style>
 
         <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Background" Value="#2D2D30"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#3E3E42"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#222222"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,5"/>
             <Setter Property="FontSize" Value="12"/>
@@ -43,7 +47,7 @@
 
         <Style x:Key="TitleButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="#666666"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -119,7 +123,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#2D2D30"/>
+                                <Setter Property="Background" Value="#F3F3F3"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -130,7 +134,7 @@
         <!-- Style cho nút toggle chat inline -->
         <Style x:Key="InlineChatToggleStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="Foreground" Value="#777777"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="12"/>
@@ -146,7 +150,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Foreground" Value="#CCCCCC"/>
-                                <Setter Property="Background" Value="#333333"/>
+                                <Setter Property="Background" Value="#E5E5E5"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -155,14 +159,58 @@
         </Style>
 
         <Style x:Key="ChatMessageStyle" TargetType="Border">
-            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Background" Value="#F1F1F1"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Padding" Value="10"/>
         </Style>
+        <Style x:Key="ChatActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="16"/>
+
+            <Setter Property="Foreground" Value="{StaticResource TheirTimestampColor}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E5E5E5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsMine}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource MyTextColor}"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#0063B0"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
-    <Border x:Name="MainBorder" CornerRadius="15" BorderBrush="#FF4A90E2" BorderThickness="2" Background="#FF1E1E1E">
+    <Border x:Name="MainBorder" CornerRadius="15" BorderBrush="#FF4A90E2" BorderThickness="2" Background="#FAFAFA">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
@@ -187,7 +235,7 @@
                             <ImageBrush ImageSource="/Views/Images/RemoteX.png"/>
                         </Ellipse.Fill>
                     </Ellipse>
-                    <TextBlock Text="RemoteX" FontWeight="SemiBold" Foreground="White" FontSize="14"/>
+                    <TextBlock Text="RemoteX" FontWeight="SemiBold" Foreground="#111111" FontSize="14"/>
                     <!-- Status Text -->
                     <TextBlock Text="{Binding InfoVM.StatusText}" Foreground="{Binding InfoVM.StatusColor}" FontWeight="Normal" 
                FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
@@ -196,9 +244,9 @@
                 <!-- Window Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Width="90">
                     <Button x:Name="btnMinimize" Content="−" Width="40" Height="40" Background="Transparent" Style="{StaticResource TitleButtonStyle}" 
-                        Foreground="White" BorderThickness="0" FontSize="20" Click="btnMinimize_Click" Cursor="Hand"/>
+                        Foreground="#666666" BorderThickness="0" FontSize="20" Click="btnMinimize_Click" Cursor="Hand"/>
                     <Button x:Name="btnClose" Content="⏻" Width="40" Height="40" Background="Transparent" Style="{StaticResource TitleButtonStyle}"
-                        Foreground="White" BorderThickness="0" FontSize="20" Click="btnClose_Click" Cursor="Hand"/>
+                        Foreground="#666666" BorderThickness="0" FontSize="20" Click="btnClose_Click" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
 
@@ -210,7 +258,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Left Panel - Allow Remote Control -->
-                <Border Grid.Column="0" Background="#252526" Margin="0,0,5,0" CornerRadius="8" BorderBrush="#FF454545" BorderThickness="1,1,1,1">
+                <Border Grid.Column="0" Background="#F3F3F3" Margin="0,0,5,0" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1,1,1,1">
                     <StackPanel Margin="15">
                         <!-- Header with Icon -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
@@ -224,7 +272,7 @@
 
                         <!-- Description -->
                         <TextBlock Text="Hãy gửi ID và Mật khẩu dưới đây cho đối tác"
-                               Foreground="#CCCCCC" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                               Foreground="#555555" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
                         <!-- Your ID -->
                         <TextBlock Text="ID của bạn" Style="{StaticResource LabelTextStyle}"/>
@@ -233,7 +281,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtClientID" Grid.Column="0" Text="{Binding InfoVM.ClientInfo.Id}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
+                            <TextBox x:Name="txtClientID" Grid.Column="0" Text="{Binding InfoVM.ClientInfo.Id}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FFFFFF"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
                                 <Button x:Name="btnCopyID" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
                             </StackPanel>
@@ -246,7 +294,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtClientPass" Grid.Column="0" Text="{Binding InfoVM.ClientInfo.Password}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FF454545"/>
+                            <TextBox x:Name="txtClientPass" Grid.Column="0" Text="{Binding InfoVM.ClientInfo.Password}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FFFFFF"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
                                 <Button x:Name="btnCopyPass" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
                                 <Button x:Name="btnGeneratePass" Content="🔄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
@@ -260,14 +308,14 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtCustomPass" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" Background="#FF454545"/>
-                            <Button Grid.Column="1" Content="🔑" Style="{StaticResource IconButtonStyle}" Margin="5,0,0,0" FontSize="14"/>
+                            <TextBox x:Name="txtCustomPass" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" Background="#FFFFFF"/>
+                            <Button Grid.Column="1" Content="🔑" Style="{StaticResource IconButtonStyle}" Margin="5,0,0,0" FontSize="14" Foreground="Goldenrod"/>
                         </Grid>
                     </StackPanel>
                 </Border>
 
                 <!-- Right Panel - Control Another Computer -->
-                <Border Grid.Column="1" Background="#252526" Margin="5,0,0,0" CornerRadius="8" BorderBrush="#FF454545" BorderThickness="1,1,1,1">
+                <Border Grid.Column="1" Background="#F3F3F3" Margin="5,0,0,0" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1,1,1,1">
                     <StackPanel Margin="15">
                         <!-- Header with Icon -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
@@ -281,15 +329,15 @@
 
                         <!-- Description -->
                         <TextBlock Text="Hãy nhập ID và Mật khẩu của đối tác"
-                               Foreground="#CCCCCC" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                               Foreground="#555555" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
                         <!-- Partner ID -->
                         <TextBlock Text="ID đối tác" Style="{StaticResource LabelTextStyle}"/>
-                        <TextBox x:Name="txtPartnerID" Style="{StaticResource InputTextBoxStyle}" Margin="0,0,0,10" Background="#FF454545"/>
+                        <TextBox x:Name="txtPartnerID" Style="{StaticResource InputTextBoxStyle}" Margin="0,0,0,10" Background="#FFFFFF"/>
 
                         <!-- Password -->
                         <TextBlock Text="Mật khẩu" Style="{StaticResource LabelTextStyle}"/>
-                        <TextBox x:Name="txtPartnerPass" Style="{StaticResource InputTextBoxStyle}" Margin="0,0,0,15" Background="#FF454545"/>
+                        <TextBox x:Name="txtPartnerPass" Style="{StaticResource InputTextBoxStyle}" Margin="0,0,0,15" Background="#FFFFFF"/>
 
                         <!-- Connect Button -->
                         <Button x:Name="btnConnect" Content="Bắt đầu điều khiển" Style="{StaticResource ButtonStyle}" HorizontalAlignment="Stretch" Click="btnConnect_Click"/>
@@ -299,9 +347,9 @@
 
             <!-- Chat Header - Always Visible -->
             <Border Grid.Row="2" 
-                    Background="#252526" CornerRadius="8,8,0,0" 
+                    Background="#F3F3F3" CornerRadius="8,8,0,0" 
                     Margin="10,0,10,0" 
-                    BorderThickness="1,1,1,0" BorderBrush="#FF454545">
+                    BorderThickness="1,1,1,0" BorderBrush="#E0E0E0">
                 <StackPanel Orientation="Horizontal" Margin="15,15,15,15" HorizontalAlignment="Left">
                     <Ellipse Width="20" Height="20" Margin="0,0,0,0">
                         <Ellipse.Fill>
@@ -319,9 +367,9 @@
 
             <!-- Collapsible Chat Content -->
             <Border x:Name="ChatPanel" Grid.Row="3" 
-                    Background="#252526" CornerRadius="0,0,8,8" 
+                    Background="#F3F3F3" CornerRadius="0,0,8,8" 
                     Margin="10,0,10,0" 
-                    BorderThickness="1,0,1,1" BorderBrush="#FF454545"
+                    BorderThickness="1,0,1,1" BorderBrush="#E0E0E0"
                     Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -330,44 +378,124 @@
                     </Grid.RowDefinitions>
 
                     <!-- Chat Messages -->
-                    <ScrollViewer x:Name="svChatBox" Grid.Row="0" Margin="15,10,15,0" Height="250" VerticalScrollBarVisibility="Auto" Background="#FF454545">
+                    <Border Grid.Row="0" Margin="15,10,15,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <ScrollViewer x:Name="svChatBox" Grid.Row="0" Height="250" VerticalScrollBarVisibility="Auto" Background="#FFFFFF">
                         <ItemsControl ItemsSource="{Binding ChatVM.Messages}">
                             <ItemsControl.Resources>
+                                <SolidColorBrush x:Key="MyBubbleBackground" Color="#0078D7" />
+                                <SolidColorBrush x:Key="TheirBubbleBackground" Color="#F1F1F1" />
+                                <SolidColorBrush x:Key="MyTextColor" Color="White" />
+                                <SolidColorBrush x:Key="TheirTextColor" Color="Black" />
+                                <SolidColorBrush x:Key="MyTimestampColor" Color="#DDDDDD" />
+                                <SolidColorBrush x:Key="TheirTimestampColor" Color="#666666" />
+                                <Style x:Key="ChatBubbleStyle" TargetType="Border" BasedOn="{StaticResource ChatMessageStyle}">
+                                    <Setter Property="HorizontalAlignment" Value="Left" />
+                                    <Setter Property="Background" Value="{StaticResource TheirBubbleBackground}" />
+                                    <Setter Property="MaxWidth" Value="350" />
+                                    <Setter Property="Margin" Value="10,4,10,4" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                            <Setter Property="HorizontalAlignment" Value="Right" />
+                                            <Setter Property="Background" Value="{StaticResource MyBubbleBackground}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+
+                                <Style x:Key="ChatMainTextStyle" TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TheirTextColor}" />
+                                    <Setter Property="FontSize" Value="12" />
+                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                    <Setter Property="Margin" Value="0,2,0,0" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource MyTextColor}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+
+                                <Style x:Key="ChatTimestampStyle" TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TheirTimestampColor}" />
+                                    <Setter Property="FontSize" Value="9" />
+                                    <Setter Property="HorizontalAlignment" Value="Right" />
+                                    <Setter Property="Margin" Value="0,5,0,0" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource MyTimestampColor}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+
+                                <Style x:Key="ChatFileNameStyle" TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TheirTextColor}" />
+                                    <Setter Property="TextDecorations" Value="Underline" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="Cursor" Value="Hand" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource MyTextColor}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+
+                                <Style x:Key="ChatFileSizeStyle" TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TheirTimestampColor}" />
+                                    <Setter Property="FontSize" Value="10" />
+                                    <Setter Property="Margin" Value="0,2,0,5" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource MyTimestampColor}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+
                                 <DataTemplate DataType="{x:Type models:ChatMessage}">
-                                    <Border Style="{StaticResource ChatMessageStyle}"
-                                            HorizontalAlignment="{Binding IsMine, Converter={StaticResource BoolToAlignConverter}}"
-                                            Background="{Binding IsMine, Converter={StaticResource BoolToBrushConverter}}"
-                                            MaxWidth="350" Margin="0,4">
+                                    <Border Style="{StaticResource ChatBubbleStyle}">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Message}" 
-                                                        Foreground="White" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                            <TextBlock Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}"
-                                                       Foreground="LightGray" FontSize="9" HorizontalAlignment="Right"/>
+                                            <TextBlock Text="{Binding Message}" Style="{StaticResource ChatMainTextStyle}"/>
+                                            <TextBlock Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}" Style="{StaticResource ChatTimestampStyle}"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
 
-                                <DataTemplate DataType="{x:Type models:FileMessage}">
-                                    <Border Style="{StaticResource ChatMessageStyle}"
-                        HorizontalAlignment="{Binding IsMine, Converter={StaticResource BoolToAlignConverter}}"
-                        Background="{Binding IsMine, Converter={StaticResource BoolToBrushConverter}}"
-                        MaxWidth="350" Margin="0,4">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding FileName}" TextDecorations="Underline" FontWeight="SemiBold" Foreground="White" Cursor="Hand"/>
-                                            <TextBlock Text="{Binding FileSize, StringFormat={}{0:N0} bytes}" Foreground="LightGray" FontSize="10" Margin="0,2,0,5"/>
+                                    <DataTemplate DataType="{x:Type models:FileMessage}">
+                                        <Border Style="{StaticResource ChatBubbleStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
 
-                                            <Button x:Name="btnDownload" 
-                                                Content="📥 Tải về"
-                                                Tag="{Binding FileID}"
-                                                Click="btnDownload_Click"/>
+                                                <Grid Grid.Row="0" Margin="0,0,0,5">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
 
-                                            <TextBlock Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}" Foreground="LightGray" FontSize="9" HorizontalAlignment="Right" Margin="0,5,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.Resources>
+                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding FileName}" Style="{StaticResource ChatFileNameStyle}"/>
+                                                        <TextBlock Text="{Binding FileSize, StringFormat={}{0:N0} bytes}" Style="{StaticResource ChatFileSizeStyle}"/>
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,0,0">
+                                                        <Button x:Name="btnOpenFolder" Content="📁" 
+                                                        Style="{StaticResource ChatActionButtonStyle}" ToolTip="Mở thư mục chứa file" />
+                                                        <Button x:Name="btnDownload" Content="🡻" 
+                                                        Click="btnDownload_Click" Tag="{Binding FileID}"
+                                                        Style="{StaticResource ChatActionButtonStyle}" ToolTip="Tải về" />
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" 
+                                                Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}" 
+                                                Style="{StaticResource ChatTimestampStyle}" Margin="0" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+
+                                </ItemsControl.Resources>
                         </ItemsControl>
                     </ScrollViewer>
+                    </Border>
 
                     <!-- Chat Input -->
                     <Grid x:Name="ChatInput" Grid.Row="1" Margin="15,10,15,15">
@@ -378,10 +506,10 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button x:Name="btnFile" Grid.Column="0" Content="📂" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14" Click="btnFile_Click"/>
+                        <Button x:Name="btnFile" Grid.Column="0" Content="📂" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14" Click="btnFile_Click" Foreground="Goldenrod"/>
                         <Button x:Name="btnImage" Grid.Column="1" Content="🏜" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14"/>
                         <TextBox x:Name="txtMessage" Grid.Column="2" Style="{StaticResource InputTextBoxStyle}" 
-                             Text="{Binding ChatVM.InputMessage, UpdateSourceTrigger=PropertyChanged}" Foreground="#CCCCCC" Background="#FF454545"/>
+                             Text="{Binding ChatVM.InputMessage, UpdateSourceTrigger=PropertyChanged}" Foreground="#333333" Background="#FFFFFF"/>
                         <Button x:Name="btnSend" Grid.Column="3" Content="➤" Style="{StaticResource ButtonStyle}" 
                              Width="40" Margin="5,0,0,0" Padding="0" Height="30" VerticalAlignment="Top" Click="btnSend_Click"/>
                     </Grid>

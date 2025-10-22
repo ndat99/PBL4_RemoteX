@@ -94,7 +94,7 @@
             <!-- Remote ID Display -->
 
             <!-- Action Buttons -->
-            <Border Background="Transparent" Padding="4,4">
+            <Border Background="#F3F3F3" Padding="4,4">
                 <StackPanel Orientation="Horizontal">
                     <Button x:Name="btnScreenshot" Content="⛶ Chụp màn hình" 
                             Style="{StaticResource ToolbarButtonStyle}"

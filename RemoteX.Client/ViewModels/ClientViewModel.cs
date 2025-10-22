@@ -43,7 +43,7 @@ namespace RemoteX.Client.ViewModels
                 }
                 else if (log.Content.Contains("✔"))
                 {
-                    InfoVM.StatusColor = System.Windows.Media.Brushes.Yellow;
+                    InfoVM.StatusColor = System.Windows.Media.Brushes.Goldenrod;
 
                     //Lấy PartnerId từ log
                     if (log.Content.Contains("Đang kết nối tới"))
