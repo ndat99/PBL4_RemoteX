@@ -20,7 +20,7 @@
 
         <Style x:Key="LabelTextStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Foreground" Value="#555555"/>
             <Setter Property="Margin" Value="0,5,0,2"/>
         </Style>
 
@@ -87,17 +87,17 @@
         </Style>
 
         <Style x:Key="ClientItemStyle" TargetType="Border">
-            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Margin" Value="0,3"/>
             <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="BorderBrush" Value="#3E3E42"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style x:Key="TitleButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="#666666"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -128,7 +128,7 @@
         </Style>
     </Window.Resources>
 
-    <Border CornerRadius="15" BorderBrush="#FF4A90E2" BorderThickness="2" Background="#FF1E1E1E">
+    <Border CornerRadius="15" BorderBrush="#FF4A90E2" BorderThickness="2" Background="#FAFAFA">
         <DockPanel>
             <!-- Title Bar - Fixed at top -->
             <Grid x:Name="titleBar" DockPanel.Dock="Top" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" 
@@ -146,15 +146,15 @@
                             <ImageBrush ImageSource="Images/RemoteX.png"/>
                         </Ellipse.Fill>
                     </Ellipse>
-                    <TextBlock Text="RemoteX - Server" FontWeight="SemiBold" Foreground="White" FontSize="14"/>
+                    <TextBlock Text="RemoteX - Server" FontWeight="SemiBold" Foreground="#111111" FontSize="14"/>
                 </StackPanel>
 
                 <!-- Window Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Width="90">
                     <Button x:Name="btnMinimize" Content="−" Width="40" Height="40" Background="Transparent" Style="{StaticResource TitleButtonStyle}" 
-                        Foreground="White" BorderThickness="0" FontSize="20" Click="btnMinimize_Click" Cursor="Hand"/>
+                        Foreground="#666666" BorderThickness="0" FontSize="20" Click="btnMinimize_Click" Cursor="Hand"/>
                     <Button x:Name="btnClose" Content="⏻" Width="40" Height="40" Background="Transparent" Style="{StaticResource TitleButtonStyle}"
-                        Foreground="White" BorderThickness="0" FontSize="20" Click="btnClose_Click" Cursor="Hand"/>
+                        Foreground="#666666" BorderThickness="0" FontSize="20" Click="btnClose_Click" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
 
@@ -162,13 +162,11 @@
             <Border DockPanel.Dock="Bottom" Height="30" Background="Transparent">
                 <TextBlock Text="Nguyen Hoang Phuc - Nguyen Dang Anh Tien" 
                            Foreground="#4A90E2" FontSize="10" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0"/>
             </Border>
 
             <!-- Main Content - Fills remaining space -->
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                          Padding="20,10,20,10">
-                <Grid>
+                <Grid Margin="20,10,20,10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -178,7 +176,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Server Status -->
-                    <Border Grid.Row="0" Background="#252526" CornerRadius="8" BorderBrush="#FF454545" 
+                    <Border Grid.Row="0" Background="#F3F3F3" CornerRadius="8" BorderBrush="#E0E0E0" 
                             BorderThickness="1" Padding="20,15" Margin="0,0,0,15">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -205,11 +203,11 @@
                     </Border>
 
                     <!-- Separator -->
-                    <Border Grid.Row="1" Height="1" Background="#FF454545" Margin="0,0,0,15"/>
+                    <Border Grid.Row="1" Height="1" Background="#E0E0E0" Margin="0,0,0,15"/>
 
                     <!-- Connected Clients Section -->
-                    <Border Grid.Row="2" Background="#252526" CornerRadius="8" BorderBrush="#FF454545" 
-                            BorderThickness="1" Padding="20" MinHeight="150">
+                    <Border Grid.Row="2" Background="#F3F3F3" CornerRadius="8" BorderBrush="#E0E0E0" 
+                            BorderThickness="1" Padding="20" MinHeight="150" Margin="0,0,0,21" Grid.RowSpan="2">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -250,13 +248,13 @@
                                                     <!-- ID + Password -->
                                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding MachineName, StringFormat='Thiết bị: {0}'}"
-                                                                  Foreground="#AAAAAA" FontSize="11" Margin="0,2,0,0"
+                                                                  Foreground="#777777" FontSize="11" Margin="0,2,0,0"
                                                                   TextTrimming="CharacterEllipsis"/>
                                                         <TextBlock Text="{Binding Id}" 
-                                                                  Foreground="White" FontWeight="SemiBold" FontSize="13"
+                                                                  Foreground="#111111" FontWeight="SemiBold" FontSize="13"
                                                                   TextTrimming="CharacterEllipsis"/>
                                                         <TextBlock Text="{Binding Password, StringFormat='Mật khẩu: {0}'}" 
-                                                                  Foreground="#CCCCCC" FontSize="11" Margin="0,2,0,0"
+                                                                  Foreground="#111111" FontSize="11" Margin="0,2,0,0"
                                                                   TextTrimming="CharacterEllipsis"/>
                                                     </StackPanel>
                                                 </Grid>
@@ -269,7 +267,7 @@
                     </Border>
 
                     <!-- Separator -->
-                    <Border Grid.Row="3" Height="1" Background="#FF454545" Margin="0,15"/>
+                    <Border Grid.Row="3" Height="1" Background="#E0E0E0" Margin="0,28,0,2"/>
 
                     <!-- Control Buttons -->
                     <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
@@ -277,7 +275,6 @@
                         <Button x:Name="btnStop" Content="Dừng lại" Style="{StaticResource StopButtonStyle}" Click="btnStop_Click" IsEnabled="{Binding CanStop}"/>
                     </StackPanel>
                 </Grid>
-            </ScrollViewer>
         </DockPanel>
     </Border>
 </Window>

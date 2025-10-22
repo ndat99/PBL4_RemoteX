@@ -273,7 +273,7 @@ namespace RemoteX.Client.Views
                 _receivedFiles[fileId] = fileStream;
 
                 btn.IsEnabled = false;
-                btn.Content = "Downloading...";
+                btn.Content = "✔";
             }
         }
 

@@ -4,6 +4,7 @@ using System.ComponentModel.Design.Serialization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RemoteX.Core.Enums;
 
 namespace RemoteX.Core.Models
 {
@@ -17,7 +18,7 @@ namespace RemoteX.Core.Models
 
         public FileMessage()
         {
-            Type = Enums.MessageType.File;
+            Type = MessageType.File;
         }
     }
 }

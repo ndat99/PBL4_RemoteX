@@ -43,7 +43,7 @@ namespace RemoteX.Client.ViewModels
         public InfoViewModel()
         {
             StatusText = " ⬤  Đang kết nối tới Server";
-            StatusColor = System.Windows.Media.Brushes.Yellow;
+            StatusColor = System.Windows.Media.Brushes.Goldenrod;
         }
     }
 }
