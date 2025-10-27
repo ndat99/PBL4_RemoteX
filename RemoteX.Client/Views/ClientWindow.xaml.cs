@@ -46,6 +46,7 @@ namespace RemoteX.Client.Views
 
         // Theo dõi các file đang nhận
         private Dictionary<Guid, FileStream> _receivedFiles = new Dictionary<Guid, FileStream>();
+        private Dictionary<Guid, string> _mysentFiles = new Dictionary<Guid, string>();
         public MainWindow()
         {
             InitializeComponent();
@@ -100,6 +101,14 @@ namespace RemoteX.Client.Views
                     }
                 }
             };
+            _client.FileAcceptReceived += acceptMsg =>
+            {
+                if(_mysentFiles.TryGetValue(acceptMsg.FileID, out string filePath))
+                {
+                    new Thread(() => SendFileChunks(filePath, acceptMsg.FileID, acceptMsg.From)).Start();
+                    _mysentFiles.Remove(acceptMsg.FileID);
+                }
+            }; 
                 this.DataContext = _cvm;
        }
 
@@ -217,7 +226,7 @@ namespace RemoteX.Client.Views
 
                 _cvm.ChatVM.AddMessage(fileMessage);
 
-                new Thread(() => SendFileChunks(filePath, fileMessage.FileID, _cvm.PartnerId)).Start();
+                _mysentFiles[fileMessage.FileID] = filePath;
             }
         }
 
@@ -274,6 +283,14 @@ namespace RemoteX.Client.Views
 
                 btn.IsEnabled = false;
                 btn.Content = "✔";
+
+                var acceptMsg = new FileAcceptMessage
+                {
+                    FileID = fileId,
+                    From = _cvm.InfoVM.ClientInfo.Id,
+                    To = fileMessage.From // Gửi lại cho người đã gửi file
+                };
+                _client.Send(acceptMsg);
             }
         }
 
