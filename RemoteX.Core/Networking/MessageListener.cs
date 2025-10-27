@@ -117,6 +117,7 @@ namespace RemoteX.Core.Networking
                 MessageType.Log => JsonSerializer.Deserialize<Log>(json),
                 MessageType.MouseEvent => JsonSerializer.Deserialize<MouseEventMessage>(json),
                 MessageType.KeyboardEvent => JsonSerializer.Deserialize<KeyboardEventMessage>(json),
+                MessageType.FileAccept => JsonSerializer.Deserialize<FileAcceptMessage>(json),
                 MessageType.File => DeserializeFileMessage(json, doc),
                 _ => throw new NotSupportedException($"Unsupported message type {type}")
             };

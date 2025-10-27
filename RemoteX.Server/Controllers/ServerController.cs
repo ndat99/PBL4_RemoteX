@@ -251,6 +251,9 @@ namespace RemoteX.Server.Controllers
                 case FileChunk fileChunk:
                     ForwardTcpMessage(sender, message);
                     break;
+                case FileAcceptMessage fileAccept:
+                    ForwardTcpMessage(sender, fileAccept);
+                    break;
             }
         }
 

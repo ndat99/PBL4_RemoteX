@@ -29,6 +29,7 @@ namespace RemoteX.Client.Controllers
         public event Action<Log> LogReceived;
         public event Action<FileMessage> FileMessageReceived;
         public event Action<FileChunk> FileChunkReceived;
+        public event Action<FileAcceptMessage> FileAcceptReceived;
         //public event Action<MouseEventMessage> MouseEventReceived;
         //public event Action<KeyboardEventMessage> KeyboardEventReceived;
 
@@ -114,6 +115,9 @@ namespace RemoteX.Client.Controllers
                     break;
                 case FileChunk fileChunk:
                     FileChunkReceived?.Invoke(fileChunk);
+                    break;
+                case FileAcceptMessage fileAccept:
+                    FileAcceptReceived?.Invoke(fileAccept);
                     break;
 
             }
