@@ -11,6 +11,7 @@ namespace RemoteX.Client.ViewModels
         public event Action<string> PartnerConnected;
 
         public readonly ClientController _clientController;
+        private CancellationTokenSource _myStreamingCts;
 
         // Tạo một Dictionary để lưu lại đường dẫn các file đã gửi
         private readonly Dictionary<Guid, string> _mySentFiles = new Dictionary<Guid, string>();
@@ -40,6 +41,12 @@ namespace RemoteX.Client.ViewModels
                 {
                     InfoVM.StatusColor = System.Windows.Media.Brushes.Red;
                     PartnerId = null;
+                    try
+                    {
+                        _myStreamingCts?.Cancel();
+                        _myStreamingCts?.Dispose();
+                        _myStreamingCts = null;
+                    } catch { }
                 }
                 else if (log.Content.Contains("✔"))
                 {
@@ -56,9 +63,11 @@ namespace RemoteX.Client.ViewModels
                     else if (log.Content.Contains("Đang được điều khiển"))
                     {
                         PartnerId = log.Content.Split(' ').Last();
+                        _myStreamingCts?.Cancel(); //hủy stream cũ nếu có
+
                         //PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
-                        var cts = new CancellationTokenSource();
-                        new RemoteController(_clientController).StartStreaming(PartnerId, cts.Token);
+                        _myStreamingCts = new CancellationTokenSource();
+                        new RemoteController(_clientController).StartStreaming(PartnerId, _myStreamingCts.Token);
                     }
                 }
                 else if (log.Content.Contains("⬤"))

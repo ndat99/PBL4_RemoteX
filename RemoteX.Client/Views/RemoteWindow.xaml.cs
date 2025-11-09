@@ -64,19 +64,19 @@ namespace RemoteX.Client.Views
         private void RegisterMouseEvent()
         {
             //move
-            imgRemoteScreen.MouseMove += (s, e) =>
+            imgRemoteScreen.MouseMove += async (s, e) =>
             {
                 //if (!_isMouseDown) return; //nếu chuột trái không được click thì không bắt event move
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendMouseEvent(MouseEventMessage.MouseAction.Move, pos, size);
-                }).Start();
+                });
             };
 
             //left down
-            imgRemoteScreen.MouseLeftButtonDown += (s, e) =>
+            imgRemoteScreen.MouseLeftButtonDown += async (s, e) =>
             {
                 //kiểm tra xem phải double click ko
                 if (e.ClickCount == 2)
@@ -84,10 +84,10 @@ namespace RemoteX.Client.Views
                     System.Diagnostics.Debug.WriteLine("[REMOTE] Double Click detected");
                     var pos = e.GetPosition(imgRemoteScreen);
                     var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                    new Thread(() =>
+                    await Task.Run(() =>
                     {
                         _rvm.SendMouseEvent(MouseEventMessage.MouseAction.DoubleClick, pos, size);
-                    }).Start();
+                    });
                 }
                 else
                 {
@@ -96,62 +96,62 @@ namespace RemoteX.Client.Views
 
                     var pos = e.GetPosition(imgRemoteScreen);
                     var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                    new Thread(() =>
+                    await Task.Run(() =>
                     {
                         _rvm.SendMouseEvent(MouseEventMessage.MouseAction.LeftDown, pos, size);
-                    }).Start();
+                    });
                 }
                 e.Handled = true; //ngăn chặn sự kiện được xử lý tiếp
             };
             //left up
-            imgRemoteScreen.MouseLeftButtonUp += (s, e) =>
+            imgRemoteScreen.MouseLeftButtonUp += async (s, e) =>
             {
                 _isMouseDown = false;
                 imgRemoteScreen.ReleaseMouseCapture(); //thả bắt sự kiện chuột
 
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendMouseEvent(MouseEventMessage.MouseAction.LeftUp, pos, size);
-                }).Start();
+                });
                 e.Handled = true;
             };
             //right down
-            imgRemoteScreen.MouseRightButtonDown += (s, e) =>
+            imgRemoteScreen.MouseRightButtonDown += async (s, e) =>
             {
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendMouseEvent(MouseEventMessage.MouseAction.RightDown, pos, size);
-                }).Start();
+                });
                 e.Handled = true;
             };
             //right up
-            imgRemoteScreen.MouseRightButtonUp += (s, e) =>
+            imgRemoteScreen.MouseRightButtonUp += async (s, e) =>
             {
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendMouseEvent(MouseEventMessage.MouseAction.RightUp, pos, size);
-                }).Start();
+                });
                 e.Handled = true;
             };
             //wheel
-            imgRemoteScreen.MouseWheel += (s, e) =>
+            imgRemoteScreen.MouseWheel += async (s, e) =>
             {
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendScrollEvent(e.Delta);
-                }).Start();
+                });
                 e.Handled = true;
             };
         }
 
         //bắt sự kiện bàn phím
-        private void OnKeyEvent(object sender, System.Windows.Input.KeyEventArgs e)
+        private async void OnKeyEvent(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (KeyboardService.IsSimulating)
             {
@@ -162,7 +162,7 @@ namespace RemoteX.Client.Views
             int keyCode = KeyInterop.VirtualKeyFromKey(e.Key); //lấy mã phím
             bool isKeyUp = e.IsUp; //kiểm tra phím nhấn hay thả
 
-            new Thread(() =>
+            await Task.Run(() =>
             {
                 var keyEventMsg = new KeyboardEventMessage
                 {
@@ -172,7 +172,7 @@ namespace RemoteX.Client.Views
                     IsKeyUp = isKeyUp
                 };
                 _rvm.clientController.Send(keyEventMsg);
-            }).Start();
+            });
             e.Handled = true; //đánh dấu sự kiện đã được xử lý
         }
     }

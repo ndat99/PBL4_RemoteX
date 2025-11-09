@@ -14,8 +14,6 @@ namespace RemoteX.Server.Controllers
     {
         private TcpListener _tcpListener;
         private UdpClient _udpListener;
-        private Thread _tcpListenThread;
-        private Thread _udpListenThread;
         private bool _isRunning;
 
         private readonly List<ClientHandler> _handlers = new();
@@ -37,11 +35,8 @@ namespace RemoteX.Server.Controllers
                 _udpListener = new UdpClient(port + 1);
                 _isRunning = true;
 
-                _tcpListenThread = new Thread(AcceptClients) { IsBackground = true };
-                _tcpListenThread.Start();
-
-                _udpListenThread = new Thread(AcceptUdpMessages) { IsBackground = true };
-                _udpListenThread.Start();
+                Task.Run(AcceptClients);
+                AcceptUdpMessages(); //gọi trực tiếp async (fire-and-forget), nó sẽ tự chạy trên một luồng khác
 
                 StatusChanged?.Invoke($"Server đang chạy trên cổng {port}");
             }
@@ -58,10 +53,8 @@ namespace RemoteX.Server.Controllers
             try
             {
                 _tcpListener.Stop();
-                _udpListener.Close();
+                _udpListener.Close(); //làm ReceiveAsync văng lỗi
 
-                _tcpListenThread?.Join(1000);
-                _udpListenThread?.Join(1000);
                 // Close all handlers
                 foreach (var handler in _handlers.ToList())
                 {
@@ -82,7 +75,7 @@ namespace RemoteX.Server.Controllers
             }
         }
 
-        private void AcceptUdpMessages()
+        private async void AcceptUdpMessages()
         {
             System.Diagnostics.Debug.WriteLine($"[UDP] Listener started on port {((IPEndPoint)_udpListener.Client.LocalEndPoint).Port}");
 
@@ -90,8 +83,11 @@ namespace RemoteX.Server.Controllers
             {
                 try
                 {
-                    var remoteEP = new IPEndPoint(IPAddress.Any, 0);
-                    byte[] buffer = _udpListener.Receive(ref remoteEP); //trả về mảng byte và điền thông tin người gửi vào biến remoteEP
+                    UdpReceiveResult receiveResult = await _udpListener.ReceiveAsync(); //luồng sẽ đc giải phóng tại đây khi chờ message
+                    
+                    byte[] buffer = receiveResult.Buffer;
+                    var remoteEP = receiveResult.RemoteEndPoint;
+                    
                     var json = System.Text.Encoding.UTF8.GetString(buffer);
                     var msg = MessageListener.Deserialize(json);
                     System.Diagnostics.Debug.WriteLine($"[UDP RX] ✅ From {remoteEP}: Type={msg.Type}, From={msg.From}, To={msg.To}");
@@ -103,6 +99,11 @@ namespace RemoteX.Server.Controllers
                         System.Diagnostics.Debug.WriteLine($"[UDP] Registered endpoint for {msg.From}: {remoteEP}");
                     }
                     ForwardUdpMessage(msg);
+                }
+                catch (ObjectDisposedException)
+                {
+                    //bắt lỗi khi _udpListener.Close() được gọi
+                    if (_isRunning) break;
                 }
                 catch (Exception ex)
                 {
@@ -239,7 +240,7 @@ namespace RemoteX.Server.Controllers
                     App.Current.Dispatcher.Invoke(() => Clients.Add(info));
                     break;
                 case ConnectRequest connectRequest:
-                    new Thread(() => HandleConnectRequest(sender, connectRequest)) { IsBackground = true }.Start();
+                    Task.Run(() => HandleConnectRequest(sender, connectRequest));
                     break;
                 case KeyboardEventMessage keyMsg:
                     ForwardTcpMessage(sender, keyMsg);
@@ -308,22 +309,39 @@ namespace RemoteX.Server.Controllers
             // Nếu client dừng điều khiển thì báo về trạng thái như cũ
             if (request.Status == "Disconnect")
             {
+                string partnerId = null;
+                ClientHandler partnerHandler = null; //giữ handler của phía bị điều khiển (Client B)
                 lock (_lockObject)
                 {
-                    if (_activeConnection.ContainsKey(request.From))
+                    if (_activeConnection.TryGetValue(request.From, out partnerId)) //lấy ID của B
                     {
-                        var partnerId = _activeConnection[request.From];
+                        //Tìm handler của B (người đang stream)
+                        partnerHandler = _handlers.FirstOrDefault(h => h.Info?.Id == partnerId);
+
+                        //Xóa kết nối
                         _activeConnection.Remove(request.From);
                         _activeConnection.Remove(partnerId);
                     }
                 }
 
+                //gửi log cho A
                 sender.Send(new Log
                 {
                     From = "Server",
                     To = request.From,
                     Content = " ⬤  Đã kết nối tới Server"
                 });
+
+                //gửi log cho B
+                if (partnerHandler != null)
+                {
+                    SafeSend(partnerHandler, new Log
+                    {
+                        From = "Server",
+                        To = partnerId,
+                        Content = "❌ Đối tác đã ngắt kết nối"
+                    });
+                }
 
                 return;
             }
