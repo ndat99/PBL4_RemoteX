@@ -28,7 +28,7 @@ namespace RemoteX.Client.Controllers
         //Gửi frame lên server
         public void StartStreaming(string partnerId, CancellationToken token)
         {
-            Thread streamThread = new Thread(() =>
+            Task.Run( async () =>
             {
                 long frameId = 0; //ID khung hình tăng dần
                 const int MAX_PACKET_SIZE = 1024; //kích thước gói tin tối đa
@@ -74,17 +74,14 @@ namespace RemoteX.Client.Controllers
                     frameId++; //tăng ID cho khung hình tiếp theo
                     try
                     {
-                        Thread.Sleep(1000/fps);
+                        await Task.Delay(1000 / fps, token);
                     }
-                    catch (ThreadInterruptedException)
+                    catch (TaskCanceledException)
                     {
                         break; //khi token bị cancel, ném exception, thoát vòng while
                     }
                 }
-            });
-
-            streamThread.IsBackground = true; //để luồng tự tắt khi thoát ứng dụng
-            streamThread.Start();
+            }, token);
         }
     }
 }

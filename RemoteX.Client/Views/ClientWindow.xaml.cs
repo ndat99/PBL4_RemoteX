@@ -105,14 +105,14 @@ namespace RemoteX.Client.Views
             {
                 if(_mysentFiles.TryGetValue(acceptMsg.FileID, out string filePath))
                 {
-                    new Thread(() => SendFileChunks(filePath, acceptMsg.FileID, acceptMsg.From)).Start();
+                    Task.Run(() => SendFileChunks(filePath, acceptMsg.FileID, acceptMsg.From));
                     _mysentFiles.Remove(acceptMsg.FileID);
                 }
             }; 
                 this.DataContext = _cvm;
        }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Căn vị trí màn hình thôi
             this.Left = (SystemParameters.PrimaryScreenWidth - this.ActualWidth) / 2;
@@ -120,9 +120,16 @@ namespace RemoteX.Client.Views
             this.Top = Math.Max(0, top);
 
             LoadConfig();
-            //Thread.Sleep(1000); // đợi 1s rồi connect
-            //_client.Connect("127.0.0.1", 5000);
-            _client.Connect(_config.IP, 5000);
+            //await Task.Run(() => _client.ConnectAsync("127.0.0.1", 5000));
+            try
+            {
+                await Task.Run(() => _client.ConnectAsync(_config.IP, 5000));
+
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Không thể kết nối tới Server: {ex.Message}");
+            }
 
             txtMessage.KeyDown += (s, args) =>
             {
@@ -134,7 +141,7 @@ namespace RemoteX.Client.Views
             };
         }
 
-        private void btnConnect_Click(object sender, RoutedEventArgs e)
+        private async void btnConnect_Click(object sender, RoutedEventArgs e)
         {
             string targetId = txtPartnerID.Text;
             string password = txtPartnerPass.Text;
@@ -147,10 +154,18 @@ namespace RemoteX.Client.Views
 
             System.Diagnostics.Debug.WriteLine($"[CONNECT] Sending request to {targetId} with password {password}");
 
-            new Thread(() =>
+            try
             {
-                _cvm.SendConnectRequest(targetId, password);
-            }).Start();
+                await Task.Run(() =>
+                {
+                    _cvm.SendConnectRequest(targetId, password);
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ConnectRequest Error] {ex.Message}");
+                System.Windows.MessageBox.Show($"Lỗi gửi yêu cầu: {ex.Message}");
+            }
         }
 
         private void btnSend_Click(object sender, RoutedEventArgs e)
@@ -251,7 +266,7 @@ namespace RemoteX.Client.Views
                             To = _cvm.PartnerId
                         };
                         _client.Send(chunk);
-                        Thread.Sleep(1);
+                        Task.Delay(1);
                     }
                 }
             }

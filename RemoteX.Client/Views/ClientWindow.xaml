@@ -297,7 +297,6 @@
                             <TextBox x:Name="txtClientPass" Grid.Column="0" Text="{Binding InfoVM.ClientInfo.Password}" Style="{StaticResource InputTextBoxStyle}" IsReadOnly="True" Background="#FFFFFF"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
                                 <Button x:Name="btnCopyPass" Content="📄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
-                                <Button x:Name="btnGeneratePass" Content="🔄" Style="{StaticResource IconButtonStyle}" FontSize="14"/>
                             </StackPanel>
                         </Grid>
 

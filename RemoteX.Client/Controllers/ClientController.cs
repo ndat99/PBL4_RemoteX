@@ -33,59 +33,53 @@ namespace RemoteX.Client.Controllers
         //public event Action<MouseEventMessage> MouseEventReceived;
         //public event Action<KeyboardEventMessage> KeyboardEventReceived;
 
-        public void Connect(string IP, int port)
+        public async Task ConnectAsync(string IP, int port)
         {
-            Thread connectThread = new Thread(() =>
+            try
             {
-                try
+                _tcpClient = new TcpClient();
+                await _tcpClient.ConnectAsync(IP, port);
+
+                int udpPort = port + 1;
+                _handler = new ClientHandler(_tcpClient, IP, udpPort);
+
+                //_handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
+                _handler.TcpMessageReceived += (sender, msg) => OnMessageReceived(msg);
+                _handler.UdpMessageReceived += (sender, msg) => OnMessageReceived(msg);
+                _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
+
+                _handler.Start();
+                //Gui info qua tcp
+                var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ TEST
+                //var config = IdGenerator.DeviceConfig(); //DÙNG CHÍNH THỨC
+                var info = new ClientInfo(config);
+
+                _handler.Send(info);
+                ClientId = info.Id;
+
+                var udpInit = new ChatMessage
                 {
-                    _tcpClient = new TcpClient();
-                    _tcpClient.Connect(IP, port);
+                    From = ClientId,
+                    To = "Server",
+                    Message = "UDP_INIT", //Dùng để server biết port UDP của client
+                    Timestamp = DateTime.Now
+                };
+                _handler.Send(udpInit);
 
-                    int udpPort = port + 1;
-                    _handler = new ClientHandler(_tcpClient, IP, udpPort);
-
-                    //_handler.ConnectRequestReceived += request => ConnectRequestReceived?.Invoke(request);
-                    _handler.TcpMessageReceived += (sender, msg) => OnMessageReceived(msg);
-                    _handler.UdpMessageReceived += (sender, msg) => OnMessageReceived(msg);
-                    _handler.Disconnected += _ => StatusChanged?.Invoke("⬤ Mất kết nối server", System.Windows.Media.Brushes.Red);
-
-                    _handler.Start();
-                    //Gui info qua tcp
-                    var config = IdGenerator.RandomDeviceConfig(); //DÙNG ĐỂ TEST
-                    //var config = IdGenerator.DeviceConfig(); //DÙNG CHÍNH THỨC
-                    var info = new ClientInfo(config);
-
-                    _handler.Send(info);
-                    ClientId = info.Id;
-
-                    Thread.Sleep(100); //đợi tcp gửi clientInfo xong
-                    var udpInit = new ChatMessage
-                    {
-                        From = ClientId,
-                        To = "Server",
-                        Message = "UDP_INIT", //Dùng để server biết port UDP của client
-                        Timestamp = DateTime.Now
-                    };
-                    _handler.Send(udpInit);
-
-                    App.Current.Dispatcher.Invoke(() =>
-                    {
-                        ClientConnected?.Invoke(info);
-                        StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port} (UDP:{udpPort})", System.Windows.Media.Brushes.Green);
-                    });
-                }
-                catch (Exception ex)
+                App.Current.Dispatcher.Invoke(() =>
                 {
-                    App.Current.Dispatcher.Invoke(() =>
-                    {
-                        StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}", System.Windows.Media.Brushes.Red);
-                    });
-                }
-            });
-
-            connectThread.IsBackground = true; //để luồng tự tắt khi thoát ứng dụng
-            connectThread.Start();
+                    ClientConnected?.Invoke(info);
+                    StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port} (UDP:{udpPort})", System.Windows.Media.Brushes.Green);
+                });
+            }
+            catch (Exception ex)
+            {
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}", System.Windows.Media.Brushes.Red);
+                });
+                throw; //ném lỗi cho ClientWindow bắt và thông báo
+            }
         }
         private void OnMessageReceived(RemoteX.Core.Message msg)
         {
