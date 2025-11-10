@@ -5,6 +5,7 @@ using RemoteX.Core.Utils;
 using System.Windows.Media.Imaging;
 using System.IO;
 using System.Windows;
+using System.Drawing.Drawing2D;
 
 namespace RemoteX.Client.ViewModels
 {
@@ -87,11 +88,6 @@ namespace RemoteX.Client.ViewModels
                     _remoteScreenWidth = packet.Width;
                 });
             }
-        }
-
-        public void StartStreaming(CancellationToken token)
-        {
-            _remoteController.StartStreaming(PartnerId, token);
         }
 
         //chụp màn hình

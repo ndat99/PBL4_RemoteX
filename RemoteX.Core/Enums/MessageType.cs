@@ -13,5 +13,7 @@ namespace RemoteX.Core.Enums
         KeyboardEvent,
         Log,
         File,
+        FileAccept,
+        QualityChange
     }
 }

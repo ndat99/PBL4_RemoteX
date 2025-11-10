@@ -16,6 +16,7 @@ namespace RemoteX.Client.Controllers
 {
     public class RemoteController
     {
+
         public readonly ClientController _clientController;
         private int fps = 15; //tốc độ khung hình
         private int quality = 25 ; //chất lượng ảnh
@@ -25,16 +26,38 @@ namespace RemoteX.Client.Controllers
             _clientController = clientController;
         }
 
+        public void SetQuality(QualityLevel level)
+        {
+            switch (level)
+            {
+                case QualityLevel.Low:
+                    fps = 20;
+                    quality = 15;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Thấp");
+                    break;
+                case QualityLevel.Medium:
+                    fps = 15;
+                    quality = 25;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Trung bình");
+                    break;
+                case QualityLevel.High:
+                    fps = 10;
+                    quality = 35;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Cao");
+                    break;
+            }
+        }
+
         //Gửi frame lên server
         public void StartStreaming(string partnerId, CancellationToken token)
         {
-            Thread streamThread = new Thread(() =>
+            Task.Run( async () =>
             {
                 long frameId = 0; //ID khung hình tăng dần
                 const int MAX_PACKET_SIZE = 1024; //kích thước gói tin tối đa
                 while (!token.IsCancellationRequested)
                 {
-                    Thread.Sleep(1); //nhường luồng khác có cơ hội chạy (để dọn rác, tránh rò rỉ)
+                    Task.Delay(1); //nhường luồng khác có cơ hội chạy (để dọn rác, tránh rò rỉ)
                     using var bmp = ScreenService.CaptureScreen(); //Bitmap screenshot
                     int newWidth = bmp.Width /3*2;
                     int newHeight = bmp.Height /3*2;
@@ -74,17 +97,14 @@ namespace RemoteX.Client.Controllers
                     frameId++; //tăng ID cho khung hình tiếp theo
                     try
                     {
-                        Thread.Sleep(1000/fps);
+                        await Task.Delay(1000 / fps, token);
                     }
-                    catch (ThreadInterruptedException)
+                    catch (TaskCanceledException)
                     {
                         break; //khi token bị cancel, ném exception, thoát vòng while
                     }
                 }
-            });
-
-            streamThread.IsBackground = true; //để luồng tự tắt khi thoát ứng dụng
-            streamThread.Start();
+            }, token);
         }
     }
 }

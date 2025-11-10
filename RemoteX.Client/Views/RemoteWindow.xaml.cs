@@ -4,6 +4,9 @@ using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
 using System.Windows.Input;
 using RemoteX.Client.Services;
+//using static RemoteX.Client.Controllers.RemoteController;
+using System.Windows.Controls;
+using RemoteX.Core.Enums;
 
 namespace RemoteX.Client.Views
 {
@@ -59,24 +62,82 @@ namespace RemoteX.Client.Views
         private void btnScreenshot_Click(object sender, RoutedEventArgs e)
         {
             _rvm.SaveScreenShot();
+            imgRemoteScreen.Focus();
+        }
+        private void btnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            // Tự mở ContextMenu của chính nó
+            (sender as System.Windows.Controls.Button).ContextMenu.IsOpen = true;
+        }
+
+        // các hàm xử lý chọn chất lượng
+        private void Quality_Click_Thap(object sender, RoutedEventArgs e)
+        {
+            var msg = new QualityChangeMessage
+            {
+                From = _rvm.clientController.ClientId,
+                To = _rvm.PartnerId,
+                Quality = QualityLevel.Low
+            };
+            _rvm.clientController.Send(msg);
+
+            menuItemThap.IsChecked = true;
+            menuItemTrungBinh.IsChecked = false;
+            menuItemCao.IsChecked = false;
+
+            imgRemoteScreen.Focus(); //trả focus về màn hình
+        }
+
+        private void Quality_Click_TrungBinh(object sender, RoutedEventArgs e)
+        {
+            var msg = new QualityChangeMessage
+            {
+                From = _rvm.clientController.ClientId,
+                To = _rvm.PartnerId,
+                Quality = QualityLevel.Medium
+            };
+            _rvm.clientController.Send(msg);
+
+            menuItemThap.IsChecked = false;
+            menuItemTrungBinh.IsChecked = true;
+            menuItemCao.IsChecked = false;
+
+            imgRemoteScreen.Focus();
+        }
+
+        private void Quality_Click_Cao(object sender, RoutedEventArgs e)
+        {
+            var msg = new QualityChangeMessage
+            {
+                From = _rvm.clientController.ClientId,
+                To = _rvm.PartnerId,
+                Quality = QualityLevel.High
+            };
+            _rvm.clientController.Send(msg);
+
+            menuItemThap.IsChecked = false;
+            menuItemTrungBinh.IsChecked = false;
+            menuItemCao.IsChecked = true;
+
+            imgRemoteScreen.Focus();
         }
 
         private void RegisterMouseEvent()
         {
             //move
-            imgRemoteScreen.MouseMove += (s, e) =>
+            imgRemoteScreen.MouseMove += async (s, e) =>
             {
                 //if (!_isMouseDown) return; //nếu chuột trái không được click thì không bắt event move
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendMouseEvent(MouseEventMessage.MouseAction.Move, pos, size);
-                }).Start();
+                });
             };
 
             //left down
-            imgRemoteScreen.MouseLeftButtonDown += (s, e) =>
+            imgRemoteScreen.MouseLeftButtonDown += async (s, e) =>
             {
                 //kiểm tra xem phải double click ko
                 if (e.ClickCount == 2)
@@ -84,10 +145,10 @@ namespace RemoteX.Client.Views
                     System.Diagnostics.Debug.WriteLine("[REMOTE] Double Click detected");
                     var pos = e.GetPosition(imgRemoteScreen);
                     var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                    new Thread(() =>
+                    await Task.Run(() =>
                     {
                         _rvm.SendMouseEvent(MouseEventMessage.MouseAction.DoubleClick, pos, size);
-                    }).Start();
+                    });
                 }
                 else
                 {
@@ -96,62 +157,62 @@ namespace RemoteX.Client.Views
 
                     var pos = e.GetPosition(imgRemoteScreen);
                     var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                    new Thread(() =>
+                    await Task.Run(() =>
                     {
                         _rvm.SendMouseEvent(MouseEventMessage.MouseAction.LeftDown, pos, size);
-                    }).Start();
+                    });
                 }
                 e.Handled = true; //ngăn chặn sự kiện được xử lý tiếp
             };
             //left up
-            imgRemoteScreen.MouseLeftButtonUp += (s, e) =>
+            imgRemoteScreen.MouseLeftButtonUp += async (s, e) =>
             {
                 _isMouseDown = false;
                 imgRemoteScreen.ReleaseMouseCapture(); //thả bắt sự kiện chuột
 
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendMouseEvent(MouseEventMessage.MouseAction.LeftUp, pos, size);
-                }).Start();
+                });
                 e.Handled = true;
             };
             //right down
-            imgRemoteScreen.MouseRightButtonDown += (s, e) =>
+            imgRemoteScreen.MouseRightButtonDown += async (s, e) =>
             {
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendMouseEvent(MouseEventMessage.MouseAction.RightDown, pos, size);
-                }).Start();
+                });
                 e.Handled = true;
             };
             //right up
-            imgRemoteScreen.MouseRightButtonUp += (s, e) =>
+            imgRemoteScreen.MouseRightButtonUp += async (s, e) =>
             {
                 var pos = e.GetPosition(imgRemoteScreen);
                 var size = new System.Windows.Size(imgRemoteScreen.ActualWidth, imgRemoteScreen.ActualHeight);
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendMouseEvent(MouseEventMessage.MouseAction.RightUp, pos, size);
-                }).Start();
+                });
                 e.Handled = true;
             };
             //wheel
-            imgRemoteScreen.MouseWheel += (s, e) =>
+            imgRemoteScreen.MouseWheel += async (s, e) =>
             {
-                new Thread(() =>
+                await Task.Run(() =>
                 {
                     _rvm.SendScrollEvent(e.Delta);
-                }).Start();
+                });
                 e.Handled = true;
             };
         }
 
         //bắt sự kiện bàn phím
-        private void OnKeyEvent(object sender, System.Windows.Input.KeyEventArgs e)
+        private async void OnKeyEvent(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (KeyboardService.IsSimulating)
             {
@@ -162,7 +223,7 @@ namespace RemoteX.Client.Views
             int keyCode = KeyInterop.VirtualKeyFromKey(e.Key); //lấy mã phím
             bool isKeyUp = e.IsUp; //kiểm tra phím nhấn hay thả
 
-            new Thread(() =>
+            await Task.Run(() =>
             {
                 var keyEventMsg = new KeyboardEventMessage
                 {
@@ -172,7 +233,7 @@ namespace RemoteX.Client.Views
                     IsKeyUp = isKeyUp
                 };
                 _rvm.clientController.Send(keyEventMsg);
-            }).Start();
+            });
             e.Handled = true; //đánh dấu sự kiện đã được xử lý
         }
     }
