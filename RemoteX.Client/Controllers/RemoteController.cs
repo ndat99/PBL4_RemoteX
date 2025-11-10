@@ -16,6 +16,7 @@ namespace RemoteX.Client.Controllers
 {
     public class RemoteController
     {
+
         public readonly ClientController _clientController;
         private int fps = 15; //tốc độ khung hình
         private int quality = 25 ; //chất lượng ảnh
@@ -23,6 +24,28 @@ namespace RemoteX.Client.Controllers
         public RemoteController(ClientController clientController)
         {
             _clientController = clientController;
+        }
+
+        public void SetQuality(QualityLevel level)
+        {
+            switch (level)
+            {
+                case QualityLevel.Low:
+                    fps = 20;
+                    quality = 15;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Thấp");
+                    break;
+                case QualityLevel.Medium:
+                    fps = 15;
+                    quality = 25;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Trung bình");
+                    break;
+                case QualityLevel.High:
+                    fps = 10;
+                    quality = 35;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Cao");
+                    break;
+            }
         }
 
         //Gửi frame lên server
@@ -34,7 +57,7 @@ namespace RemoteX.Client.Controllers
                 const int MAX_PACKET_SIZE = 1024; //kích thước gói tin tối đa
                 while (!token.IsCancellationRequested)
                 {
-                    Thread.Sleep(1); //nhường luồng khác có cơ hội chạy (để dọn rác, tránh rò rỉ)
+                    Task.Delay(1); //nhường luồng khác có cơ hội chạy (để dọn rác, tránh rò rỉ)
                     using var bmp = ScreenService.CaptureScreen(); //Bitmap screenshot
                     int newWidth = bmp.Width /3*2;
                     int newHeight = bmp.Height /3*2;

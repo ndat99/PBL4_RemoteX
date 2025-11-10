@@ -58,6 +58,34 @@
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+        <Style x:Key="SettingsToggleButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Margin" Value="0,0,3,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E0E0E0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -106,6 +134,20 @@
                             FontSize="10" Padding="8,4"
                             Height="24" MinWidth="60"
                             Click="btnDisconnect_Click"/>
+                    <Button x:Name="btnSettings" Content="&#xE713;" 
+                            Style="{StaticResource SettingsToggleButtonStyle}"
+                            Click="btnSettings_Click">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                <MenuItem x:Name="menuItemThap" Header="Thấp"
+                                          Click="Quality_Click_Thap" IsCheckable="True"/>
+                                <MenuItem x:Name="menuItemTrungBinh" Header="Trung bình"
+                                          Click="Quality_Click_TrungBinh" IsCheckable="True" IsChecked="True"/>
+                                <MenuItem x:Name="menuItemCao" Header="Cao"
+                                          Click="Quality_Click_Cao" IsCheckable="True"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                    </Button>
                 </StackPanel>
             </Border>
         </StackPanel>

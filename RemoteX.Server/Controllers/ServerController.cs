@@ -255,6 +255,9 @@ namespace RemoteX.Server.Controllers
                 case FileAcceptMessage fileAccept:
                     ForwardTcpMessage(sender, fileAccept);
                     break;
+                case QualityChangeMessage qualityChange:
+                    ForwardTcpMessage(sender, qualityChange);
+                    break;
             }
         }
 
