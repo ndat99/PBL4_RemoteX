@@ -329,14 +329,15 @@
                         </Grid>
 
                         <!-- Advanced Password -->
-                        <TextBlock Text="Mật khẩu tùy chỉnh" Style="{StaticResource LabelTextStyle}"/>
+                        <TextBlock Text="Mật khẩu tùy chỉnh" Style="{StaticResource LabelTextStyle}" Visibility="Hidden"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtCustomPass" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" Background="#FFFFFF"/>
-                            <Button Grid.Column="1" Content="🔑" Style="{StaticResource IconButtonStyle}" Margin="5,0,0,0" FontSize="14" Foreground="Goldenrod"/>
+                            <TextBox x:Name="txtCustomPass" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" Background="#FFFFFF" Visibility="Hidden"/>
+                            <Button Grid.Column="1" Content="🔑" Style="{StaticResource IconButtonStyle}" Margin="5,0,0,0"
+                                    FontSize="14" Foreground="Goldenrod" Visibility="Hidden"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -534,7 +535,6 @@
                         </Grid.ColumnDefinitions>
 
                         <Button x:Name="btnFile" Grid.Column="0" Content="📂" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14" Click="btnFile_Click" Foreground="Goldenrod"/>
-                        <Button x:Name="btnImage" Grid.Column="1" Content="🏜" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14"/>
                         <TextBox x:Name="txtMessage" Grid.Column="2" Style="{StaticResource InputTextBoxStyle}" 
                              Text="{Binding ChatVM.InputMessage, UpdateSourceTrigger=PropertyChanged}" Foreground="#333333" Background="#FFFFFF"/>
                         <Button x:Name="btnSend" Grid.Column="3" Content="➤" Style="{StaticResource ButtonStyle}" 
@@ -548,7 +548,7 @@
                 <TextBlock Text="Nguyen Hoang Phuc - Nguyen Dang Anh Tien" 
                        Foreground="#4A90E2" FontSize="10" 
                        HorizontalAlignment="Right" VerticalAlignment="Top" 
-                       Margin="0,4,15,0"/>
+                       Margin="0,7,15,0"/>
                 <Button x:Name="btn" Content="&#xE713;" 
                     Style="{StaticResource SettingsToggleButtonStyle}" 
                     HorizontalAlignment="Left" Margin="10,-4,0,0"
