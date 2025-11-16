@@ -86,10 +86,14 @@ namespace RemoteX.Client.Views
 
                                 if (fileMsgContainer != null)
                                 {
-                                    var button = FindVisualChild<System.Windows.Controls.Button>(fileMsgContainer, btn => btn.Name == "btnDownload");
-                                    if (button != null)
+                                    var btnDown = FindVisualChild<System.Windows.Controls.Button>(fileMsgContainer, btn => btn.Name == "btnDownload");
+                                    var btnFolder = FindVisualChild<System.Windows.Controls.Button>(fileMsgContainer, btn => btn.Name == "btnOpenFolder");
+                                    if (btnDown != null)
                                     {
                                         //button.Content = "Done!!";
+                                    }
+                                    if (btnFolder != null) {
+                                        btnFolder.Visibility = Visibility.Visible;
                                     }
                                 }
                             });
@@ -276,8 +280,29 @@ namespace RemoteX.Client.Views
             }
         }
 
+        private void btnOpenFolder_Click(object sender, EventArgs e)
+        {
+            var btn = sender as System.Windows.Controls.Button;
+            if (btn == null || !(btn.DataContext is FileMessage fileMessage)) return;
 
-    private void btnDownload_Click(object sender, EventArgs e)
+            if (!string.IsNullOrEmpty(fileMessage.LocalFilePath))
+            {
+                try
+                {
+                    string folderPath = System.IO.Path.GetDirectoryName(fileMessage.LocalFilePath);
+
+                    if (Directory.Exists(folderPath)) {
+                        System.Diagnostics.Process.Start("explorer.exe", folderPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"{ex.Message}");
+                }
+            }
+        }
+
+        private void btnDownload_Click(object sender, EventArgs e)
         {
             var btn = sender as System.Windows.Controls.Button;
             if (btn == null || btn.Tag == null) return;
@@ -293,6 +318,7 @@ namespace RemoteX.Client.Views
 
             if (saveFileDialog.ShowDialog() == true)
             {
+                fileMessage.LocalFilePath = saveFileDialog.FileName;
                 var fileStream = new System.IO.FileStream(saveFileDialog.FileName, FileMode.Create, FileAccess.Write);
                 _receivedFiles[fileId] = fileStream;
 

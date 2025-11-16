@@ -11,12 +11,6 @@ namespace RemoteX.Client.Controllers
         private TcpClient _tcpClient;
         private ClientHandler _handler;
 
-        //Udp rieng cho screen + info server
-        private UdpClient _udp;  //Socket UDP dung gui chunk nhi phan
-        public UdpClient UdpClient => _udp;
-        public string ServerIP { get; set; }
-        public string ServerPort { get; set; }
-
         public string ClientId { get; private set; }
         public TcpClient TcpClient => _tcpClient;
 

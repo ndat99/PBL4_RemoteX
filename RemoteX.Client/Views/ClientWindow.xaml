@@ -472,12 +472,13 @@
 
                                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding FileName}" Style="{StaticResource ChatFileNameStyle}"/>
-                                                        <TextBlock Text="{Binding FileSize, StringFormat={}{0:N0} bytes}" Style="{StaticResource ChatFileSizeStyle}"/>
+                                                        <TextBlock Text="{Binding FormatSizeFile}" Style="{StaticResource ChatFileSizeStyle}"/>
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,0,0">
                                                         <Button x:Name="btnOpenFolder" Content="📁" 
-                                                        Style="{StaticResource ChatActionButtonStyle}" ToolTip="Mở thư mục chứa file" />
+                                                                Click="btnOpenFolder_Click" 
+                                                                Style="{StaticResource ChatActionButtonStyle}" ToolTip="Mở thư mục chứa file" />
                                                         <Button x:Name="btnDownload" Content="🡻" 
                                                         Click="btnDownload_Click" Tag="{Binding FileID}"
                                                         Style="{StaticResource ChatActionButtonStyle}" ToolTip="Tải về" />
