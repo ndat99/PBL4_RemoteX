@@ -16,13 +16,40 @@ namespace RemoteX.Client.Controllers
 {
     public class RemoteController
     {
+
         public readonly ClientController _clientController;
         private int fps = 15; //tốc độ khung hình
         private int quality = 25 ; //chất lượng ảnh
+        private int resolution = 66; //tỉ lệ phân giải 
 
         public RemoteController(ClientController clientController)
         {
             _clientController = clientController;
+        }
+
+        public void SetQuality(QualityLevel level)
+        {
+            switch (level)
+            {
+                case QualityLevel.Low:
+                    fps = 20;
+                    quality = 20;
+                    resolution = 55;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Thấp");
+                    break;
+                case QualityLevel.Medium:
+                    fps = 15;
+                    quality = 25;
+                    resolution = 66;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Trung bình");
+                    break;
+                case QualityLevel.High:
+                    fps = 12;
+                    quality = 23;
+                    resolution = 73;
+                    System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Cao");
+                    break;
+            }
         }
 
         //Gửi frame lên server
@@ -34,10 +61,10 @@ namespace RemoteX.Client.Controllers
                 const int MAX_PACKET_SIZE = 1024; //kích thước gói tin tối đa
                 while (!token.IsCancellationRequested)
                 {
-                    Thread.Sleep(1); //nhường luồng khác có cơ hội chạy (để dọn rác, tránh rò rỉ)
+                    Task.Delay(1); //nhường luồng khác có cơ hội chạy (để dọn rác, tránh rò rỉ)
                     using var bmp = ScreenService.CaptureScreen(); //Bitmap screenshot
-                    int newWidth = bmp.Width /3*2;
-                    int newHeight = bmp.Height /3*2;
+                    int newWidth = bmp.Width * resolution/100;
+                    int newHeight = bmp.Height * resolution/100;
                     using var smallBmp = new Bitmap(newWidth, newHeight);
                     using (var g = Graphics.FromImage(smallBmp))
                     {

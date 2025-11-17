@@ -10,7 +10,7 @@ namespace RemoteX.Client.Controllers
     {
         private TcpClient _tcpClient;
         private ClientHandler _handler;
-
+      
         public string ClientId { get; private set; }
         public TcpClient TcpClient => _tcpClient;
 
@@ -24,6 +24,7 @@ namespace RemoteX.Client.Controllers
         public event Action<FileMessage> FileMessageReceived;
         public event Action<FileChunk> FileChunkReceived;
         public event Action<FileAcceptMessage> FileAcceptReceived;
+        public event Action<QualityChangeMessage> QualityChangeMessageReceived;
         //public event Action<MouseEventMessage> MouseEventReceived;
         //public event Action<KeyboardEventMessage> KeyboardEventReceived;
 
@@ -86,6 +87,9 @@ namespace RemoteX.Client.Controllers
                     break;
                 case Log log:
                     LogReceived?.Invoke(log);
+                    break;
+                case QualityChangeMessage qualityChange:
+                    QualityChangeMessageReceived?.Invoke(qualityChange);
                     break;
 
                 //udp message

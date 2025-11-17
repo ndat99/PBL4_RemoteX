@@ -4,6 +4,9 @@ using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
 using System.Windows.Input;
 using RemoteX.Client.Services;
+//using static RemoteX.Client.Controllers.RemoteController;
+using System.Windows.Controls;
+using RemoteX.Core.Enums;
 
 namespace RemoteX.Client.Views
 {
@@ -59,6 +62,64 @@ namespace RemoteX.Client.Views
         private void btnScreenshot_Click(object sender, RoutedEventArgs e)
         {
             _rvm.SaveScreenShot();
+            imgRemoteScreen.Focus();
+        }
+        private void btnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            // Tự mở ContextMenu của chính nó
+            (sender as System.Windows.Controls.Button).ContextMenu.IsOpen = true;
+        }
+
+        // các hàm xử lý chọn chất lượng
+        private void Quality_Click_Thap(object sender, RoutedEventArgs e)
+        {
+            var msg = new QualityChangeMessage
+            {
+                From = _rvm.clientController.ClientId,
+                To = _rvm.PartnerId,
+                Quality = QualityLevel.Low
+            };
+            _rvm.clientController.Send(msg);
+
+            menuItemThap.IsChecked = true;
+            menuItemTrungBinh.IsChecked = false;
+            menuItemCao.IsChecked = false;
+
+            imgRemoteScreen.Focus(); //trả focus về màn hình
+        }
+
+        private void Quality_Click_TrungBinh(object sender, RoutedEventArgs e)
+        {
+            var msg = new QualityChangeMessage
+            {
+                From = _rvm.clientController.ClientId,
+                To = _rvm.PartnerId,
+                Quality = QualityLevel.Medium
+            };
+            _rvm.clientController.Send(msg);
+
+            menuItemThap.IsChecked = false;
+            menuItemTrungBinh.IsChecked = true;
+            menuItemCao.IsChecked = false;
+
+            imgRemoteScreen.Focus();
+        }
+
+        private void Quality_Click_Cao(object sender, RoutedEventArgs e)
+        {
+            var msg = new QualityChangeMessage
+            {
+                From = _rvm.clientController.ClientId,
+                To = _rvm.PartnerId,
+                Quality = QualityLevel.High
+            };
+            _rvm.clientController.Send(msg);
+
+            menuItemThap.IsChecked = false;
+            menuItemTrungBinh.IsChecked = false;
+            menuItemCao.IsChecked = true;
+
+            imgRemoteScreen.Focus();
         }
 
         private void RegisterMouseEvent()

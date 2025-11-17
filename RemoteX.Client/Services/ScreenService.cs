@@ -47,6 +47,18 @@ namespace RemoteX.Client.Services
             return bmpImage;
         }
 
+        public static BitmapImage ConvertToBitmapImage(byte[] dataBuffer, int length)
+        {
+            //dùng MemoryStream để đọc byte[]
+            using var ms = new MemoryStream(dataBuffer, 0, length, writable: false); //chỉ đọc đến length
+            var bmpImage = new BitmapImage();
+            bmpImage.BeginInit();
+            bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+            bmpImage.StreamSource = ms;
+            bmpImage.EndInit();
+            bmpImage.Freeze(); //thread-safe
+            return bmpImage;
+        }
 
         private static ImageCodecInfo GetEncoder(ImageFormat format)
         {
