@@ -208,6 +208,34 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="SettingsToggleButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Margin" Value="0,0,3,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E0E0E0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border x:Name="MainBorder" CornerRadius="15" BorderBrush="#FF4A90E2" BorderThickness="2" Background="#FAFAFA">
@@ -301,14 +329,15 @@
                         </Grid>
 
                         <!-- Advanced Password -->
-                        <TextBlock Text="Mật khẩu tùy chỉnh" Style="{StaticResource LabelTextStyle}"/>
+                        <TextBlock Text="Mật khẩu tùy chỉnh" Style="{StaticResource LabelTextStyle}" Visibility="Hidden"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtCustomPass" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" Background="#FFFFFF"/>
-                            <Button Grid.Column="1" Content="🔑" Style="{StaticResource IconButtonStyle}" Margin="5,0,0,0" FontSize="14" Foreground="Goldenrod"/>
+                            <TextBox x:Name="txtCustomPass" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" Background="#FFFFFF" Visibility="Hidden"/>
+                            <Button Grid.Column="1" Content="🔑" Style="{StaticResource IconButtonStyle}" Margin="5,0,0,0"
+                                    FontSize="14" Foreground="Goldenrod" Visibility="Hidden"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -507,7 +536,6 @@
                         </Grid.ColumnDefinitions>
 
                         <Button x:Name="btnFile" Grid.Column="0" Content="📂" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14" Click="btnFile_Click" Foreground="Goldenrod"/>
-                        <Button x:Name="btnImage" Grid.Column="1" Content="🏜" Style="{StaticResource IconButtonStyle}" Margin="0,0,5,0" FontSize="14"/>
                         <TextBox x:Name="txtMessage" Grid.Column="2" Style="{StaticResource InputTextBoxStyle}" 
                              Text="{Binding ChatVM.InputMessage, UpdateSourceTrigger=PropertyChanged}" Foreground="#333333" Background="#FFFFFF"/>
                         <Button x:Name="btnSend" Grid.Column="3" Content="➤" Style="{StaticResource ButtonStyle}" 
@@ -521,9 +549,9 @@
                 <TextBlock Text="Nguyen Hoang Phuc - Nguyen Dang Anh Tien" 
                        Foreground="#4A90E2" FontSize="10" 
                        HorizontalAlignment="Right" VerticalAlignment="Top" 
-                       Margin="0,4,15,0"/>
-                <Button x:Name="btn" Content="🌣" 
-                    Style="{StaticResource InlineChatToggleStyle}" 
+                       Margin="0,7,15,0"/>
+                <Button x:Name="btn" Content="&#xE713;" 
+                    Style="{StaticResource SettingsToggleButtonStyle}" 
                     HorizontalAlignment="Left" Margin="10,-4,0,0"
                     FontSize="20" Height="27"  Width="33" Cursor="Hand"/>
             </Grid>

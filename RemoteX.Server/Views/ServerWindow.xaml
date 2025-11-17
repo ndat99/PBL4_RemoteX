@@ -221,9 +221,8 @@
                                         <ImageBrush ImageSource="/Views/Images/Client.png"/>
                                     </Ellipse.Fill>
                                 </Ellipse>
-                                <TextBlock Text="Máy khách đã kết nối:" Style="{StaticResource HeaderTextStyle}"/>
-                                <TextBlock x:Name="txtClientCount" Text="(*)" Foreground="#4A90E2" FontSize="14" 
-                                           VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                <TextBlock Text="Máy khách đang kết nối" Style="{StaticResource HeaderTextStyle}"/>
+
                             </StackPanel>
 
                             <!-- Client List -->

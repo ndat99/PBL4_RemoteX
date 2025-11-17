@@ -11,7 +11,9 @@ namespace RemoteX.Client.ViewModels
         public event Action<string> PartnerConnected;
 
         public readonly ClientController _clientController;
+
         private CancellationTokenSource _myStreamingCts;
+        private RemoteController _myStreamingController;
 
         // Tạo một Dictionary để lưu lại đường dẫn các file đã gửi
         private readonly Dictionary<Guid, string> _mySentFiles = new Dictionary<Guid, string>();
@@ -46,6 +48,7 @@ namespace RemoteX.Client.ViewModels
                         _myStreamingCts?.Cancel();
                         _myStreamingCts?.Dispose();
                         _myStreamingCts = null;
+                        _myStreamingController = null;
                     } catch { }
                 }
                 else if (log.Content.Contains("✔"))
@@ -67,7 +70,8 @@ namespace RemoteX.Client.ViewModels
 
                         //PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
                         _myStreamingCts = new CancellationTokenSource();
-                        new RemoteController(_clientController).StartStreaming(PartnerId, _myStreamingCts.Token);
+                        _myStreamingController = new RemoteController(_clientController);
+                        _myStreamingController.StartStreaming(PartnerId, _myStreamingCts.Token);
                     }
                 }
                 else if (log.Content.Contains("⬤"))
@@ -91,6 +95,15 @@ namespace RemoteX.Client.ViewModels
             {
                 //ChatVM.ReceiveMessage(fileChunk);
             };
+            _clientController.QualityChangeMessageReceived += OnQualityChangeReceived;
+        }
+
+        private void OnQualityChangeReceived(QualityChangeMessage msg)
+        {
+            if (_myStreamingController != null && msg.From == PartnerId)
+            {
+                _myStreamingController.SetQuality(msg.Quality);
+            }
         }
 
         public void SendConnectRequest(string targetId, string password)

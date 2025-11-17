@@ -58,6 +58,34 @@
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+        <Style x:Key="SettingsToggleButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Margin" Value="0,0,3,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E0E0E0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -81,33 +109,46 @@
         </Border>
 
         <!-- Floating Toolbar (Top Center Overlay) -->
-        <StackPanel Orientation="Horizontal" 
-                    HorizontalAlignment="Center" 
-                    VerticalAlignment="Top" 
-                    Margin="0,5" 
-                    Background="#252526" 
-                    Opacity="0.95">
-            <StackPanel.Effect>
+        <Border VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0"
+        Background="#F3F3F3" Opacity="0.95"
+        CornerRadius="0,0,20,20" BorderThickness="0"
+        Padding="3">
+            <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="3" Opacity="0.5"/>
-            </StackPanel.Effect>
+            </Border.Effect>
 
-            <!-- Remote ID Display -->
+            <StackPanel Orientation="Horizontal" Margin="10,0">
 
-            <!-- Action Buttons -->
-            <Border Background="#F3F3F3" Padding="4,4">
-                <StackPanel Orientation="Horizontal">
-                    <Button x:Name="btnScreenshot" Content="⛶ Chụp màn hình" 
-                            Style="{StaticResource ToolbarButtonStyle}"
-                            FontSize="10" Padding="8,4"
-                            Height="24" MinWidth="60"
-                            Click="btnScreenshot_Click"/>
-                    <Button x:Name="btnDisconnect" Content="⏻ Ngắt kết nối" 
-                            Style="{StaticResource DisconnectButtonStyle}"
-                            FontSize="10" Padding="8,4"
-                            Height="24" MinWidth="60"
-                            Click="btnDisconnect_Click"/>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+                <Button x:Name="btnScreenshot" Content="⛶ Chụp màn hình" 
+                Style="{StaticResource ToolbarButtonStyle}"
+                FontSize="10" Padding="8,4"
+                Height="24" MinWidth="60"
+                Click="btnScreenshot_Click"/>
+
+                <Button x:Name="btnDisconnect" Content="⏻ Ngắt kết nối" 
+                Style="{StaticResource DisconnectButtonStyle}"
+                FontSize="10" Padding="8,4"
+                Height="24" MinWidth="60"
+                Margin="3,0,0,0"
+                Click="btnDisconnect_Click"/>
+
+                <Button x:Name="btnSettings" Content="&#xE713;" 
+                Style="{StaticResource SettingsToggleButtonStyle}"
+                Click="btnSettings_Click"
+                Margin="3,0,0,0">
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="menuItemThap" Header="Thấp"
+                              Click="Quality_Click_Thap" IsCheckable="True"/>
+                            <MenuItem x:Name="menuItemTrungBinh" Header="Trung bình"
+                              Click="Quality_Click_TrungBinh" IsCheckable="True" IsChecked="True"/>
+                            <MenuItem x:Name="menuItemCao" Header="Cao"
+                              Click="Quality_Click_Cao" IsCheckable="True"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>
