@@ -5,6 +5,7 @@ using RemoteX.Core.Utils;
 using System.Windows.Media.Imaging;
 using System.IO;
 using System.Windows;
+using System.Buffers;
 using System.Drawing.Drawing2D;
 
 namespace RemoteX.Client.ViewModels
@@ -72,21 +73,30 @@ namespace RemoteX.Client.ViewModels
                 {
                     totalImageSize += p.ImageData.Length;
                 }
-                byte[] finalImageData = new byte[totalImageSize];
-                int currentPosition = 0;
-                
-                foreach (var p in completedPackets)
+                byte[] rentedBuffer = ArrayPool<byte>.Shared.Rent(totalImageSize);
+                //dùng try để đảm bảo buffer luôn đc trả lại ngay cả khi có lỗi
+                try
                 {
-                    Buffer.BlockCopy(p.ImageData, 0, finalImageData, currentPosition, p.ImageData.Length);
-                    currentPosition += p.ImageData.Length;
+                    int currentPosition = 0;
+
+                    foreach (var p in completedPackets)
+                    {
+                        Buffer.BlockCopy(p.ImageData, 0, rentedBuffer, currentPosition, p.ImageData.Length);
+                        currentPosition += p.ImageData.Length;
+                    }
+                    var bmp = ScreenService.ConvertToBitmapImage(rentedBuffer, totalImageSize);
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        ScreenView = bmp;
+                        _remoteScreenHeight = packet.Height;
+                        _remoteScreenWidth = packet.Width;
+                    });
                 }
-                var bmp = ScreenService.ConvertToBitmapImage(finalImageData);
-                App.Current.Dispatcher.Invoke(() =>
+                finally
                 {
-                    ScreenView = bmp;
-                    _remoteScreenHeight = packet.Height;
-                    _remoteScreenWidth = packet.Width;
-                });
+                    ArrayPool<byte>.Shared.Return(rentedBuffer); //trả mảng byte về pool
+                }
+
             }
         }
 
