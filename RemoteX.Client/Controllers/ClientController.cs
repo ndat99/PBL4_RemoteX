@@ -10,10 +10,7 @@ namespace RemoteX.Client.Controllers
     {
         private TcpClient _tcpClient;
         private ClientHandler _handler;
-
-        public string ServerIP { get; set; }
-        public string ServerPort { get; set; }
-
+      
         public string ClientId { get; private set; }
         public TcpClient TcpClient => _tcpClient;
 
