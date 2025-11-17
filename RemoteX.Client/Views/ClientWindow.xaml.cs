@@ -239,6 +239,8 @@ namespace RemoteX.Client.Views
                     FileID = Guid.NewGuid(),
                     IsMine = true,
                     Timestamp = DateTime.Now,
+
+                    LocalFilePath = filePath
                 };
 
                 _client.Send(fileMessage);
