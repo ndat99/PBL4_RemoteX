@@ -6,25 +6,24 @@ using System.Threading.Tasks;
 using System.Windows;
 using RemoteX.Core.Models;
 using RemoteX.Core.Networking;
-using RemoteX.Client.Services;
 using RemoteX.Core.Services;
 using RemoteX.Core.Enums;
 using System.Net.Sockets;
 using RemoteX.Core;
 
-namespace RemoteX.Client.Controllers
+namespace RemoteX.Client.Services
 {
-    public class RemoteController
+    public class ScreenStreamer
     {
 
-        public readonly ClientController _clientController;
+        public readonly ClientNetworkManager _clientController;
         private int fps = 15; //tốc độ khung hình
         private int quality = 25 ; //chất lượng ảnh
         private int resolution = 66; //tỉ lệ phân giải 
 
-        public RemoteController(ClientController clientController)
+        public ScreenStreamer(ClientNetworkManager clientNetwork)
         {
-            _clientController = clientController;
+            _clientController = clientNetwork;
         }
 
         public void SetQuality(QualityLevel level)

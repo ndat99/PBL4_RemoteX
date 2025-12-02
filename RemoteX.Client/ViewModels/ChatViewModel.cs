@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using RemoteX.Client.Controllers;
+using RemoteX.Client.Services;
 using RemoteX.Core.Models;
 using RemoteX.Core.Utils;
 
@@ -7,7 +7,7 @@ namespace RemoteX.Client.ViewModels
 {
     public class ChatViewModel : BaseViewModel
     {
-        private readonly ClientController _client;
+        private readonly ClientNetworkManager _client;
         public ObservableCollection<RemoteX.Core.Message> Messages { get; set; } = new();
         private string _inputMessage;
 
@@ -21,7 +21,7 @@ namespace RemoteX.Client.ViewModels
             }
         }
 
-        public ChatViewModel(ClientController client)
+        public ChatViewModel(ClientNetworkManager client)
         {
             _client = client;
             //InputMessage = "Nhập tin nhắn";

@@ -1,10 +1,8 @@
 ﻿using System.Windows;
 using RemoteX.Client.ViewModels;
-using RemoteX.Client.Controllers;
 using RemoteX.Core.Models;
 using System.Windows.Input;
 using RemoteX.Client.Services;
-//using static RemoteX.Client.Controllers.RemoteController;
 using System.Windows.Controls;
 using RemoteX.Core.Enums;
 
@@ -15,10 +13,10 @@ namespace RemoteX.Client.Views
         private RemoteViewModel _rvm;
         private CancellationTokenSource _cts;
         private bool _isMouseDown = false;
-        public RemoteWindow(ClientController clientController, string partnerId)
+        public RemoteWindow(ClientNetworkManager clientNetwork, string partnerId)
         {
             InitializeComponent();
-            _rvm = new RemoteViewModel(clientController, partnerId);
+            _rvm = new RemoteViewModel(clientNetwork, partnerId);
             this.DataContext = _rvm;
 
             RegisterMouseEvent();
@@ -52,11 +50,11 @@ namespace RemoteX.Client.Views
 
             var disconnectMsg = new ConnectRequest
             {
-                From = _rvm.clientController.ClientId,
+                From = _rvm.clientNetwork.ClientId,
                 To = _rvm.PartnerId,
                 Status = "Disconnect"
             };
-            _rvm.clientController.Send(disconnectMsg);
+            _rvm.clientNetwork.Send(disconnectMsg);
         }
 
         private void btnScreenshot_Click(object sender, RoutedEventArgs e)
@@ -75,11 +73,11 @@ namespace RemoteX.Client.Views
         {
             var msg = new QualityChangeMessage
             {
-                From = _rvm.clientController.ClientId,
+                From = _rvm.clientNetwork.ClientId,
                 To = _rvm.PartnerId,
                 Quality = QualityLevel.Low
             };
-            _rvm.clientController.Send(msg);
+            _rvm.clientNetwork.Send(msg);
 
             menuItemThap.IsChecked = true;
             menuItemTrungBinh.IsChecked = false;
@@ -92,11 +90,11 @@ namespace RemoteX.Client.Views
         {
             var msg = new QualityChangeMessage
             {
-                From = _rvm.clientController.ClientId,
+                From = _rvm.clientNetwork.ClientId,
                 To = _rvm.PartnerId,
                 Quality = QualityLevel.Medium
             };
-            _rvm.clientController.Send(msg);
+            _rvm.clientNetwork.Send(msg);
 
             menuItemThap.IsChecked = false;
             menuItemTrungBinh.IsChecked = true;
@@ -109,11 +107,11 @@ namespace RemoteX.Client.Views
         {
             var msg = new QualityChangeMessage
             {
-                From = _rvm.clientController.ClientId,
+                From = _rvm.clientNetwork.ClientId,
                 To = _rvm.PartnerId,
                 Quality = QualityLevel.High
             };
-            _rvm.clientController.Send(msg);
+            _rvm.clientNetwork.Send(msg);
 
             menuItemThap.IsChecked = false;
             menuItemTrungBinh.IsChecked = false;
@@ -227,12 +225,12 @@ namespace RemoteX.Client.Views
             {
                 var keyEventMsg = new KeyboardEventMessage
                 {
-                    From = _rvm.clientController.ClientId,
+                    From = _rvm.clientNetwork.ClientId,
                     To = _rvm.PartnerId,
                     KeyCode = keyCode,
                     IsKeyUp = isKeyUp
                 };
-                _rvm.clientController.Send(keyEventMsg);
+                _rvm.clientNetwork.Send(keyEventMsg);
             });
             e.Handled = true; //đánh dấu sự kiện đã được xử lý
         }

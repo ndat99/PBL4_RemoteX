@@ -9,13 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Services\**" />
-    <EmbeddedResource Remove="Services\**" />
-    <None Remove="Services\**" />
-    <Page Remove="Services\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="RemoteX.png" />
     <None Remove="Views\Client.png" />
     <None Remove="Views\RemoteX.ico" />
