@@ -1,5 +1,4 @@
-﻿using RemoteX.Client.Controllers;
-using RemoteX.Client.ViewModels;
+﻿using RemoteX.Client.ViewModels;
 using RemoteX.Core.Models;
 using RemoteX.Core.Utils;
 using System.IO;
@@ -10,12 +9,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Win32;
+using RemoteX.Client.Services;
 
 namespace RemoteX.Client.Views
 {
     public partial class MainWindow : Window
     {
-        private ClientController _client;
+        private ClientNetworkManager _clientNetwork;
         private ClientViewModel _cvm;
         private NetworkConfig _config;
 
@@ -51,21 +51,21 @@ namespace RemoteX.Client.Views
         {
             InitializeComponent();
 
-            _client = new ClientController();
-            _cvm = new ClientViewModel(_client);
+            _clientNetwork = new ClientNetworkManager();
+            _cvm = new ClientViewModel(_clientNetwork);
             _cvm.PartnerConnected += partnerId =>
             {
                 System.Diagnostics.Debug.WriteLine($"[MAIN] PartnerConnected event received: {partnerId}");
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     System.Diagnostics.Debug.WriteLine($"[MAIN] Creating RemoteWindow");
-                    var remoteWindow = new RemoteWindow(_client, partnerId);
+                    var remoteWindow = new RemoteWindow(_clientNetwork, partnerId);
                     System.Diagnostics.Debug.WriteLine($"[MAIN] Showing RemoteWindow");
                     remoteWindow.Show();
                 });
             };
 
-            _client.FileChunkReceived += chunk =>
+            _clientNetwork.FileChunkReceived += chunk =>
             {
                 //Khi nhan duoc mot manh file, ghi nos vao FileStream tuong ung
                 if (_receivedFiles.TryGetValue(chunk.FileID, out FileStream fs))
@@ -86,10 +86,14 @@ namespace RemoteX.Client.Views
 
                                 if (fileMsgContainer != null)
                                 {
-                                    var button = FindVisualChild<System.Windows.Controls.Button>(fileMsgContainer, btn => btn.Name == "btnDownload");
-                                    if (button != null)
+                                    var btnDown = FindVisualChild<System.Windows.Controls.Button>(fileMsgContainer, btn => btn.Name == "btnDownload");
+                                    var btnFolder = FindVisualChild<System.Windows.Controls.Button>(fileMsgContainer, btn => btn.Name == "btnOpenFolder");
+                                    if (btnDown != null)
                                     {
                                         //button.Content = "Done!!";
+                                    }
+                                    if (btnFolder != null) {
+                                        btnFolder.Visibility = Visibility.Visible;
                                     }
                                 }
                             });
@@ -101,7 +105,7 @@ namespace RemoteX.Client.Views
                     }
                 }
             };
-            _client.FileAcceptReceived += acceptMsg =>
+            _clientNetwork.FileAcceptReceived += acceptMsg =>
             {
                 if(_mysentFiles.TryGetValue(acceptMsg.FileID, out string filePath))
                 {
@@ -120,10 +124,10 @@ namespace RemoteX.Client.Views
             this.Top = Math.Max(0, top);
 
             LoadConfig();
-            //await Task.Run(() => _client.ConnectAsync("127.0.0.1", 5000));
+            //await Task.Run(() => _clientNetwork.ConnectAsync("127.0.0.1", 5000));
             try
             {
-                await Task.Run(() => _client.ConnectAsync(_config.IP, 5000));
+                await Task.Run(() => _clientNetwork.ConnectAsync(_config.IP, 5000));
 
             }
             catch (Exception ex)
@@ -237,7 +241,7 @@ namespace RemoteX.Client.Views
                     Timestamp = DateTime.Now,
                 };
 
-                _client.Send(fileMessage);
+                _clientNetwork.Send(fileMessage);
 
                 _cvm.ChatVM.AddMessage(fileMessage);
 
@@ -265,7 +269,7 @@ namespace RemoteX.Client.Views
                             From = _cvm.InfoVM.ClientInfo.Id,
                             To = _cvm.PartnerId
                         };
-                        _client.Send(chunk);
+                        _clientNetwork.Send(chunk);
                         Task.Delay(1);
                     }
                 }
@@ -276,8 +280,29 @@ namespace RemoteX.Client.Views
             }
         }
 
+        private void btnOpenFolder_Click(object sender, EventArgs e)
+        {
+            var btn = sender as System.Windows.Controls.Button;
+            if (btn == null || !(btn.DataContext is FileMessage fileMessage)) return;
 
-    private void btnDownload_Click(object sender, EventArgs e)
+            if (!string.IsNullOrEmpty(fileMessage.LocalFilePath))
+            {
+                try
+                {
+                    string folderPath = System.IO.Path.GetDirectoryName(fileMessage.LocalFilePath);
+
+                    if (Directory.Exists(folderPath)) {
+                        System.Diagnostics.Process.Start("explorer.exe", folderPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"{ex.Message}");
+                }
+            }
+        }
+
+        private void btnDownload_Click(object sender, EventArgs e)
         {
             var btn = sender as System.Windows.Controls.Button;
             if (btn == null || btn.Tag == null) return;
@@ -293,6 +318,7 @@ namespace RemoteX.Client.Views
 
             if (saveFileDialog.ShowDialog() == true)
             {
+                fileMessage.LocalFilePath = saveFileDialog.FileName;
                 var fileStream = new System.IO.FileStream(saveFileDialog.FileName, FileMode.Create, FileAccess.Write);
                 _receivedFiles[fileId] = fileStream;
 
@@ -305,7 +331,7 @@ namespace RemoteX.Client.Views
                     From = _cvm.InfoVM.ClientInfo.Id,
                     To = fileMessage.From // Gửi lại cho người đã gửi file
                 };
-                _client.Send(acceptMsg);
+                _clientNetwork.Send(acceptMsg);
             }
         }
 

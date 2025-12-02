@@ -8,9 +8,9 @@ using RemoteX.Core.Networking;
 using System.IO;
 using System.Collections.Concurrent;
 
-namespace RemoteX.Server.Controllers
+namespace RemoteX.Server.Services
 {
-    public class ServerController
+    public class RelayServer
     {
         private TcpListener _tcpListener;
         private UdpClient _udpListener;

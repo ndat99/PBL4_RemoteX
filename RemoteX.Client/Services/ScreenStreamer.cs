@@ -6,24 +6,24 @@ using System.Threading.Tasks;
 using System.Windows;
 using RemoteX.Core.Models;
 using RemoteX.Core.Networking;
-using RemoteX.Client.Services;
 using RemoteX.Core.Services;
 using RemoteX.Core.Enums;
 using System.Net.Sockets;
 using RemoteX.Core;
 
-namespace RemoteX.Client.Controllers
+namespace RemoteX.Client.Services
 {
-    public class RemoteController
+    public class ScreenStreamer
     {
 
-        public readonly ClientController _clientController;
+        public readonly ClientNetworkManager _clientController;
         private int fps = 15; //tốc độ khung hình
         private int quality = 25 ; //chất lượng ảnh
+        private int resolution = 66; //tỉ lệ phân giải 
 
-        public RemoteController(ClientController clientController)
+        public ScreenStreamer(ClientNetworkManager clientNetwork)
         {
-            _clientController = clientController;
+            _clientController = clientNetwork;
         }
 
         public void SetQuality(QualityLevel level)
@@ -32,17 +32,20 @@ namespace RemoteX.Client.Controllers
             {
                 case QualityLevel.Low:
                     fps = 20;
-                    quality = 15;
+                    quality = 20;
+                    resolution = 55;
                     System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Thấp");
                     break;
                 case QualityLevel.Medium:
                     fps = 15;
                     quality = 25;
+                    resolution = 66;
                     System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Trung bình");
                     break;
                 case QualityLevel.High:
-                    fps = 10;
-                    quality = 35;
+                    fps = 12;
+                    quality = 23;
+                    resolution = 73;
                     System.Diagnostics.Debug.WriteLine("[QUALITY] Set to Cao");
                     break;
             }
@@ -59,8 +62,8 @@ namespace RemoteX.Client.Controllers
                 {
                     Task.Delay(1); //nhường luồng khác có cơ hội chạy (để dọn rác, tránh rò rỉ)
                     using var bmp = ScreenService.CaptureScreen(); //Bitmap screenshot
-                    int newWidth = bmp.Width /3*2;
-                    int newHeight = bmp.Height /3*2;
+                    int newWidth = bmp.Width * resolution/100;
+                    int newHeight = bmp.Height * resolution/100;
                     using var smallBmp = new Bitmap(newWidth, newHeight);
                     using (var g = Graphics.FromImage(smallBmp))
                     {

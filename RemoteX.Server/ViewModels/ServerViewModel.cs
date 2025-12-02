@@ -2,13 +2,13 @@
 using System.Windows.Media;
 using RemoteX.Core.Utils;
 using RemoteX.Core.Models;
-using RemoteX.Server.Controllers;
+using RemoteX.Server.Services;
 
 namespace RemoteX.Server.ViewModels
 {
     public class ServerViewModel : BaseViewModel
     {
-        private readonly ServerController _serverController;
+        private readonly RelayServer _relayServer;
         private int _port = 5000;
         private bool _isRunning;
 
@@ -21,7 +21,7 @@ namespace RemoteX.Server.ViewModels
 
         private Action<string> _onStatusChanged;
 
-        public ObservableCollection<ClientInfo> Clients => _serverController.Clients;
+        public ObservableCollection<ClientInfo> Clients => _relayServer.Clients;
 
         public string StatusText
         {
@@ -75,15 +75,15 @@ namespace RemoteX.Server.ViewModels
 
         public ServerViewModel()
         {
-            _serverController = new ServerController();
-            _serverController.StatusChanged += OnStatusChanged;
+            _relayServer = new RelayServer();
+            _relayServer.StatusChanged += OnStatusChanged;
    
             StartServer();
         }
 
         public void StartServer()
         {
-            _serverController.Start(_port);
+            _relayServer.Start(_port);
             StatusText = $"Server đang chạy";
             StatusColor = Brushes.Green;
             StatusDot = Brushes.Green;
@@ -94,7 +94,7 @@ namespace RemoteX.Server.ViewModels
 
         public void StopServer()
         {
-            _serverController.Stop();
+            _relayServer.Stop();
             StatusText = "Đã tắt Server";
             StatusColor = Brushes.Gray;
             StatusDot = Brushes.Gray;
