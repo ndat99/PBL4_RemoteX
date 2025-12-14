@@ -1,4 +1,4 @@
-﻿using RemoteX.Client.Controllers;
+﻿using RemoteX.Client.Services;
 using RemoteX.Core.Models;
 using System.IO;
 
@@ -10,18 +10,18 @@ namespace RemoteX.Client.ViewModels
         public ChatViewModel ChatVM { get; set; }
         public event Action<string> PartnerConnected;
 
-        public readonly ClientController _clientController;
+        public readonly ClientNetworkManager _clientController;
 
         private CancellationTokenSource _myStreamingCts;
-        private RemoteController _myStreamingController;
+        private ScreenStreamer _myStreamingController;
 
         // Tạo một Dictionary để lưu lại đường dẫn các file đã gửi
         private readonly Dictionary<Guid, string> _mySentFiles = new Dictionary<Guid, string>();
         public string PartnerId { get; set; }
 
-        public ClientViewModel(ClientController clientController)
+        public ClientViewModel(ClientNetworkManager clientNetwork)
         {
-            _clientController = clientController;
+            _clientController = clientNetwork;
             InfoVM = new InfoViewModel();
             ChatVM = new ChatViewModel(_clientController);
 
@@ -70,7 +70,7 @@ namespace RemoteX.Client.ViewModels
 
                         //PartnerConnected?.Invoke(PartnerId); //Mở RemoteWindow
                         _myStreamingCts = new CancellationTokenSource();
-                        _myStreamingController = new RemoteController(_clientController);
+                        _myStreamingController = new ScreenStreamer(_clientController);
                         _myStreamingController.StartStreaming(PartnerId, _myStreamingCts.Token);
                     }
                 }

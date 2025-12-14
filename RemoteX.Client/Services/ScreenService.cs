@@ -34,19 +34,6 @@ namespace RemoteX.Client.Services
             }
         }
 
-        //Convert byte[] thành BitmapImage (thì mới hiện được trong WPF Image control)
-        public static BitmapImage ConvertToBitmapImage(byte[] data)
-        {
-            using var ms = new MemoryStream(data);
-            var bmpImage = new BitmapImage();
-            bmpImage.BeginInit();
-            bmpImage.CacheOption = BitmapCacheOption.OnLoad;
-            bmpImage.StreamSource = ms;
-            bmpImage.EndInit();
-            bmpImage.Freeze(); //thread-safe
-            return bmpImage;
-        }
-
         public static BitmapImage ConvertToBitmapImage(byte[] dataBuffer, int length)
         {
             //dùng MemoryStream để đọc byte[]

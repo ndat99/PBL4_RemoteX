@@ -6,8 +6,8 @@ using System.Net.Sockets;
 namespace RemoteX.Core.Services
 {
     //Giữ TcpClient, MessageListener và ClientInfo của 1 client
-    //ServerController quản lý list ClientHandler
-    //Client disconnected -> báo event về ServerController -> remove khỏi list
+    //RelayServer quản lý list ClientHandler
+    //Client disconnected -> báo event về RelayServer -> remove khỏi list
     public class ClientHandler
     {
         private readonly TcpClient _tcpClient;

@@ -1,5 +1,4 @@
-﻿using RemoteX.Client.Controllers;
-using RemoteX.Client.Services;
+﻿using RemoteX.Client.Services;
 using RemoteX.Core.Models;
 using RemoteX.Core.Utils;
 using System.Windows.Media.Imaging;
@@ -15,12 +14,12 @@ namespace RemoteX.Client.ViewModels
         //kho chứa các gói tin chưa hoàn chỉnh với key là FrameID
         private readonly Dictionary<long, List<ScreenFrameMessage>> _frameBuffer = new();
         private BitmapImage _screen;
-        private readonly ClientController _clientController;
-        private readonly RemoteController _remoteController;
+        private readonly ClientNetworkManager _clientController;
+        private readonly ScreenStreamer _screenStreamer;
 
         private int _remoteScreenWidth;
         private int _remoteScreenHeight;
-        public ClientController clientController => _clientController;
+        public ClientNetworkManager clientNetwork => _clientController;
 
         public BitmapImage ScreenView
         {
@@ -33,14 +32,14 @@ namespace RemoteX.Client.ViewModels
         }
         public string PartnerId { get; set; }
 
-        public RemoteViewModel(ClientController clientController, string partnerId)
+        public RemoteViewModel(ClientNetworkManager clientNetwork, string partnerId)
         {
             ////Màn hình loading
             var bmp = new BitmapImage(new Uri("pack://application:,,,/Views/Screenshot.png"));
             ScreenView = bmp;
 
-            _clientController = clientController;
-            _remoteController = new RemoteController(_clientController);
+            _clientController = clientNetwork;
+            _screenStreamer = new ScreenStreamer(_clientController);
             PartnerId = partnerId;
 
             //nhận frame packet từ partner

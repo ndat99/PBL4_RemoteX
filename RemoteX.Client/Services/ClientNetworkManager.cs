@@ -2,11 +2,10 @@
 using RemoteX.Core.Utils;
 using System.Net.Sockets;
 using RemoteX.Core.Services;
-using RemoteX.Client.Services;
 
-namespace RemoteX.Client.Controllers
+namespace RemoteX.Client.Services
 {
-    public class ClientController
+    public class ClientNetworkManager
     {
         private TcpClient _tcpClient;
         private ClientHandler _handler;
@@ -61,7 +60,7 @@ namespace RemoteX.Client.Controllers
                 };
                 _handler.Send(udpInit);
 
-                App.Current.Dispatcher.Invoke(() =>
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     ClientConnected?.Invoke(info);
                     StatusChanged?.Invoke($" ⬤  Đã kết nối Server {IP}:{port} (UDP:{udpPort})", System.Windows.Media.Brushes.Green);
@@ -69,20 +68,20 @@ namespace RemoteX.Client.Controllers
             }
             catch (Exception ex)
             {
-                App.Current.Dispatcher.Invoke(() =>
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     StatusChanged?.Invoke($" ⬤  Lỗi kết nối: {ex.Message}", System.Windows.Media.Brushes.Red);
                 });
                 throw; //ném lỗi cho ClientWindow bắt và thông báo
             }
         }
-        private void OnMessageReceived(RemoteX.Core.Message msg)
+        private void OnMessageReceived(Core.Message msg)
         {
             switch (msg)
             {
                 //tcp message
                 case KeyboardEventMessage keyEvent:
-                    System.Diagnostics.Debug.WriteLine($"[KEYBOARD RX] ClientController received key: {keyEvent.KeyCode}, IsUp: {keyEvent.IsKeyUp}");
+                    System.Diagnostics.Debug.WriteLine($"[KEYBOARD RX] ClientNetwork received key: {keyEvent.KeyCode}, IsUp: {keyEvent.IsKeyUp}");
                     KeyboardService.ExecuteKeyboardEvent(keyEvent);
                     break;
                 case Log log:
@@ -114,6 +113,6 @@ namespace RemoteX.Client.Controllers
 
             }
         }
-        public void Send(RemoteX.Core.Message msg) => _handler.Send(msg);
+        public void Send(Core.Message msg) => _handler.Send(msg);
     }
 }
